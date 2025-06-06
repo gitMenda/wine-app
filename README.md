@@ -2,11 +2,23 @@
 
 Use [Expo Router](https://docs.expo.dev/router/introduction/) with [Nativewind](https://www.nativewind.dev/v4/overview/) styling.
 
-## 🚀 How to use
+## 🚀 How to run the app
+
+### Install dependencies
 
 ```sh
-npx create-expo-app -e with-tailwindcss
+npm install
 ```
+
+### Run the project
+
+```sh
+npx expo start 
+```
+
+### Open the app
+
+Make sure you have the Expo Go app installed on your phone and both your computer and phone are connected to the same internet network. Scan the generated QR code with the Expo Go app. 
 
 ## Deploy
 
