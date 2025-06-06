@@ -2,6 +2,7 @@ import { Link } from "expo-router";
 import React from "react";
 import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Button from "@/components/Button"
 
 export default function Page() {
   return (
@@ -18,25 +19,41 @@ function Content() {
     <View className="flex-1">
       <View className="py-12 md:py-24 lg:py-32 xl:py-48">
         <View className="px-4 md:px-6">
-          <View className="flex flex-col items-center gap-4 text-center">
-            <Text
-              role="heading"
-              className="text-3xl text-center native:text-5xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl"
-            >
-              Welcome to Project ACME
-            </Text>
-            <Text className="mx-auto max-w-[700px] text-lg text-center text-gray-500 md:text-xl dark:text-gray-400">
-              Discover and collaborate on acme. Explore our services now.
-            </Text>
-
-            <View className="gap-4">
-              <Link
-                suppressHighlighting
-                className="flex h-9 items-center justify-center overflow-hidden rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-gray-50 web:shadow ios:shadow transition-colors hover:bg-gray-900/90 active:bg-gray-400/90 web:focus-visible:outline-none web:focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
-                href="/"
+          <View className="flex flex-col items-center gap-2 text-center px-3 justify-between flex-col h-full py-48">
+            <View className="gap-3 w-full">
+              <Text
+                role="heading"
+                className="text-3xl text-center native:text-5xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl"
               >
-                Explore
-              </Link>
+                Welcome to
+              </Text>
+              <Text
+                role="heading"
+                className="text-3xl text-burgundy-600 text-center native:text-5xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl"
+              >
+                TuVino
+              </Text>
+              <Text className="mx-auto max-w-[700px] text-lg text-center text-gray-700 md:text-xl dark:text-gray-400">
+                Your first wine advisor 
+              </Text>
+            </View>
+
+            <View className="gap-3 w-full">
+              <Button
+                title="Log in"
+                onPress={() => {}}
+                variant="primary"
+              />
+              <Button
+                title="Register"
+                onPress={() => {}}
+                variant="secondary"
+              />
+              <Button
+                title="Log out"
+                onPress={() => {}}
+                variant="danger"
+              />
             </View>
           </View>
         </View>
@@ -49,9 +66,9 @@ function Header() {
   const { top } = useSafeAreaInsets();
   return (
     <View style={{ paddingTop: top }}>
-      <View className="px-4 lg:px-6 h-14 flex items-center flex-row justify-between ">
+      <View className="px-4 lg:px-6 h-14 flex items-center flex-row justify-between">
         <Link className="font-bold flex-1 items-center justify-center" href="/">
-          ACME
+          TuVino
         </Link>
         <View className="flex flex-row gap-4 sm:gap-6">
           <Link
@@ -59,18 +76,6 @@ function Header() {
             href="/"
           >
             About
-          </Link>
-          <Link
-            className="text-md font-medium hover:underline web:underline-offset-4"
-            href="/"
-          >
-            Product
-          </Link>
-          <Link
-            className="text-md font-medium hover:underline web:underline-offset-4"
-            href="/"
-          >
-            Pricing
           </Link>
         </View>
       </View>
