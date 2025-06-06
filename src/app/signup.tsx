@@ -2,17 +2,18 @@ import Button from '@/components/Button';
 import TextField from '@/components/TextField';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 
-export default function LoginScreen() {
+export default function SignupScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const router = useRouter();
 
   return (
     <View className="flex-1 justify-center px-8 bg-white dark:bg-black">
         <Text className="text-3xl font-bold mb-8 text-center text-black dark:text-white">
-            Login
+            Sign Up
         </Text>
 
         <TextField
@@ -30,19 +31,22 @@ export default function LoginScreen() {
             onChangeText={setPassword}
         />
 
+        <TextField
+            placeholder="Confirm Password"
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+        />
+
       <Button
-        title='Login'
+        title='Sign Up'
         onPress={() => {}}
         className='mb-4'
       />
 
-      <TouchableOpacity>
-        <Text className="text-burgundy-500 text-center mb-2">Forgot password?</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => router.push('/signup')}>
+      <TouchableOpacity onPress={() => router.push('/login')}>
         <Text className="text-gray-500 text-center">
-          Don't have an account? <Text className="text-burgundy-500">Sign up</Text>
+          Already have an account? <Text className="text-burgundy-500">Log in</Text>
         </Text>
       </TouchableOpacity>
     </View>
