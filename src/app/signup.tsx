@@ -7,11 +7,12 @@ import { useRouter } from "expo-router"
 import { useState } from "react"
 import { View, Text, TouchableOpacity } from "react-native"
 import { z } from "zod";
+import Layout from "@/components/Layout"
 
 const loginSchema = z
   .object({
     name: z.string().min(1, "Debe ingresar su nombre"),
-    email: z.string().email(),
+    email: z.string().email("Debe ingresar un email válido"),
     password: z
       .string()
       .min(8, "La contraseña debe tener al menos 8 caracteres"),
@@ -25,6 +26,7 @@ const loginSchema = z
   });
 
 export default function SignupScreen() {
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -32,12 +34,30 @@ export default function SignupScreen() {
   const [rememberMe, setRememberMe] = useState(false)
   const router = useRouter()
 
+  const validate = () => {
+    const result = loginSchema.safeParse({ name, email, password, confirmPassword })
+    if (!result.success) {
+      const fieldErrors: { [key: string]: string } = {}
+      result.error.errors.forEach(err => {
+        const field = err.path[0]
+        fieldErrors[field] = err.message
+      })
+      setErrors(fieldErrors)
+      return false
+    } else {
+      setErrors({})
+      return true
+    }
+  }
+
   const handleSignUp = async ({
     name,
     email,
     password,
     confirmPassword,
   }: z.infer<typeof loginSchema>) => {
+
+    if(!validate()) return
     // Handle sign up logic here
     console.log("Sign up with:", { name, email, password, confirmPassword, rememberMe })
     try {
@@ -49,7 +69,8 @@ export default function SignupScreen() {
   }
 
   return (
-      <View className="flex-1 px-6 bg-gray-900 rounded-3xl p-8 pt-24">
+    <Layout scrollable>
+      <View className="px-6 rounded-3xl p-8 pt-12">
         <View className="mb-8">
           <Text className="text-2xl font-semibold text-white mb-2">Create your account</Text>
         </View>
@@ -62,18 +83,22 @@ export default function SignupScreen() {
             value={name}
             onChangeText={setName}
             variant="dark"
+            error={!!errors.name}
+            errorMessage={errors.name}
           />
         </View>
 
         <View className="mb-4">
           <Text className="text-gray-400 text-sm mb-3">Your number & email address</Text>
           <TextField
-            placeholder="user@mail.com"
+            placeholder="user@email.com"
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
             variant="dark"
+            error={!!errors.email}
+            errorMessage={errors.email}
           />
         </View>
 
@@ -85,6 +110,8 @@ export default function SignupScreen() {
             value={password}
             onChangeText={setPassword}
             variant="dark"
+            error={!!errors.password}
+            errorMessage={errors.password}
           />
         </View>
 
@@ -96,6 +123,8 @@ export default function SignupScreen() {
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             variant="dark"
+            error={!!errors.confirmPassword}
+            errorMessage={errors.confirmPassword}
           />
         </View>
 
@@ -108,7 +137,13 @@ export default function SignupScreen() {
           </TouchableOpacity>
         </View>
 
-        <Button title="Sign up" onPress={() => handleSignUp({ name, email, password, confirmPassword })} variant="primary" className="mb-6" />
+        <Button
+          title="Sign up"
+          onPress={() => handleSignUp({ name, email, password, confirmPassword })}
+          variant="primary"
+          className="mb-6"
+          disabled={!name || !email || !password || !confirmPassword || Object.keys(errors).length > 0}
+        />
 
         <View className="items-center mb-6">
           <Text className="text-gray-500 text-sm">Or</Text>
@@ -126,5 +161,6 @@ export default function SignupScreen() {
           </TouchableOpacity>
         </View>
       </View>
+      </Layout>
   )
 }

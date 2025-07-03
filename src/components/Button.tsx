@@ -38,7 +38,7 @@ export default function Button({ title, variant = "primary", className = "", ...
   const { button, text } = variantStyles[variant]
 
   return (
-    <TouchableOpacity className={`rounded-xl px-6 p-4 ${button} ${className}`} {...rest}>
+    <TouchableOpacity className={`rounded-2xl px-6 p-4 ${button} ${className}`} {...rest}>
       <Text className={`text-center font-semibold text-base ${text}`}>{title}</Text>
     </TouchableOpacity>
   )

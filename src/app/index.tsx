@@ -2,11 +2,13 @@
 
 import { useState } from "react"
 import { Text, View, TouchableOpacity } from "react-native"
+import Toast from "react-native-toast-message"
 import Button from "@/components/Button"
 import TextField from "@/components/TextField"
 import { useRouter } from "expo-router"
 import { z } from "zod"
 import { authServiceInstance } from "@/modules/auth/AuthService"
+import Layout from "@/components/Layout"
 
 
 const loginSchema = z.object({
@@ -37,12 +39,16 @@ function Content() {
       await authServiceInstance.login(email, password);
       router.push("/home");
     } catch (error) {
-      console.error(error);
+      Toast.show({
+        type: "error",
+        text1: "Email o contraseña incorrectos",
+      });;
     }
   };
 
   return (
-      <View className="flex-1 bg-gray-900 rounded-3xl p-6 pt-24">
+    <Layout>
+      <View className="px-6 rounded-3xl p-8 pt-12">
         <View className="mb-8">
           <Text className="text-2xl font-semibold text-white mb-2">Login to your account</Text>
         </View>
@@ -50,7 +56,7 @@ function Content() {
         <View className="mb-4">
           <Text className="text-gray-400 text-sm mb-3">Your number & email address</Text>
           <TextField
-            placeholder="uiuxdesigner@gmail.com"
+            placeholder="user@email.com"
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
@@ -101,6 +107,8 @@ function Content() {
             </Text>
           </TouchableOpacity>
         </View>
+        <Toast />
       </View>
+    </Layout>
   )
 }
