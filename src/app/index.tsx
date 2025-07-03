@@ -91,13 +91,14 @@ function Content() {
 
         <Button title="Log in" onPress={() => handleLogin({ email, password })} variant="primary" className="mb-6" />
 
-        <View className="items-center mb-6">
-          <Text className="text-gray-500 text-sm">Or</Text>
+        <View className="flex-row items-center mb-6">
+          <View className="flex-1 h-px bg-gray-700" />
+          <Text className="text-gray-500 text-sm px-3">Or</Text>
+          <View className="flex-1 h-px bg-gray-700" />
         </View>
 
         <View className="gap-3 mb-6">
           <Button title="Sign up with Google" onPress={() => {}} variant="social" className="mb-0" />
-          <Button title="Sign up with Facebook" onPress={() => {}} variant="social" className="mb-0" />
         </View>
 
         <View className="items-center">

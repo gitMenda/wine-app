@@ -145,8 +145,10 @@ export default function SignupScreen() {
           disabled={!name || !email || !password || !confirmPassword || Object.keys(errors).length > 0}
         />
 
-        <View className="items-center mb-6">
-          <Text className="text-gray-500 text-sm">Or</Text>
+        <View className="flex-row items-center mb-6">
+          <View className="flex-1 h-px bg-gray-700" />
+          <Text className="text-gray-500 text-sm px-3">Or</Text>
+          <View className="flex-1 h-px bg-gray-700" />
         </View>
 
         <View className="gap-3 mb-6">
