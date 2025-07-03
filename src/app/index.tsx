@@ -5,6 +5,15 @@ import { Text, View, TouchableOpacity } from "react-native"
 import Button from "@/components/Button"
 import TextField from "@/components/TextField"
 import { useRouter } from "expo-router"
+import { z } from "zod"
+import { authServiceInstance } from "@/modules/auth/AuthService"
+
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z
+    .string(),
+});
 
 export default function Page() {
   return (
@@ -19,6 +28,18 @@ function Content() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
+
+  const handleLogin = async ({
+    email,
+    password,
+  }: z.infer<typeof loginSchema>) => {
+    try {
+      await authServiceInstance.login(email, password);
+      router.push("/home");
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
       <View className="flex-1 bg-gray-900 rounded-3xl p-6 pt-24">
@@ -62,7 +83,7 @@ function Content() {
           </TouchableOpacity>
         </View>
 
-        <Button title="Log in" onPress={() => {}} variant="primary" className="mb-6" />
+        <Button title="Log in" onPress={() => handleLogin({ email, password })} variant="primary" className="mb-6" />
 
         <View className="items-center mb-6">
           <Text className="text-gray-500 text-sm">Or</Text>

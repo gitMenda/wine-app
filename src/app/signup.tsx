@@ -2,16 +2,51 @@
 
 import Button from "@/components/Button"
 import TextField from "@/components/TextField"
+import { authServiceInstance } from "@/modules/auth/AuthService"
 import { useRouter } from "expo-router"
 import { useState } from "react"
 import { View, Text, TouchableOpacity } from "react-native"
+import { z } from "zod";
+
+const loginSchema = z
+  .object({
+    name: z.string().min(1, "Debe ingresar su nombre"),
+    email: z.string().email(),
+    password: z
+      .string()
+      .min(8, "La contraseña debe tener al menos 8 caracteres"),
+    confirmPassword: z
+      .string()
+      .min(8, "La contraseña debe tener al menos 8 caracteres"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"], // set the error on confirmPassword field
+    message: "Las contraseñas no coinciden",
+  });
 
 export default function SignupScreen() {
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
   const router = useRouter()
+
+  const handleSignUp = async ({
+    name,
+    email,
+    password,
+    confirmPassword,
+  }: z.infer<typeof loginSchema>) => {
+    // Handle sign up logic here
+    console.log("Sign up with:", { name, email, password, confirmPassword, rememberMe })
+    try {
+      await authServiceInstance.signUp( name, email, password);
+      //route to home
+    } catch (error) {
+      console.error("Error during sign up:", error);
+    }
+  }
 
   return (
       <View className="flex-1 px-6 bg-gray-900 rounded-3xl p-8 pt-24">
@@ -20,9 +55,20 @@ export default function SignupScreen() {
         </View>
 
         <View className="mb-4">
+          <Text className="text-gray-400 text-sm mb-3">Your name</Text>
+          <TextField
+            placeholder="Your Name"
+            autoCapitalize="none"
+            value={name}
+            onChangeText={setName}
+            variant="dark"
+          />
+        </View>
+
+        <View className="mb-4">
           <Text className="text-gray-400 text-sm mb-3">Your number & email address</Text>
           <TextField
-            placeholder="uiuxdesigner@gmail.com"
+            placeholder="user@mail.com"
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
@@ -62,7 +108,7 @@ export default function SignupScreen() {
           </TouchableOpacity>
         </View>
 
-        <Button title="Sign up" onPress={() => {}} variant="primary" className="mb-6" />
+        <Button title="Sign up" onPress={() => handleSignUp({ name, email, password, confirmPassword })} variant="primary" className="mb-6" />
 
         <View className="items-center mb-6">
           <Text className="text-gray-500 text-sm">Or</Text>
@@ -70,7 +116,6 @@ export default function SignupScreen() {
 
         <View className="gap-3 mb-6">
           <Button title="Sign up with Google" onPress={() => {}} variant="social" className="mb-0" />
-          <Button title="Sign up with Facebook" onPress={() => {}} variant="social" className="mb-0" />
         </View>
 
         <View className="items-center">
