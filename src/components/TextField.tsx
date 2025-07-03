@@ -8,7 +8,7 @@ interface TextFieldProps extends TextInputProps {
 export default function TextField({ className = '', ...props }: TextFieldProps) {
   return (
     <TextInput
-      className={`border border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-4 text-black dark:text-white ${className}`}
+      className={`rounded-2xl border border-gray-300 dark:border-gray-600 p-4 mb-4 text-black dark:text-white ${className}`}
       placeholderTextColor="#888"
       {...props}
     />
