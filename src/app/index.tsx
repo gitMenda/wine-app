@@ -8,7 +8,7 @@ import { useRouter } from "expo-router"
 
 export default function Page() {
   return (
-    <View className="flex flex-1 bg-white dark:bg-black">
+    <View className="flex flex-1 bg-gray-900">
       <Content />
     </View>
   )
@@ -18,61 +18,68 @@ function Content() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [rememberMe, setRememberMe] = useState(false)
 
   return (
-    <View className="flex-1">
-      <View className="py-12 md:py-24 lg:py-32 xl:py-48">
-        <View className="px-4 md:px-6">
-          <View className="flex flex-col items-center gap-6 text-center px-3 justify-center h-full">
-            <View className="gap-2 w-full mb-8">
-              <Text
-                role="heading"
-                className="text-3xl dark:text-white text-center native:text-5xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl"
-              >
-                Welcome back to
-              </Text>
-              <Text
-                role="heading"
-                className="text-3xl text-burgundy-600 text-center native:text-5xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl"
-              >
-                TuVino
-              </Text>
-              <Text className="mx-auto max-w-[700px] text-lg text-center text-gray-700 md:text-xl dark:text-gray-200">
-                Your first wine advisor
-              </Text>
-            </View>
+      <View className="flex-1 bg-gray-900 rounded-3xl p-6 pt-24">
+        <View className="mb-8">
+          <Text className="text-2xl font-semibold text-white mb-2">Login to your account</Text>
+        </View>
 
-            <View className="w-full max-w-sm">
-              <TextField
-                placeholder="Email"
-                autoCapitalize="none"
-                keyboardType="email-address"
-                value={email}
-                onChangeText={setEmail}
-              />
+        <View className="mb-4">
+          <Text className="text-gray-400 text-sm mb-3">Your number & email address</Text>
+          <TextField
+            placeholder="uiuxdesigner@gmail.com"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+            variant="dark"
+          />
+        </View>
 
-              <TextField
-                placeholder="Password"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword} 
-              />
+        <View className="mb-4">
+          <Text className="text-gray-400 text-sm mb-3">Enter your password</Text>
+          <TextField
+            placeholder="••••••••••••"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            variant="dark"
+          />
+        </View>
 
-              <Button title="Login" onPress={() => {}} variant="primary" className="mb-4" />
-            </View>
+        <View className="flex-row justify-between items-center mb-4">
+          <TouchableOpacity className="flex-row items-center" onPress={() => setRememberMe(!rememberMe)}>
+            <View
+              className={`w-4 h-4 rounded border mr-2 ${rememberMe ? "bg-burgundy-600 border-burgundy-600" : "border-gray-500"}`}
+            />
+            <Text className="text-gray-400 text-sm">Remember me</Text>
+          </TouchableOpacity>
 
-            <TouchableOpacity>
-              <Text className="text-burgundy-500 text-center mb-2">Forgot password?</Text>
-            </TouchableOpacity>
+          <TouchableOpacity>
+            <Text className="text-burgundy-500 text-sm">Forgot password?</Text>
+          </TouchableOpacity>
+        </View>
 
-            <TouchableOpacity onPress={() => router.push("/signup")}>
-              <Text className="text-gray-500 text-center">
-                Don't have an account? <Text className="text-burgundy-500">Sign up</Text>
-              </Text>
-            </TouchableOpacity>
-          </View>
+        <Button title="Log in" onPress={() => {}} variant="primary" className="mb-6" />
+
+        <View className="items-center mb-6">
+          <Text className="text-gray-500 text-sm">Or</Text>
+        </View>
+
+        <View className="gap-3 mb-6">
+          <Button title="Sign up with Google" onPress={() => {}} variant="social" className="mb-0" />
+          <Button title="Sign up with Facebook" onPress={() => {}} variant="social" className="mb-0" />
+        </View>
+
+        <View className="items-center">
+          <TouchableOpacity onPress={() => router.push("/signup")}>
+            <Text className="text-gray-400 text-sm">
+              Don't have an account? <Text className="text-burgundy-500">Create an account</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
-    </View>
   )
 }
