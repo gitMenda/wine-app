@@ -10,6 +10,7 @@
     "deploy": "npx expo export -p web && npx eas-cli@latest deploy"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.2.0",
     "expo": "^53.0.4",
     "expo-constants": "~17.1.4",
     "expo-linking": "~7.1.4",

@@ -2,7 +2,8 @@ import { Link } from "expo-router";
 import React from "react";
 import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Button from "@/components/Button"
+import Button from "@/components/Button";
+import { router } from 'expo-router';
 
 export default function Page() {
   return (
@@ -41,18 +42,13 @@ function Content() {
             <View className="gap-3 w-full">
               <Button
                 title="Log in"
-                onPress={() => {}}
+                onPress={() => router.push('/login')}
                 variant="primary"
               />
               <Button
                 title="Register"
                 onPress={() => {}}
                 variant="secondary"
-              />
-              <Button
-                title="Log out"
-                onPress={() => {}}
-                variant="danger"
               />
             </View>
           </View>
