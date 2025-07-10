@@ -4,18 +4,40 @@ import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "@/components/Button";
 import { router } from 'expo-router';
+import { useAuth } from '@/hooks/useAuth';
+import { useOnboarding } from '@/hooks/useOnboarding';
+import { useEffect } from 'react';
 
 export default function Page() {
+  const { user, loading: authLoading } = useAuth();
+  const { isCompleted, loading: onboardingLoading } = useOnboarding();
+
+  useEffect(() => {
+    // Redirect to onboarding if user is authenticated but hasn't completed onboarding
+    if (!authLoading && !onboardingLoading && user && isCompleted === false) {
+      router.replace('/(onboarding)/welcome');
+    }
+  }, [user, isCompleted, authLoading, onboardingLoading]);
+
+  // Show loading while checking auth and onboarding status
+  if (authLoading || onboardingLoading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text className="text-lg">Loading...</Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex flex-1">
       <Header />
-      <Content />
+      <Content user={user} />
       <Footer />
     </View>
   );
 }
 
-function Content() {
+function Content({ user }: { user: any }) {
   return (
     <View className="flex-1">
       <View className="py-12 md:py-24 lg:py-32 xl:py-48">
@@ -40,6 +62,14 @@ function Content() {
             </View>
 
             <View className="gap-3 w-full">
+              {user ? (
+                <Button
+                  title="Continue to App"
+                  onPress={() => {}}
+                  variant="primary"
+                />
+              ) : (
+                <>
               <Button
                 title="Log in"
                 onPress={() => router.push('/login')}
@@ -50,6 +80,8 @@ function Content() {
                 onPress={() => {}}
                 variant="secondary"
               />
+                </>
+              )}
             </View>
           </View>
         </View>

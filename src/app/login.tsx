@@ -1,22 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { router } from 'expo-router';
-import { useOnboarding } from '@/hooks/useOnboarding';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { isCompleted } = useOnboarding();
+  const [loading, setLoading] = useState(false);
+  const { signIn } = useAuth();
 
-  const handleLogin = () => {
-    // Mock login logic - in a real app you'd validate credentials
-    if (email && password) {
-      // Check if onboarding is completed
-      if (isCompleted) {
-        router.replace('/');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await signIn(email, password);
+      
+      if (error) {
+        Alert.alert('Login Error', error.message);
       } else {
-        router.replace('/(onboarding)/welcome');
+        // Navigation will be handled by the auth state change
+        router.replace('/');
       }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,8 +60,11 @@ export default function LoginScreen() {
       <TouchableOpacity 
         className="bg-blue-600 p-4 rounded-lg mb-4"
         onPress={handleLogin}
+        disabled={loading}
       >
-        <Text className="text-white text-center font-semibold">Login</Text>
+        <Text className="text-white text-center font-semibold">
+          {loading ? 'Logging in...' : 'Login'}
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity>

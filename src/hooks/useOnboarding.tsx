@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface OnboardingData {
   experienceLevel: string;
@@ -10,10 +11,8 @@ export interface OnboardingData {
   learningGoals: string[];
 }
 
-const ONBOARDING_KEY = '@onboarding_completed';
-const ONBOARDING_DATA_KEY = '@onboarding_data';
-
 export function useOnboarding() {
+  const { user, loading: authLoading } = useAuth();
   const [isCompleted, setIsCompleted] = useState<boolean | null>(null);
   const [data, setData] = useState<OnboardingData>({
     experienceLevel: '',
@@ -23,41 +22,94 @@ export function useOnboarding() {
     tastingNotes: [],
     learningGoals: []
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadOnboardingStatus();
-  }, []);
+    if (!authLoading && user) {
+      loadOnboardingStatus();
+    } else if (!authLoading && !user) {
+      // User not authenticated
+      setIsCompleted(null);
+      setLoading(false);
+    }
+  }, [user, authLoading]);
 
   const loadOnboardingStatus = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      const completed = await AsyncStorage.getItem(ONBOARDING_KEY);
-      const savedData = await AsyncStorage.getItem(ONBOARDING_DATA_KEY);
-      
-      setIsCompleted(completed === 'true');
-      if (savedData) {
-        setData(JSON.parse(savedData));
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('onboarding_completed, onboarding_data')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error loading onboarding status:', error);
+        setIsCompleted(false);
+      } else {
+        setIsCompleted(userData.onboarding_completed);
+        if (userData.onboarding_data) {
+          setData(userData.onboarding_data);
+        }
       }
     } catch (error) {
       console.error('Error loading onboarding status:', error);
       setIsCompleted(false);
+    } finally {
+      setLoading(false);
     }
   };
 
   const completeOnboarding = async (onboardingData: OnboardingData) => {
+    if (!user) {
+      throw new Error('User must be authenticated to complete onboarding');
+    }
+
     try {
-      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
-      await AsyncStorage.setItem(ONBOARDING_DATA_KEY, JSON.stringify(onboardingData));
+      const { error } = await supabase
+        .from('users')
+        .update({
+          onboarding_completed: true,
+          onboarding_data: onboardingData,
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error completing onboarding:', error);
+        throw error;
+      }
+
       setIsCompleted(true);
       setData(onboardingData);
     } catch (error) {
-      console.error('Error saving onboarding completion:', error);
+      console.error('Error completing onboarding:', error);
+      throw error;
     }
   };
 
   const resetOnboarding = async () => {
+    if (!user) {
+      throw new Error('User must be authenticated to reset onboarding');
+    }
+
     try {
-      await AsyncStorage.removeItem(ONBOARDING_KEY);
-      await AsyncStorage.removeItem(ONBOARDING_DATA_KEY);
+      const { error } = await supabase
+        .from('users')
+        .update({
+          onboarding_completed: false,
+          onboarding_data: null,
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error resetting onboarding:', error);
+        throw error;
+      }
+
       setIsCompleted(false);
       setData({
         experienceLevel: '',
@@ -69,12 +121,14 @@ export function useOnboarding() {
       });
     } catch (error) {
       console.error('Error resetting onboarding:', error);
+      throw error;
     }
   };
 
   return {
     isCompleted,
     data,
+    loading,
     completeOnboarding,
     resetOnboarding
   };
