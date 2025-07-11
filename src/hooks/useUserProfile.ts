@@ -2,9 +2,9 @@ import { useState, useEffect } from "react"
 import { supabase } from "../lib/supabase"
 
 type UserProfile = {
-  uid: string
+  id: string
   email: string
-  nombre: string
+  name: string
 }
 
 export const useUserProfile = () => {
@@ -33,10 +33,11 @@ export const useUserProfile = () => {
       }
 
       // Query your profiles table for this user's info
+      console.log("Fetching profile for user:", user.id)
       const { data, error: profileError } = await supabase
-        .from("usuarios")
-        .select("uid, email, nombre")
-        .eq("uid", user.id)
+        .from("users")
+        .select("id, email, name, onboarding_completed")
+        .eq("id", user.id)
         .single()
 
       if (profileError) {

@@ -1,0 +1,100 @@
+import React, { useState } from 'react';
+import { View, Text, ScrollView } from 'react-native';
+import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Button from '@/components/Button';
+import OnboardingOption from '@/components/OnboardingOption';
+import Layout from '@/components/Layout';
+
+const tastingNoteOptions = [
+  {
+    id: 'fruity',
+    title: 'Fruity',
+    description: 'Berry, citrus, tropical fruit flavors'
+  },
+  {
+    id: 'earthy',
+    title: 'Earthy',
+    description: 'Mineral, soil, mushroom notes'
+  },
+  {
+    id: 'spicy',
+    title: 'Spicy',
+    description: 'Pepper, cinnamon, clove flavors'
+  },
+  {
+    id: 'floral',
+    title: 'Floral',
+    description: 'Rose, violet, lavender aromas'
+  },
+  {
+    id: 'oaky',
+    title: 'Oaky',
+    description: 'Vanilla, toast, smoke from barrel aging'
+  },
+  {
+    id: 'crisp',
+    title: 'Crisp & Fresh',
+    description: 'Clean, bright, refreshing wines'
+  }
+];
+
+export default function TastingNotesScreen() {
+  const { top } = useSafeAreaInsets();
+  const [selectedNotes, setSelectedNotes] = useState<string[]>([]);
+
+  const toggleNote = (noteId: string) => {
+    setSelectedNotes(prev => 
+      prev.includes(noteId) 
+        ? prev.filter(id => id !== noteId)
+        : [...prev, noteId]
+    );
+  };
+
+  const handleContinue = () => {
+    if (selectedNotes.length > 0) {
+      router.push('/(onboarding)/learning-goals');
+    }
+  };
+
+  return (
+    <Layout>
+    <View className="flex-1 bg-gray-900" style={{ paddingTop: top }}>
+      <ScrollView className="flex-1 px-8 py-6">
+        <View className="mb-8">
+          <Text className="text-2xl font-bold text-black dark:text-white mb-2">
+            What flavors do you enjoy?
+          </Text>
+          <Text className="text-gray-600 dark:text-gray-400">
+            Select the tasting notes that appeal to you most.
+          </Text>
+        </View>
+
+        <View className="mb-8">
+          {tastingNoteOptions.map((option) => (
+            <OnboardingOption
+              key={option.id}
+              title={option.title}
+              description={option.description}
+              isSelected={selectedNotes.includes(option.id)}
+              onPress={() => toggleNote(option.id)}
+            />
+          ))}
+        </View>
+      </ScrollView>
+
+      <View className="px-8 pb-8">
+        <Text className="text-center text-gray-500 dark:text-gray-400 mb-4">
+          {selectedNotes.length} selected
+        </Text>
+        <Button
+          title="Continue"
+          onPress={handleContinue}
+          variant={selectedNotes.length > 0 ? "primary" : "secondary"}
+          disabled={selectedNotes.length === 0}
+        />
+      </View>
+    </View>
+    </Layout>
+  );
+}

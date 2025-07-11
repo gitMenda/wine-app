@@ -9,6 +9,8 @@ import { useRouter } from "expo-router"
 import { z } from "zod"
 import { authServiceInstance } from "@/modules/auth/AuthService"
 import Layout from "@/components/Layout"
+import { useOnboarding } from "@/hooks/useOnboarding"
+import { supabase } from "@/lib/supabase"
 
 
 const loginSchema = z.object({
@@ -30,6 +32,7 @@ function Content() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
+  const { isCompleted } = useOnboarding();
 
   const handleLogin = async ({
     email,
@@ -37,6 +40,29 @@ function Content() {
   }: z.infer<typeof loginSchema>) => {
     try {
       await authServiceInstance.login(email, password);
+      // Explicitly load onboarding status after login
+      // TODO: this should be handled elsewhere
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('onboarding_completed')
+        .eq('id', (await authServiceInstance.getUser())?.userId)
+        .single();
+
+      console.log("Onboarding status:", isCompleted);
+
+      if (error) {
+        console.error('Error fetching onboarding status after login:', error);
+        // Decide whether to route to onboarding or show error
+        router.push("/home");
+        return;
+      }
+  
+      console.log("Fetched onboarding status after login:", userData.onboarding_completed);
+  
+      if (!userData.onboarding_completed) {
+        router.push("/(onboarding)/welcome");
+        return;
+      }
       router.push("/home");
     } catch (error) {
       Toast.show({

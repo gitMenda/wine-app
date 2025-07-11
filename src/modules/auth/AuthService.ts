@@ -63,11 +63,12 @@ export class AuthService {
     console.log("2. signed up successfully through supabase", data);
 
     const { error: profileError } = await supabase
-      .from("usuarios")
+      .from("users")
       .insert({
-        uid: data.user!.id,
-        nombre: name,
+        id: data.user!.id,
+        name: name,
         email: email,
+        onboarding_competed: false,
       });
 
     console.log("3. tried to create user profile", profileError);

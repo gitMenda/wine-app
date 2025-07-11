@@ -3,6 +3,7 @@
 import { ScrollView, Text, View } from "react-native"
 import WineCard from "@/components/WineCard"
 import { useUserProfile } from "@/hooks/useUserProfile"
+import Layout from "@/components/Layout"
 
 // Mock data for wines
 const lastTriedWines = [
@@ -67,17 +68,18 @@ const favoriteWines = [
 
 export default function HomeScreen() {
     const { profile, loading, error } = useUserProfile()
-    if (loading) return <Text>Loading...</Text>
+    if (loading) return <Text>Loading...</Text> // TODO: make nice loading screen with spinner
     if (error) return <Text>Error: {error}</Text>
 
   return (
+    <Layout scrollable>
     <View className="flex-1 bg-gray-900">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="px-6 pt-12 pb-6">
           {/* Welcome Section */}
           <View className="mb-8">
             <Text className="text-3xl font-bold text-white mb-2">Welcome back,</Text>
-            <Text className="text-3xl font-bold text-burgundy-500">{profile?.nombre}</Text>
+            <Text className="text-3xl font-bold text-burgundy-500">{profile?.name}</Text>
             <Text className="text-gray-400 text-base mt-2">Ready to discover your next favorite wine?</Text>
           </View>
 
@@ -151,5 +153,6 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
     </View>
+    </Layout>
   )
 }
