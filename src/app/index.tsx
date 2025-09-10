@@ -1,26 +1,15 @@
 import { Link } from "expo-router";
 import React from "react";
 import { Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "@/components/Button";
 import { router } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
-import { useOnboarding } from '@/hooks/useOnboarding';
-import { useEffect } from 'react';
 
 export default function Page() {
   const { user, loading: authLoading } = useAuth();
-  const { isCompleted, loading: onboardingLoading } = useOnboarding();
 
-  useEffect(() => {
-    // Redirect to onboarding if user is authenticated but hasn't completed onboarding
-    if (!authLoading && !onboardingLoading && user && isCompleted === false) {
-      router.replace('/(onboarding)/welcome');
-    }
-  }, [user, isCompleted, authLoading, onboardingLoading]);
-
-  // Show loading while checking auth and onboarding status
-  if (authLoading || onboardingLoading) {
+  // Show loading while checking auth status
+  if (authLoading) {
     return (
       <View className="flex-1 justify-center items-center">
         <Text className="text-lg">Loading...</Text>
@@ -63,11 +52,13 @@ function Content({ user }: { user: any }) {
 
             <View className="gap-3 w-full">
               {user ? (
-                <Button
-                  title="Continue to App"
-                  onPress={() => {}}
-                  variant="primary"
-                />
+                <>
+                  <Button
+                    title="Continue to App"
+                    onPress={() => router.push('/home')}  // Navega a /home
+                    variant="primary"
+                  />
+                </>
               ) : (
                 <>
               <Button
@@ -91,19 +82,18 @@ function Content({ user }: { user: any }) {
 }
 
 function Header() {
-  const { top } = useSafeAreaInsets();
   return (
-    <View style={{ paddingTop: top }}>
+    <View style={{ paddingTop: 20 }}>
       <View className="px-4 lg:px-6 h-14 flex items-center flex-row justify-between">
         <Link className="font-bold flex-1 items-center justify-center" href="/">
-          TuVino
+          <Text>TuVino</Text>
         </Link>
         <View className="flex flex-row gap-4 sm:gap-6">
           <Link
             className="text-md font-medium hover:underline web:underline-offset-4"
             href="/"
           >
-            About
+            <Text>About</Text>
           </Link>
         </View>
       </View>
@@ -112,11 +102,10 @@ function Header() {
 }
 
 function Footer() {
-  const { bottom } = useSafeAreaInsets();
   return (
     <View
       className="flex shrink-0 bg-gray-100 native:hidden"
-      style={{ paddingBottom: bottom }}
+      style={{ paddingBottom: 20 }}  // Valor fijo para probar
     >
       <View className="py-6 flex-1 items-start px-4 md:px-6 ">
         <Text className={"text-center text-gray-700"}>
