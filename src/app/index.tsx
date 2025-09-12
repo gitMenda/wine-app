@@ -1,15 +1,25 @@
 import { Link } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "@/components/Button";
 import { router } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
+import { useOnboarding } from '@/hooks/useOnboarding';
 
 export default function Page() {
   const { user, loading: authLoading } = useAuth();
+  const { isCompleted, loading: onboardingLoading } = useOnboarding();
 
-  // Show loading while checking auth status
-  if (authLoading) {
+  useEffect(() => {
+    // Redirige al onboarding si el usuario está autenticado pero no lo completó
+    if (!authLoading && !onboardingLoading && user && isCompleted === false) {
+      router.replace('/(onboarding)/welcome');
+    }
+  }, [user, isCompleted, authLoading, onboardingLoading]);
+
+  // Muestra loading mientras se chequea auth y onboarding
+  if (authLoading || onboardingLoading) {
     return (
       <View className="flex-1 justify-center items-center">
         <Text className="text-lg">Loading...</Text>
@@ -52,25 +62,23 @@ function Content({ user }: { user: any }) {
 
             <View className="gap-3 w-full">
               {user ? (
-                <>
-                  <Button
-                    title="Continue to App"
-                    onPress={() => router.push('/home')}  // Navega a /home
-                    variant="primary"
-                  />
-                </>
+                <Button
+                  title="Continue to App"
+                  onPress={() => router.push('/home')}
+                  variant="primary"
+                />
               ) : (
                 <>
-              <Button
-                title="Log in"
-                onPress={() => router.push('/login')}
-                variant="primary"
-              />
-              <Button
-                title="Register"
-                onPress={() => {}}
-                variant="secondary"
-              />
+                  <Button
+                    title="Log in"
+                    onPress={() => router.push('/login')}
+                    variant="primary"
+                  />
+                  <Button
+                    title="Register"
+                    onPress={() => {}}
+                    variant="secondary"
+                  />
                 </>
               )}
             </View>
@@ -82,8 +90,9 @@ function Content({ user }: { user: any }) {
 }
 
 function Header() {
+  const { top } = useSafeAreaInsets();
   return (
-    <View style={{ paddingTop: 20 }}>
+    <View style={{ paddingTop: top }}>
       <View className="px-4 lg:px-6 h-14 flex items-center flex-row justify-between">
         <Link className="font-bold flex-1 items-center justify-center" href="/">
           <Text>TuVino</Text>
@@ -102,10 +111,11 @@ function Header() {
 }
 
 function Footer() {
+  const { bottom } = useSafeAreaInsets();
   return (
     <View
       className="flex shrink-0 bg-gray-100 native:hidden"
-      style={{ paddingBottom: 20 }}  // Valor fijo para probar
+      style={{ paddingBottom: bottom }}
     >
       <View className="py-6 flex-1 items-start px-4 md:px-6 ">
         <Text className={"text-center text-gray-700"}>

@@ -52,7 +52,7 @@ export default function WineTypesScreen() {
 
   const handleContinue = () => {
     if (selectedTypes.length > 0) {
-      router.push('/(onboarding)/budget');
+      router.push('/(onboarding)/bodies');
     }
   };
 
