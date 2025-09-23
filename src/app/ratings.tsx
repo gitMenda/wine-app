@@ -399,7 +399,7 @@ export default function MisVinosPage() {
                 </View>
                 {favorites.length === 0 ? (
                     <View className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                        <Text className="text-gray-300">Aún no tienes vinos favoritos.</Text>
+                        <Text className="text-gray-300">Aún no marcaste ningún vino como favorito.</Text>
                     </View>
                 ) : (
                     <FlatList
@@ -413,10 +413,10 @@ export default function MisVinosPage() {
             </View>
 
             <View className="mb-2">
-                <Text className="text-2xl font-semibold text-white mb-2">Vinos probados</Text>
+                <Text className="text-2xl font-semibold text-white mb-2">Historial</Text>
                 {ratings.length === 0 ? (
                     <View className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                        <Text className="text-gray-300">Aún no has probado vinos.</Text>
+                        <Text className="text-gray-300">Aún no probaste ningún vino.</Text>
                     </View>
                 ) : (
                     <FlatList
