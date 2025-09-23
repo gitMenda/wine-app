@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, FlatList, TouchableOpacity, ActivityIndicator, Image, Alert } from 'react-native';
 import { router } from 'expo-router';
 import Button from '@/components/Button';
@@ -13,35 +13,6 @@ interface Wine {
     region?: string;
     winery?: string;
     imageUrl?: string;
-    isFavorite?: boolean;
-}
-
-interface FavoriteWineApi {
-    wineId?: number;
-    wine_id?: number;
-    wineName?: string;
-    wine_name?: string;
-    type?: string;
-    country?: string;
-    region?: string;
-    winery?: string;
-    imageUrl?: string;
-    image_url?: string;
-    isFavorite?: boolean;
-}
-
-interface RatingApiItem {
-    id: string | number;
-    wineId?: number;
-    wine_id?: number;
-    wineName?: string;
-    wine_name?: string;
-    rating: number;
-    comment?: string | null;
-    createdAt?: string;
-    created_at?: string;
-    imageUrl?: string;
-    image_url?: string;
     isFavorite?: boolean;
 }
 
@@ -226,12 +197,11 @@ export default function MisVinosPage() {
     );
 
     const renderFavorite = ({ item }: { item: Wine }) => (
-        <View className="mr-3 w-64"> {/* Increased width for better spacing */}
+        <View className="mr-3 w-64">
             <TouchableOpacity
                 className="bg-gray-800 p-4 rounded-lg border border-gray-700 flex-row items-start"
                 onPress={() => router.push(`/wine/${item.wineId}`)}
             >
-                {/* Image or Initials */}
                 {item.imageUrl ? (
                     <Image
                         source={{ uri: item.imageUrl }}
@@ -277,7 +247,6 @@ export default function MisVinosPage() {
             className="bg-gray-800 p-4 mb-3 rounded-lg border border-gray-700 flex-row items-start"
             onPress={() => router.push(`/wine/${item.wineId}`)}
         >
-            {/* Image or Initials */}
             {item.imageUrl ? (
                 <Image
                     source={{ uri: item.imageUrl }}
@@ -303,11 +272,13 @@ export default function MisVinosPage() {
                         </View>
                     </View>
                     {!!item.winery && <Text className="text-gray-300 text-sm" numberOfLines={1}>{item.winery}</Text>}
-                    {(item.country && item.region) ? (
-                        <Text className="text-gray-300 text-sm" numberOfLines={2}>{item.region + ', ' + item.country}</Text>
-                    ) : (
-                        <Text className="text-gray-500 text-sm">Ubicación desconocida</Text>
-                    )}
+                    <View>
+                        {(item.country && item.region) ? (
+                            <Text className="text-gray-300 text-sm" numberOfLines={2}>{item.region + ', ' + item.country}</Text>
+                        ) : (
+                            <Text className="text-gray-500 text-sm">Ubicación desconocida</Text>
+                        )}
+                    </View>
                 </View>
 
                 <TouchableOpacity
@@ -366,7 +337,6 @@ export default function MisVinosPage() {
                                     wineId: r.id ?? r.wineId ?? r.wine_id,
                                     wineName: r.name ?? r.wineName ?? r.wine_name ?? 'Vino',
                                     rating: r.rating ?? null,
-                                    comment: r.comment ?? null,
                                     createdAt: r.createdAt ?? r.created_at,
                                     imageUrl: r.imageUrl ?? r.image_url ?? null,
                                     isFavorite: r.isFavorite ?? favs.some(fav => fav.wineId === (r.id ?? r.wineId ?? r.wine_id)),
@@ -413,7 +383,9 @@ export default function MisVinosPage() {
             </View>
 
             <View className="mb-2">
-                <Text className="text-2xl font-semibold text-white mb-2">Historial</Text>
+                <View className="flex-row justify-between items-center mb-2">
+                    <Text className="text-2xl font-semibold text-white">Historial</Text>
+                </View>
                 {ratings.length === 0 ? (
                     <View className="bg-gray-800 p-4 rounded-lg border border-gray-700">
                         <Text className="text-gray-300">Aún no probaste ningún vino.</Text>

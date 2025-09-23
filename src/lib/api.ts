@@ -1,11 +1,15 @@
 import { Platform } from 'react-native';
 
-const API_BASE_URL = 'http://localhost:8000/api';  // Agrega /api
+const API_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 
 // Cliente simple para fetch (opcional, pero recomendado para reutilizar)
 export const apiClient = {
   async get(endpoint: string) {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            headers: {
+                'ngrok-skip-browser-warning': 'true',
+            }
+    });
     if (!response.ok) throw new Error(`Error: ${response.status}`);
     return response.json();
   },
