@@ -18,6 +18,15 @@ export const apiClient = {
     if (!response.ok) throw new Error(`Error: ${response.status}`);
     return response.json();
   },
+  async delete(endpoint: string, data: any) {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error(`Error: ${response.status}`);
+      return response.json();
+  },
 };
 
 export default API_BASE_URL;
