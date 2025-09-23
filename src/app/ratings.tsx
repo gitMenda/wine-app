@@ -225,14 +225,12 @@ export default function MisVinosPage() {
 
                     <TouchableOpacity
                         onPress={(e) => {
-                            e.stopPropagation();
                             toggleFavorite(item.wineId, true, item.wineName);
                         }}
-                        disabled={togglingFavorites.has(item.wineId)}
                         className="p-1 ml-2"
                     >
                         <Ionicons
-                            name={togglingFavorites.has(item.wineId) ? "heart" : "heart"}
+                            name={togglingFavorites.has(item.wineId) ? "heart-outline" : "heart"}
                             size={24}
                             color={togglingFavorites.has(item.wineId) ? "#6b7280" : "#d60f0f"}
                         />
@@ -283,10 +281,8 @@ export default function MisVinosPage() {
 
                 <TouchableOpacity
                     onPress={(e) => {
-                        e.stopPropagation();
                         toggleFavorite(item.wineId, item.isFavorite || false, item.wineName);
                     }}
-                    disabled={togglingFavorites.has(item.wineId)}
                     className="p-1 ml-2"
                 >
                     <Ionicons
