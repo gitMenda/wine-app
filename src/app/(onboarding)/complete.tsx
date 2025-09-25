@@ -22,7 +22,7 @@ export default function CompleteScreen() {
     };
 
     await completeOnboarding(mockOnboardingData);
-    router.replace('/');
+    router.replace('/home');
   };
 
   return (

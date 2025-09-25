@@ -3,6 +3,7 @@
     "scheme": "acme",
     "userInterfaceStyle": "automatic",
     "orientation": "default",
+    "sdkVersion": "54.0.0",
     "web": {
       "output": "static"
     },

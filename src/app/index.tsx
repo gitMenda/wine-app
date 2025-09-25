@@ -11,12 +11,12 @@ export default function Page() {
   const { user, loading: authLoading } = useAuth();
   const { isCompleted, loading: onboardingLoading } = useOnboarding();
 
-  useEffect(() => {
-    // Redirige al onboarding si el usuario está autenticado pero no lo completó
-    if (!authLoading && !onboardingLoading && user && isCompleted === false) {
-      router.replace('/(onboarding)/welcome');
-    }
-  }, [user, isCompleted, authLoading, onboardingLoading]);
+  // useEffect(() => {
+  //   // Redirige al onboarding si el usuario está autenticado pero no lo completó
+  //   if (!authLoading && !onboardingLoading && user && isCompleted === false) {
+  //     router.replace('/(onboarding)/welcome');
+  //   }
+  // }, [user, isCompleted, authLoading, onboardingLoading]);
 
   // Muestra loading mientras se chequea auth y onboarding
   if (authLoading || onboardingLoading) {

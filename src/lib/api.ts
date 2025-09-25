@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 
-const API_BASE_URL = 'https://9071914aa8b3.ngrok-free.app/api';  // Agrega /api
+const API_BASE_URL = 'https://fe754604887f.ngrok-free.app/api';  // Agrega /api
 
 // Cliente simple para fetch (opcional, pero recomendado para reutilizar)
 export const apiClient = {
