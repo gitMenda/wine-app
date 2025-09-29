@@ -3,6 +3,7 @@ import { View, Text, ScrollView, FlatList, TouchableOpacity, ActivityIndicator, 
 import { router } from 'expo-router';
 import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
+import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import { Ionicons } from '@expo/vector-icons';
 
 interface Wine {
@@ -54,7 +55,7 @@ export default function MisVinosPage() {
     const [error, setError] = useState<string | null>(null);
     const [togglingFavorites, setTogglingFavorites] = useState<Set<number>>(new Set());
 
-    const userId = '204e52fc-d31e-459e-841a-b5e5f5400247';
+    const userId = '5ebaba97-9e1d-41ad-ba40-c0fd5a07c339';
 
     useEffect(() => {
         let mounted = true;
@@ -118,13 +119,7 @@ export default function MisVinosPage() {
         setTogglingFavorites(prev => new Set(prev).add(wineId));
 
         try {
-            const endpoint = `/users/${userId}/favorites/${wineId}`;
-
-            if (currentFavoriteStatus) {
-                await apiClient.delete(endpoint, null);
-            } else {
-                await apiClient.post(endpoint, null);
-            }
+            await toggleFavoriteApi(userId, wineId, currentFavoriteStatus);
 
             if (currentFavoriteStatus) {
                 setFavorites(prev => prev.filter(wine => wine.wineId !== wineId));
