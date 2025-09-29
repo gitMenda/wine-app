@@ -29,6 +29,8 @@ export default function WineDetailPage() {
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [isToggling, setIsToggling] = useState<boolean>(false);
+  const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [saving, setSaving] = useState<boolean>(false);
   const userId = '5ebaba97-9e1d-41ad-ba40-c0fd5a07c339';
 
   useEffect(() => {
@@ -46,6 +48,21 @@ export default function WineDetailPage() {
     if (id) fetchWine();
   }, [id]);
 
+  // Fetch existing rating for this wine by the current user
+  useEffect(() => {
+    const fetchRating = async () => {
+      if (!id) return;
+      try {
+        const statusResp = await apiClient.get(`/users/${userId}/wines/status/${id}`);
+        const r = (statusResp as any)?.rating ?? null;
+        setSelectedRating(typeof r === 'number' && r >= 1 && r <= 5 ? r : null);
+      } catch (e) {
+        console.error('Error fetching rating status:', e);
+      }
+    };
+    fetchRating();
+  }, [id]);
+
   const onToggleFavorite = async () => {
     if (!wine || isToggling) return;
     const prev = isFavorite;
@@ -61,14 +78,37 @@ export default function WineDetailPage() {
     }
   };
 
+  const onToggleStar = (value: number) => {
+    setSelectedRating(prev => (prev === value ? null : value));
+  };
+
+  const onSaveRating = async () => {
+    if (!id) {
+      Alert.alert('Error', 'Vino inválido.');
+      return;
+    }
+    try {
+      setSaving(true);
+      await apiClient.post(`/users/${userId}/wines/status`, {
+        wine: Number(id),
+        rating: selectedRating ?? null,
+      });
+      Alert.alert('Listo', 'Tu registro fue guardado.');
+    } catch (e) {
+      console.error('Error guardando rating', e);
+      Alert.alert('Error', 'No se pudo guardar. Intenta nuevamente.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const formatArrayField = (field: string) => {
     try {
-      // Reemplaza comillas simples por dobles para que sea JSON válido
       const jsonString = field.replace(/'/g, '"');
       const parsed = JSON.parse(jsonString);
       return Array.isArray(parsed) ? parsed.join(', ') : field;
     } catch {
-      return field;  // Si no se puede parsear, muestra el campo original
+      return field;
     }
   };
 
@@ -112,7 +152,28 @@ export default function WineDetailPage() {
       <Text className="text-lg mb-2 text-white"><Text className="font-semibold">Región:</Text> {wine.region}</Text>
       <Text className="text-lg mb-2 text-white"><Text className="font-semibold">Bodega:</Text> {wine.winery}</Text>
       <Text className="text-lg mb-4 text-white"><Text className="font-semibold">Añadas:</Text> {formatArrayField(wine.vintages)}</Text>
-      <Button title="Volver a Búsqueda" onPress={() => router.back()} variant="secondary" />
+
+      <View className="mt-2 mb-4">
+        <Text className="text-2xl font-bold mb-2 text-white">¿Probaste este vino?</Text>
+        <Text className="text-gray-300 mb-3">Podés dejar la calificación en blanco.</Text>
+        <View className="flex-row items-center justify-between mb-3">
+          <Text className="text-gray-400 mr-2">No me gustó</Text>
+          <View className="flex-row items-center">
+            {[1, 2, 3, 4, 5].map((i) => {
+              const filled = selectedRating !== null && i <= selectedRating;
+              return (
+                <TouchableOpacity key={i} onPress={() => onToggleStar(i)} className="px-1">
+                  <Ionicons name={filled ? 'star' : 'star-outline'} size={28} color={filled ? '#FACC15' : '#9CA3AF'} />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+          <Text className="text-gray-400 ml-2">Me encantó</Text>
+        </View>
+        <Button title={saving ? 'Guardando...' : 'Guardar'} onPress={onSaveRating} variant="primary" disabled={saving} />
+      </View>
+
+      <Button title="Volver" onPress={() => router.back()} variant="secondary" />
     </ScrollView>
   );
 }

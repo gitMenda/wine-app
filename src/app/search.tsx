@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, Alert } from 'react-native';
 import { router } from 'expo-router';
 import Button from '@/components/Button';
-import { apiClient } from '@/lib/api';  // Importa el cliente
+import { apiClient } from '@/lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 
 interface Wine {
-  wineId: number;  // Cambia a camelCase para coincidir con la API
+  wineId: number;
   wineName: string;
   type: string;
   elaborate: string;
@@ -64,13 +64,11 @@ export default function SearchPage() {
     if (togglingFavorites.has(wine.wineId)) return;
     setTogglingFavorites(prev => new Set(prev).add(wine.wineId));
     const prevFav = !!wine.isFavorite;
-    // Optimistic update
     setResults(prev => prev.map(w => w.wineId === wine.wineId ? { ...w, isFavorite: !prevFav } : w));
     try {
       await toggleFavoriteApi(userId, wine.wineId, prevFav);
     } catch (e) {
       Alert.alert('Error', 'No se pudo actualizar el favorito. Intenta nuevamente.');
-      // Revert
       setResults(prev => prev.map(w => w.wineId === wine.wineId ? { ...w, isFavorite: prevFav } : w));
     } finally {
       setTogglingFavorites(prev => {
@@ -82,25 +80,30 @@ export default function SearchPage() {
   };
 
   const renderItem = ({ item }: { item: Wine }) => (
-    <TouchableOpacity
-      className="bg-gray-800 p-4 m-2 rounded-lg shadow-md border border-gray-600"
-      onPress={() => router.push(`/wine/${item.wineId}`)}
-    >
-      <View className="flex-row justify-between items-start mb-2">
-        <Text className="text-xl font-bold text-white flex-1 mr-2" numberOfLines={2}>{item.wineName}</Text>
-        <TouchableOpacity className="p-1" onPress={() => onToggleFavorite(item)}>
-          <Ionicons
-            name={favoriteIconName(!!item.isFavorite, togglingFavorites.has(item.wineId))}
-            size={22}
-            color={favoriteIconColor(!!item.isFavorite, togglingFavorites.has(item.wineId))}
-          />
-        </TouchableOpacity>
-      </View>
-      <Text className="text-gray-300 mb-1">Tipo: {item.type}</Text>
-      <Text className="text-gray-300 mb-1">País: {item.country}</Text>
-      <Text className="text-gray-300 mb-1">Región: {item.region}</Text>
-      <Text className="text-gray-300">Bodega: {item.winery}</Text>
-    </TouchableOpacity>
+    <View className="bg-gray-800 p-4 m-2 rounded-lg shadow-md border border-gray-600">
+      <TouchableOpacity onPress={() => router.push(`/wine/${item.wineId}`)}>
+        <View className="flex-row justify-between items-start mb-2">
+          <Text className="text-xl font-bold text-white flex-1 mr-2" numberOfLines={2}>{item.wineName}</Text>
+          <TouchableOpacity className="p-1" onPress={() => onToggleFavorite(item)}>
+            <Ionicons
+              name={favoriteIconName(!!item.isFavorite, togglingFavorites.has(item.wineId))}
+              size={22}
+              color={favoriteIconColor(!!item.isFavorite, togglingFavorites.has(item.wineId))}
+            />
+          </TouchableOpacity>
+        </View>
+        <Text className="text-gray-300 mb-1">Tipo: {item.type}</Text>
+        <Text className="text-gray-300 mb-1">País: {item.country}</Text>
+        <Text className="text-gray-300 mb-1">Región: {item.region}</Text>
+        <Text className="text-gray-300">Bodega: {item.winery}</Text>
+      </TouchableOpacity>
+      <View className="mt-3" />
+      <Button
+        title="¿Probaste este vino?"
+        variant="secondary"
+        onPress={() => router.push(`/wine/${item.wineId}`)}
+      />
+    </View>
   );
 
   return (
