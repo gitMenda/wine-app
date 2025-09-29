@@ -1,25 +1,24 @@
 import { Link } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "@/components/Button";
 import { router } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useOnboarding } from '@/hooks/useOnboarding';
-import { useEffect } from 'react';
 
 export default function Page() {
   const { user, loading: authLoading } = useAuth();
   const { isCompleted, loading: onboardingLoading } = useOnboarding();
 
   useEffect(() => {
-    // Redirect to onboarding if user is authenticated but hasn't completed onboarding
+    // Redirige al onboarding si el usuario está autenticado pero no lo completó
     if (!authLoading && !onboardingLoading && user && isCompleted === false) {
       router.replace('/(onboarding)/welcome');
     }
   }, [user, isCompleted, authLoading, onboardingLoading]);
 
-  // Show loading while checking auth and onboarding status
+  // Muestra loading mientras se chequea auth y onboarding
   if (authLoading || onboardingLoading) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -65,21 +64,21 @@ function Content({ user }: { user: any }) {
               {user ? (
                 <Button
                   title="Continue to App"
-                  onPress={() => {}}
+                  onPress={() => router.push('/home')}
                   variant="primary"
                 />
               ) : (
                 <>
-              <Button
-                title="Log in"
-                onPress={() => router.push('/login')}
-                variant="primary"
-              />
-              <Button
-                title="Register"
-                onPress={() => {}}
-                variant="secondary"
-              />
+                  <Button
+                    title="Log in"
+                    onPress={() => router.push('/login')}
+                    variant="primary"
+                  />
+                  <Button
+                    title="Register"
+                    onPress={() => {}}
+                    variant="secondary"
+                  />
                 </>
               )}
             </View>
@@ -96,14 +95,14 @@ function Header() {
     <View style={{ paddingTop: top }}>
       <View className="px-4 lg:px-6 h-14 flex items-center flex-row justify-between">
         <Link className="font-bold flex-1 items-center justify-center" href="/">
-          TuVino
+          <Text>TuVino</Text>
         </Link>
         <View className="flex flex-row gap-4 sm:gap-6">
           <Link
             className="text-md font-medium hover:underline web:underline-offset-4"
             href="/"
           >
-            About
+            <Text>About</Text>
           </Link>
         </View>
       </View>
