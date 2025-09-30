@@ -5,6 +5,7 @@ import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
+import WineImage from "@/components/WineImage";
 
 interface Wine {
   wineId: number;
@@ -131,7 +132,8 @@ export default function WineDetailPage() {
 
   return (
     <ScrollView className="flex-1 p-4 pt-8 dark:bg-gray-900">
-      <View className="flex-row items-start justify-between mb-4">
+      <View className="flex-row justify-between items-center mb-2">
+        <WineImage name={wine.wineName} size={48} rounded className="mr-3" />
         <Text className="text-3xl font-bold text-white flex-1 mr-2" numberOfLines={2}>{wine.wineName}</Text>
         <TouchableOpacity className="p-1" onPress={onToggleFavorite}>
           <Ionicons

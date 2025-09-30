@@ -5,6 +5,7 @@ import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import { Ionicons } from '@expo/vector-icons';
+import WineImage from '@/components/WineImage';
 
 interface Wine {
     wineId: number;
@@ -30,23 +31,6 @@ interface RatingItem {
     isFavorite?: boolean;
 }
 
-const getInitials = (name: string): string => {
-    return name
-        .split(' ')
-        .map(word => word.charAt(0).toUpperCase())
-        .slice(0, 2)
-        .join('');
-};
-
-const getBackgroundColor = (name: string): string => {
-    const colors = [
-        'bg-purple-500', 'bg-blue-500', 'bg-green-500',
-        'bg-yellow-500', 'bg-red-500', 'bg-indigo-500',
-        'bg-pink-500', 'bg-teal-500', 'bg-orange-500'
-    ];
-    const index = name.length % colors.length;
-    return colors[index];
-};
 
 export default function MisVinosPage() {
     const [favorites, setFavorites] = useState<Wine[]>([]);
@@ -197,17 +181,7 @@ export default function MisVinosPage() {
                 className="bg-gray-800 p-4 rounded-lg border border-gray-700 flex-row items-start"
                 onPress={() => router.push(`/wine/${item.wineId}`)}
             >
-                {item.imageUrl ? (
-                    <Image
-                        source={{ uri: item.imageUrl }}
-                        className="w-12 h-12 rounded-md mr-3"
-                        resizeMode="cover"
-                    />
-                ) : (
-                    <View className={`w-12 h-12 rounded-md mr-3 ${getBackgroundColor(item.wineName)} justify-center items-center`}>
-                        <Text className="text-white font-bold text-lg">{getInitials(item.wineName)}</Text>
-                    </View>
-                )}
+                <WineImage name={item.wineName} uri={item.imageUrl} size={48} rounded className="mr-3" />
 
                 <View className="flex-1 flex-row justify-between items-start">
                     <View className="flex-1 mr-2">
@@ -240,17 +214,7 @@ export default function MisVinosPage() {
             className="bg-gray-800 p-4 mb-3 rounded-lg border border-gray-700 flex-row items-start"
             onPress={() => router.push(`/wine/${item.wineId}`)}
         >
-            {item.imageUrl ? (
-                <Image
-                    source={{ uri: item.imageUrl }}
-                    className="w-12 h-12 rounded-md mr-3"
-                    resizeMode="cover"
-                />
-            ) : (
-                <View className={`w-12 h-12 rounded-md mr-3 ${getBackgroundColor(item.wineName)} justify-center items-center`}>
-                    <Text className="text-white font-bold text-lg">{getInitials(item.wineName)}</Text>
-                </View>
-            )}
+            <WineImage name={item.wineName} uri={item.imageUrl} size={48} rounded className="mr-3" />
 
             <View className="flex-1 flex-row justify-between items-start">
                 <View className="flex-1 mr-2">
