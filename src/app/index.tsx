@@ -79,6 +79,16 @@ function Content({ user }: { user: any }) {
                     onPress={() => {}}
                     variant="secondary"
                   />
+                    <Button
+                        title="Test recommendations"
+                        onPress={() => router.push('/recommendations')}
+                        variant="secondary"
+                    />
+                    <Button
+                        title="busqueda"
+                        onPress={() => router.push('/search')}
+                        variant="secondary"
+                    />
                 </>
               )}
             </View>

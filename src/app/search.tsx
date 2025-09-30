@@ -5,6 +5,7 @@ import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
+import WineImage from "@/components/WineImage";
 
 interface Wine {
   wineId: number;
@@ -82,7 +83,8 @@ export default function SearchPage() {
   const renderItem = ({ item }: { item: Wine }) => (
     <View className="bg-gray-800 p-4 m-2 rounded-lg shadow-md border border-gray-600">
       <TouchableOpacity onPress={() => router.push(`/wine/${item.wineId}`)}>
-        <View className="flex-row justify-between items-start mb-2">
+          <View className="flex-row justify-between items-center mb-2">
+          <WineImage name={item.wineName} size={48} rounded className="mr-3" />
           <Text className="text-xl font-bold text-white flex-1 mr-2" numberOfLines={2}>{item.wineName}</Text>
           <TouchableOpacity className="p-1" onPress={() => onToggleFavorite(item)}>
             <Ionicons
