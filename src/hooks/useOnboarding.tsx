@@ -43,7 +43,7 @@ export function useOnboarding() {
     try {
       const { data: userData, error } = await supabase
         .from('users')
-        .select('onboarding_completed, onboarding_data')
+        .select('onboarding_completed')
         .eq('id', user.id)
         .single();
 
@@ -52,9 +52,6 @@ export function useOnboarding() {
         setIsCompleted(false);
       } else {
         setIsCompleted(userData.onboarding_completed);
-        if (userData.onboarding_data) {
-          setData(userData.onboarding_data);
-        }
       }
     } catch (error) {
       console.error('Error loading onboarding status:', error);

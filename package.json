@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/slider": "^5.0.1",
     "@supabase/supabase-js": "^2.50.4",
     "expo": "^54.0.8",
     "expo-constants": "~17.1.4",
@@ -22,7 +23,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.1",
-    "react-native-reanimated": "~3.17.4",
+    "react-native-reanimated": "^3.6.2",
     "react-native-safe-area-context": "5.3.0",
     "react-native-screens": "~4.10.0",
     "react-native-web": "^0.20.0",
@@ -30,6 +31,8 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
+    "@babel/plugin-transform-optional-chaining": "^7.27.1",
     "@types/react": "~19.0.10",
     "typescript": "~5.8.3"
   },
