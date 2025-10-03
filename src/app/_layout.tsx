@@ -2,6 +2,7 @@ import { useColorScheme, View } from "react-native";
 import "../global.css";
 import { Slot } from "expo-router";
 import { AuthProvider } from "@/hooks/useAuth";
+import { OnboardingProvider } from '@/hooks/useOnboarding';
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function Layout() {
@@ -10,9 +11,11 @@ export default function Layout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <View className={colorScheme === "dark" ? "dark" : ""} style={{ flex: 1 }}>
-          <Slot />
-        </View>
+        <OnboardingProvider>
+          <View className={colorScheme === "dark" ? "dark" : ""} style={{ flex: 1 }}>
+            <Slot />
+          </View>
+        </OnboardingProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

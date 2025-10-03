@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '@/components/Button';
 import OnboardingOption from '@/components/OnboardingOption';
+import { useOnboarding } from '@/hooks/useOnboarding';
 
 const experienceOptions = [
   {
@@ -31,10 +32,15 @@ const experienceOptions = [
 export default function ExperienceScreen() {
   const { top } = useSafeAreaInsets();
   const [selectedExperience, setSelectedExperience] = useState<string>('');
+  const { updateExperienceLevel } = useOnboarding();
+
+  const handleSelectExperience = (experienceId: string) => {
+    setSelectedExperience(experienceId);
+    updateExperienceLevel(experienceId);
+  };
 
   const handleContinue = () => {
     if (selectedExperience) {
-      // Store the selection and navigate to next screen
       router.push('/(onboarding)/wine-types');
     }
   };
@@ -58,7 +64,7 @@ export default function ExperienceScreen() {
               title={option.title}
               description={option.description}
               isSelected={selectedExperience === option.id}
-              onPress={() => setSelectedExperience(option.id)}
+              onPress={() => handleSelectExperience(option.id)}
             />
           ))}
         </View>
