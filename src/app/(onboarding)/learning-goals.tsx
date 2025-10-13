@@ -8,33 +8,33 @@ import OnboardingOption from '@/components/OnboardingOption';
 const learningGoalOptions = [
   {
     id: 'food-pairing',
-    title: 'Food Pairing',
-    description: 'Learn which wines go with different dishes'
+    title: 'Maridaje de Comidas',
+    description: 'Aprender qué vinos combinan con diferentes platos'
   },
   {
     id: 'tasting-skills',
-    title: 'Tasting Skills',
-    description: 'Develop my palate and tasting vocabulary'
+    title: 'Habilidades de Cata',
+    description: 'Desarrollar mi paladar y vocabulario de cata'
   },
   {
     id: 'wine-regions',
-    title: 'Wine Regions',
-    description: 'Explore wines from different countries and regions'
+    title: 'Regiones Vinícolas',
+    description: 'Explorar vinos de diferentes países y regiones'
   },
   {
     id: 'wine-making',
-    title: 'Wine Making',
-    description: 'Understand how wine is produced'
+    title: 'Elaboración de Vinos',
+    description: 'Entender cómo se produce el vino'
   },
   {
     id: 'collecting',
-    title: 'Wine Collecting',
-    description: 'Build a wine collection and learn about aging'
+    title: 'Coleccionismo de Vinos',
+    description: 'Construir una colección de vinos y aprender sobre el envejecimiento'
   },
   {
     id: 'social-enjoyment',
-    title: 'Social Enjoyment',
-    description: 'Simply enjoy wine with friends and family'
+    title: 'Disfrute Social',
+    description: 'Simplemente disfrutar del vino con amigos y familiares'
   }
 ];
 

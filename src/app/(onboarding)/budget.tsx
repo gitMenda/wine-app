@@ -8,28 +8,28 @@ import OnboardingOption from '@/components/OnboardingOption';
 const budgetOptions = [
   {
     id: 'budget',
-    title: 'Budget-Friendly',
-    description: 'Under $15 per bottle'
+    title: 'Económico',
+    description: 'Menos de $15 por botella'
   },
   {
     id: 'mid-range',
-    title: 'Mid-Range',
-    description: '$15 - $30 per bottle'
+    title: 'Gama Media',
+    description: '$15 - $30 por botella'
   },
   {
     id: 'premium',
     title: 'Premium',
-    description: '$30 - $60 per bottle'
+    description: '$30 - $60 por botella'
   },
   {
     id: 'luxury',
-    title: 'Luxury',
-    description: '$60+ per bottle'
+    title: 'De Lujo',
+    description: '$60+ por botella'
   },
   {
     id: 'varies',
-    title: 'It Varies',
-    description: 'Different budgets for different occasions'
+    title: 'Varía',
+    description: 'Diferentes presupuestos para diferentes ocasiones'
   }
 ];
 

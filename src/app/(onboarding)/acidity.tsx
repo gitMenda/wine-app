@@ -8,16 +8,18 @@ import OnboardingOption from '@/components/OnboardingOption';
 const acidityOptions = [
   { 
     id: 'low', 
-    title: 'Low', 
-    description: 'Smooth sensation on the palate' 
+    title: 'Baja', 
+    description: 'Sensación suave en el paladar' 
   },
   { 
     id: 'medium', 
-    title: 'Medium', description: 'Balanced, neither too soft nor too fresh' 
+    title: 'Media', 
+    description: 'Equilibrada, ni demasiado suave ni demasiado fresca' 
   },
   { 
     id: 'high', 
-    title: 'High', description: 'Fresh and vibrant sensation' 
+    title: 'Alta', 
+    description: 'Sensación fresca y vibrante' 
   },
 ];
 

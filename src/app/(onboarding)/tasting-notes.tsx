@@ -8,33 +8,33 @@ import OnboardingOption from '@/components/OnboardingOption';
 const tastingNoteOptions = [
   {
     id: 'fruity',
-    title: 'Fruity',
-    description: 'Berry, citrus, tropical fruit flavors'
+    title: 'Afrutado',
+    description: 'Sabores de frutas del bosque, cítricas y tropicales'
   },
   {
     id: 'earthy',
-    title: 'Earthy',
-    description: 'Mineral, soil, mushroom notes'
+    title: 'Terroso',
+    description: 'Notas minerales, de suelo y de champiñones'
   },
   {
     id: 'spicy',
-    title: 'Spicy',
-    description: 'Pepper, cinnamon, clove flavors'
+    title: 'Especiado',
+    description: 'Sabores de pimienta, canela y clavo'
   },
   {
     id: 'floral',
     title: 'Floral',
-    description: 'Rose, violet, lavender aromas'
+    description: 'Aromas de rosa, violeta y lavanda'
   },
   {
     id: 'oaky',
-    title: 'Oaky',
-    description: 'Vanilla, toast, smoke from barrel aging'
+    title: 'Amaderado',
+    description: 'Vainilla, tostado, humo de la crianza en barrica'
   },
   {
     id: 'crisp',
-    title: 'Crisp & Fresh',
-    description: 'Clean, bright, refreshing wines'
+    title: 'Fresco y Vivo',
+    description: 'Vinos limpios, brillantes y refrescantes'
   }
 ];
 

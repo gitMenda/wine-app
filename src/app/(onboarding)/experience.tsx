@@ -9,23 +9,23 @@ import { useOnboarding } from '@/hooks/useOnboarding';
 const experienceOptions = [
   {
     id: 'beginner',
-    title: 'Wine Beginner',
-    description: 'I\'m new to wine and want to learn the basics'
+    title: 'Principiante en Vinos',
+    description: 'Soy nuevo en el vino y quiero aprender lo básico'
   },
   {
     id: 'casual',
-    title: 'Casual Drinker',
-    description: 'I enjoy wine occasionally but want to explore more'
+    title: 'Beber Casual',
+    description: 'Disfruto del vino ocasionalmente, pero quiero explorar más'
   },
   {
     id: 'enthusiast',
-    title: 'Wine Enthusiast',
-    description: 'I have some knowledge and enjoy trying different wines'
+    title: 'Entusiasta del Vino',
+    description: 'Tengo algo de conocimiento y disfruto probar diferentes vinos'
   },
   {
     id: 'expert',
-    title: 'Wine Expert',
-    description: 'I have extensive wine knowledge and refined palate'
+    title: 'Experto en Vinos',
+    description: 'Tengo un amplio conocimiento sobre vinos y un paladar refinado'
   }
 ];
 

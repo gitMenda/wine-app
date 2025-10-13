@@ -8,33 +8,33 @@ import OnboardingOption from '@/components/OnboardingOption';
 const occasionOptions = [
   {
     id: 'dinner-parties',
-    title: 'Dinner Parties',
-    description: 'Hosting friends and family'
+    title: 'Cenas con Amigos y Familia',
+    description: 'Recibiendo amigos y familiares'
   },
   {
     id: 'romantic-dinners',
-    title: 'Romantic Dinners',
-    description: 'Special occasions with your partner'
+    title: 'Cenas Románticas',
+    description: 'Ocasiones especiales con tu pareja'
   },
   {
     id: 'casual-evenings',
-    title: 'Casual Evenings',
-    description: 'Relaxing at home after work'
+    title: 'Noches Informales',
+    description: 'Relajándose en casa después del trabajo'
   },
   {
     id: 'celebrations',
-    title: 'Celebrations',
-    description: 'Birthdays, anniversaries, achievements'
+    title: 'Celebraciones',
+    description: 'Cumpleaños, aniversarios, logros'
   },
   {
     id: 'business-meals',
-    title: 'Business Meals',
-    description: 'Professional dining occasions'
+    title: 'Comidas de Negocios',
+    description: 'Ocasiones de cena profesional'
   },
   {
     id: 'gifts',
-    title: 'Gifts',
-    description: 'Wine as presents for others'
+    title: 'Regalos',
+    description: 'Vino como regalo para otros'
   }
 ];
 
