@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react';
-import { Platform } from 'react-native';
 import { apiClient } from '@/lib/api';
+import { getAccessToken, setAccessToken, removeAccessToken } from '@/lib/tokenStorage';
 
 // Lightweight user type based on JWT payload (if available)
 type AuthUser = any | null;
@@ -21,15 +21,6 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
-function readTokenWeb(): string | null {
-  if (Platform.OS !== 'web') return null;
-  try {
-    return window.sessionStorage.getItem('access_token');
-  } catch {
-    return null;
-  }
-}
-
 function decodeJwt(token: string | null): any | null {
   if (!token) return null;
   try {
@@ -47,15 +38,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize auth state from stored token (web)
-    const token = readTokenWeb();
-    const decoded = decodeJwt(token);
-    if (token) {
-      setUser(decoded || {});
-    } else {
-      setUser(null);
-    }
-    setLoading(false);
+    // Initialize auth state from stored token (AsyncStorage)
+    (async () => {
+      const token = await getAccessToken();
+      const decoded = decodeJwt(token);
+      if (token) {
+        setUser(decoded || {});
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    })();
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -67,14 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: { message: 'Invalid response from server: access_token missing' } };
       }
 
-      // Store token in sessionStorage (web) and update user state
-      if (Platform.OS === 'web') {
-        try {
-          window.sessionStorage.setItem('access_token', access_token);
-        } catch (err) {
-          console.warn('Failed to access sessionStorage:', err);
-        }
-      }
+      await setAccessToken(access_token);
 
       setUser(decodeJwt(access_token) || {});
       return { error: null };
@@ -96,12 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    // Clear token from sessionStorage on web and reset user state
-    if (Platform.OS === 'web') {
-      try {
-        window.sessionStorage.removeItem('access_token');
-      } catch {}
-    }
+    await removeAccessToken();
     setUser(null);
   };
 

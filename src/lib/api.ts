@@ -1,14 +1,4 @@
-import { Platform } from 'react-native';
-
-// Safely read the access_token from cookie on web
-function getCookieToken(): string | null {
-  if (Platform.OS !== 'web') return null;
-  if (typeof document === 'undefined' || !document.cookie) return null;
-  const match = document.cookie
-    .split('; ')
-    .find((row) => row.startsWith('access_token='));
-  return match ? decodeURIComponent(match.split('=')[1]) : null;
-}
+import { getAccessToken } from '@/lib/tokenStorage';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 
@@ -18,7 +8,7 @@ export const apiClient = {
     const headers: Record<string, string> = {
       'ngrok-skip-browser-warning': 'true',
     };
-    const token = getCookieToken();
+    const token = await getAccessToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -33,7 +23,7 @@ export const apiClient = {
       'Content-Type': 'application/json',
       'ngrok-skip-browser-warning': 'true',
     };
-    const token = getCookieToken();
+    const token = await getAccessToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -50,7 +40,7 @@ export const apiClient = {
       'Content-Type': 'application/json',
       'ngrok-skip-browser-warning': 'true',
     };
-    const token = getCookieToken();
+    const token = await getAccessToken();
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
