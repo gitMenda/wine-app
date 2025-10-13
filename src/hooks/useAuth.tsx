@@ -96,11 +96,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      // Call backend register endpoint
+      await apiClient.post('/auth/register', { email, password });
+      // On success, automatically login to retrieve and store access token
+      const { error } = await signIn(email, password);
+      return { error };
+    } catch (e: any) {
+      return { error: { message: e?.message || 'Registration failed' } };
+    }
   };
 
   const signOut = async () => {
