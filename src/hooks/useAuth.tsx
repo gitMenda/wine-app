@@ -1,6 +1,8 @@
 import { useState, useEffect, createContext, useContext } from 'react';
+import { Platform } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { Session, User } from '@supabase/supabase-js';
+import { apiClient } from '@/lib/api';
 
 interface AuthContextType {
   session: Session | null;
@@ -69,11 +71,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    try {
+      const res = await apiClient.post('/auth/login', { email, password });
+      const access_token = res?.access_token;
+
+      if (!access_token) {
+        return { error: { message: 'Invalid response from server: access_token missing' } };
+      }
+
+      // Store token in sessionStorage (web)
+      if (Platform.OS === 'web') {
+        try {
+          window.sessionStorage.setItem('access_token', access_token);
+        } catch (err) {
+          // Fallback: do nothing if sessionStorage is not available
+          console.warn('Failed to access sessionStorage:', err);
+        }
+      }
+
+      return { error: null };
+    } catch (e: any) {
+      return { error: { message: e?.message || 'Login failed' } };
+    }
   };
 
   const signUp = async (email: string, password: string) => {
@@ -85,6 +104,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    // Clear token from sessionStorage on web
+    if (Platform.OS === 'web') {
+      try {
+        window.sessionStorage.removeItem('access_token');
+      } catch {}
+    }
     await supabase.auth.signOut();
   };
 
