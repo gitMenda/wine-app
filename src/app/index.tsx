@@ -24,6 +24,7 @@ const useSafeOnboarding = () => {
 
 export default function Page() {
   const { user, loading: authLoading } = useAuth();
+    console.log(user);
   const router = useRouter();
   // Usar el hook seguro en lugar del hook directo
   const { isCompleted, loading: onboardingLoading } = useSafeOnboarding();
@@ -90,17 +91,7 @@ function Content({ user }: { user: any }) {
                 <>
                   <Button
                     title="Register"
-                    onPress={() => {}}
-                    variant="secondary"
-                  />
-                  <Button
-                    title="Test recommendations"
-                    onPress={() => router.push('/recommendations')}
-                    variant="secondary"
-                  />
-                  <Button
-                    title="busqueda"
-                    onPress={() => router.push('/search')}
+                    onPress={() => router.push('/register')}
                     variant="secondary"
                   />
                 </>

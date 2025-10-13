@@ -11,7 +11,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert('Error', 'Por favor llená todos los campos');
       return;
     }
 
@@ -20,13 +20,13 @@ export default function LoginScreen() {
       const { error } = await signIn(email, password);
       
       if (error) {
-        Alert.alert('Login Error', error.message);
+        Alert.alert('Error', 'Las credenciales ingresadas no son validas');
       } else {
         // Navigation will be handled by the auth state change
         router.replace('/');
       }
     } catch (error) {
-      Alert.alert('Error', 'An unexpected error occurred');
+      Alert.alert('Error', 'Error inesperado. Intente de nuevo en unos momentos.');
     } finally {
       setLoading(false);
     }
@@ -35,7 +35,7 @@ export default function LoginScreen() {
   return (
     <View className="flex-1 justify-center px-8 bg-white dark:bg-black">
       <Text className="text-3xl font-bold mb-8 text-center text-black dark:text-white">
-        Login
+        Ingresar con cuenta existente
       </Text>
 
       <TextInput
@@ -50,7 +50,7 @@ export default function LoginScreen() {
 
       <TextInput
         className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-6 text-black dark:text-white"
-        placeholder="Password"
+        placeholder="Contraseña"
         placeholderTextColor="#888"
         secureTextEntry
         value={password}
@@ -63,17 +63,17 @@ export default function LoginScreen() {
         disabled={loading}
       >
         <Text className="text-white text-center font-semibold">
-          {loading ? 'Logging in...' : 'Login'}
+          {loading ? 'Ingresando...' : 'Ingresar'}
         </Text>
       </TouchableOpacity>
 
       <TouchableOpacity>
-        <Text className="text-blue-500 text-center mb-2">Forgot password?</Text>
+        <Text className="text-blue-500 text-center mb-2">Olvidaste tu contraseña?</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push('/register')}>
+      <TouchableOpacity>
         <Text className="text-gray-500 text-center">
-          Don't have an account? <Text className="text-blue-500">Sign up</Text>
+          Todavía no tenes una cuenta? Registrate <Text className="text-blue-500" onPress={() => router.push('/register')}>acá</Text>
         </Text>
       </TouchableOpacity>
     </View>

@@ -1,12 +1,12 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { Platform } from 'react-native';
-import { supabase } from '@/lib/supabase';
-import { Session, User } from '@supabase/supabase-js';
 import { apiClient } from '@/lib/api';
 
+// Lightweight user type based on JWT payload (if available)
+type AuthUser = any | null;
+
 interface AuthContextType {
-  session: Session | null;
-  user: User | null;
+  user: AuthUser;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
@@ -14,7 +14,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType>({
-  session: null,
   user: null,
   loading: true,
   signIn: async () => ({ error: null }),
@@ -22,53 +21,42 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
+function readTokenWeb(): string | null {
+  if (Platform.OS !== 'web') return null;
+  try {
+    return window.sessionStorage.getItem('access_token');
+  } catch {
+    return null;
+  }
+}
+
+function decodeJwt(token: string | null): any | null {
+  if (!token) return null;
+  try {
+    const [, payload] = token.split('.');
+    if (!payload) return {};
+    const json = typeof atob !== 'undefined' ? atob(payload.replace(/-/g, '+').replace(/_/g, '/')) : '';
+    return json ? JSON.parse(decodeURIComponent(escape(json))) : {};
+  } catch {
+    return {};
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-
-        // Create user record if signing up
-        if (event === 'SIGNED_UP' && session?.user) {
-          await createUserRecord(session.user);
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const createUserRecord = async (user: User) => {
-    try {
-      const { error } = await supabase
-        .from('users')
-        .insert({
-          id: user.id,
-          email: user.email!,
-          onboarding_completed: false,
-        });
-
-      if (error) {
-        console.error('Error creating user record:', error);
-      }
-    } catch (error) {
-      console.error('Error creating user record:', error);
+    // Initialize auth state from stored token (web)
+    const token = readTokenWeb();
+    const decoded = decodeJwt(token);
+    if (token) {
+      setUser(decoded || {});
+    } else {
+      setUser(null);
     }
-  };
+    setLoading(false);
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -79,16 +67,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: { message: 'Invalid response from server: access_token missing' } };
       }
 
-      // Store token in sessionStorage (web)
+      // Store token in sessionStorage (web) and update user state
       if (Platform.OS === 'web') {
         try {
           window.sessionStorage.setItem('access_token', access_token);
         } catch (err) {
-          // Fallback: do nothing if sessionStorage is not available
           console.warn('Failed to access sessionStorage:', err);
         }
       }
 
+      setUser(decodeJwt(access_token) || {});
       return { error: null };
     } catch (e: any) {
       return { error: { message: e?.message || 'Login failed' } };
@@ -108,18 +96,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    // Clear token from sessionStorage on web
+    // Clear token from sessionStorage on web and reset user state
     if (Platform.OS === 'web') {
       try {
         window.sessionStorage.removeItem('access_token');
       } catch {}
     }
-    await supabase.auth.signOut();
+    setUser(null);
   };
 
   return (
     <AuthContext.Provider value={{
-      session,
       user,
       loading,
       signIn,
