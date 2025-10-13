@@ -1,35 +1,56 @@
-import { Platform } from 'react-native';
+import { getAccessToken } from '@/lib/tokenStorage';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 
 // Cliente simple para fetch (opcional, pero recomendado para reutilizar)
 export const apiClient = {
   async get(endpoint: string) {
+    const headers: Record<string, string> = {
+      'ngrok-skip-browser-warning': 'true',
+    };
+    const token = await getAccessToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            headers: {
-                'ngrok-skip-browser-warning': 'true',
-            }
+      credentials: 'include',
+      headers,
     });
     if (!response.ok) throw new Error(`Error: ${response.status}`);
     return response.json();
   },
   async post(endpoint: string, data: any) {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'ngrok-skip-browser-warning': 'true',
+    };
+    const token = await getAccessToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      headers,
       body: JSON.stringify(data),
     });
     if (!response.ok) throw new Error(`Error: ${response.status}`);
     return response.json();
   },
   async delete(endpoint: string, data: any) {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error(`Error: ${response.status}`);
-      return response.json();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'ngrok-skip-browser-warning': 'true',
+    };
+    const token = await getAccessToken();
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers,
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error(`Error: ${response.status}`);
+    return response.json();
   },
 };
 

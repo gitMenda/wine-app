@@ -3,30 +3,35 @@ import { View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 
-export default function LoginScreen() {
+export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signUp } = useAuth();
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Error', 'Por favor llená todos los campos');
+  const handleRegister = async () => {
+    if (!email || !password || !confirmPassword) {
+      Alert.alert('Error', 'Please fill in all fields');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
       return;
     }
 
     setLoading(true);
     try {
-      const { error } = await signIn(email, password);
-      
+      const { error } = await signUp(email, password);
       if (error) {
-        Alert.alert('Error', 'Las credenciales ingresadas no son validas');
+        Alert.alert('Registration Error', error.message);
       } else {
-        // Navigation will be handled by the auth state change
+        // signUp auto logs in; navigate to home
         router.replace('/');
       }
-    } catch (error) {
-      Alert.alert('Error', 'Error inesperado. Intente de nuevo en unos momentos.');
+    } catch (e) {
+      Alert.alert('Error', 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
@@ -35,7 +40,7 @@ export default function LoginScreen() {
   return (
     <View className="flex-1 justify-center px-8 bg-white dark:bg-black">
       <Text className="text-3xl font-bold mb-8 text-center text-black dark:text-white">
-        Ingresar con cuenta existente
+        Crear cuenta
       </Text>
 
       <TextInput
@@ -49,7 +54,7 @@ export default function LoginScreen() {
       />
 
       <TextInput
-        className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-6 text-black dark:text-white"
+        className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-4 text-black dark:text-white"
         placeholder="Contraseña"
         placeholderTextColor="#888"
         secureTextEntry
@@ -57,23 +62,28 @@ export default function LoginScreen() {
         onChangeText={setPassword}
       />
 
-      <TouchableOpacity 
+      <TextInput
+        className="border border-gray-300 dark:border-gray-600 rounded-lg p-4 mb-6 text-black dark:text-white"
+        placeholder="Confirmar Contraseña"
+        placeholderTextColor="#888"
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
+
+      <TouchableOpacity
         className="bg-blue-600 p-4 rounded-lg mb-4"
-        onPress={handleLogin}
+        onPress={handleRegister}
         disabled={loading}
       >
         <Text className="text-white text-center font-semibold">
-          {loading ? 'Ingresando...' : 'Ingresar'}
+          {loading ? 'Creando usuario...' : 'Registrarse'}
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity>
-        <Text className="text-blue-500 text-center mb-2">Olvidaste tu contraseña?</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => router.back()}>
         <Text className="text-gray-500 text-center">
-          Todavía no tenes una cuenta? Registrate <Text className="text-blue-500" onPress={() => router.push('/register')}>acá</Text>
+          Ya tenés una cuenta? <Text className="text-blue-500" onPress={() => router.push('/login')}>Ingresar</Text>
         </Text>
       </TouchableOpacity>
     </View>
