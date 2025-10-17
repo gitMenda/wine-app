@@ -1,40 +1,18 @@
 import { Link, router } from "expo-router";
-import React, { useEffect } from "react";
+import React from "react";
 import { Text, View, ActivityIndicator } from "react-native";
-import { useRouter } from 'expo-router';
 import { useAuth } from '@/hooks/useAuth';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "@/components/Button";
 
-// Función de seguridad para usar el hook de onboarding
-const useSafeOnboarding = () => {
-  try {
-    // Importación dinámica para evitar errores de compilación
-    const { useOnboarding } = require('@/hooks/useOnboarding');
-    return useOnboarding();
-  } catch (error) {
-    // Si el hook no está disponible, devuelve valores por defecto
-    return { 
-      isCompleted: null, 
-      loading: false,
-      data: { selectedOptionIds: [] }
-    };
-  }
-};
-
 export default function Page() {
   const { user, loading: authLoading } = useAuth();
-    console.log(user);
-  const router = useRouter();
-  // Usar el hook seguro en lugar del hook directo
-  const { isCompleted, loading: onboardingLoading } = useSafeOnboarding();
 
-  useEffect(() => {
-    // Redirige al onboarding si el usuario está autenticado pero no lo completó
-    if (!authLoading && !onboardingLoading && user && isCompleted === false) {
-      router.replace('/(onboarding)/welcome');
-    }
-  }, [user, isCompleted, authLoading, onboardingLoading, router]);
+  // Force log the authentication state
+  console.log("Auth state:", { 
+    user: user ? "Logged in" : "Not logged in", 
+    authLoading
+  });
 
   // Muestra loading mientras se chequea auth
   if (authLoading) {
@@ -55,8 +33,22 @@ export default function Page() {
   );
 }
 
-// Modificar la función Content para evitar redirecciones automáticas
 function Content({ user }: { user: any }) {
+  // ¡IMPORTANTE! - Usa useAuth aquí, en el nivel superior del componente
+  const { signOut } = useAuth();
+
+  // Función para manejar el cierre de sesión
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      console.log("Sesión cerrada correctamente");
+      // No es necesario redireccionar, el cambio en el estado de autenticación
+      // hará que el componente se vuelva a renderizar
+    } catch (e) {
+      console.error("Error al cerrar sesión:", e);
+    }
+  };
+
   return (
     <View className="flex-1">
       <View className="py-12 md:py-24 lg:py-32 xl:py-48">
@@ -81,21 +73,49 @@ function Content({ user }: { user: any }) {
             </View>
 
             <View className="gap-3 w-full">
-              {/* Mostrar todos los botones sin importar si el usuario está autenticado */}
-              <Button
-                title={user ? "Continue to App" : "Log in"}
-                onPress={() => router.push(user ? '/home' : '/login')}
-                variant="primary"
-              />
-              {!user && (
+              {/* Separamos la lógica para usuarios autenticados y no autenticados */}
+              {user ? (
                 <>
                   <Button
-                    title="Register"
+                    title="Continuar a la App"
+                    onPress={() => {
+                      if (user.onboardingCompleted === false) {
+                        router.push('/(onboarding)/welcome');
+                      } else {
+                        router.push('/home');
+                      }
+                    }}
+                    variant="primary"
+                  />
+                  
+                  <Button
+                    title="Cerrar Sesión"
+                    onPress={handleSignOut}
+                    variant="secondary"
+                  />
+                </>
+              ) : (
+                <>
+                  <Button
+                    title="Iniciar Sesión"
+                    onPress={() => router.push('/login')}
+                    variant="primary"
+                    className="bg-burgundy-600" // Agregar este className para mantener consistencia
+                  />
+                  
+                  <Button
+                    title="Registrarse"
                     onPress={() => router.push('/register')}
                     variant="secondary"
                   />
                 </>
               )}
+              
+              <Button
+                title="Ver Home (Demo)"
+                onPress={() => router.push('/home')}
+                variant="secondary"
+              />
             </View>
           </View>
         </View>

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 
 // Tipos actualizados según la estructura de la base de datos
 export interface PreferenceCategory {
@@ -73,9 +74,14 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   // ID de usuario fijo para las llamadas a la API
   const HARDCODED_USER_ID = "23847412-8ab0-46fc-81b1-81b4193227e6";
 
+  const { user } = useAuth();
+
   useEffect(() => {
-    loadOptionsFromAPI();
-  }, []);
+    // Solo cargar cuando el componente se monta y el usuario está autenticado
+    if (user && user.id) {
+      loadOptionsFromAPI();
+    }
+  }, [user]);
 
   const loadOptionsFromAPI = async () => {
     if (apiOptions.length > 0) return; // No cargar si ya tenemos opciones
@@ -87,7 +93,8 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       setApiOptions(options);
     } catch (error) {
       console.error('Error loading preference options:', error);
-      setTimeout(() => loadOptionsFromAPI(), 3000);
+      // ELIMINAR ESTA LÍNEA - ES LA CAUSANTE DEL BUCLE INFINITO:
+      // setTimeout(() => loadOptionsFromAPI(), 3000);
     } finally {
       setLoadingOptions(false);
     }
@@ -149,8 +156,8 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       
       console.log('Sending onboarding data to API:', payload);
       
-      // URL para la petición
-      const url = `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/preferences/users/${HARDCODED_USER_ID}/onboarding`;
+      // URL para la petición - usar el ID real del usuario, no el hardcodeado
+      const url = `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/preferences/users/${user?.id || HARDCODED_USER_ID}/onboarding`;
       
       // Usar fetch directamente para tener control total sobre el formato
       const response = await fetch(url, {
