@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
@@ -21,6 +21,7 @@ interface Wine {
   region: string;
   winery: string;
   vintages: string;
+  summary?: string | null;
   id?: string;
 }
 
@@ -31,6 +32,7 @@ export default function WineDetailPage() {
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [isToggling, setIsToggling] = useState<boolean>(false);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [review, setReview] = useState<string>('');
   const [saving, setSaving] = useState<boolean>(false);
   const userId = '5ebaba97-9e1d-41ad-ba40-c0fd5a07c339';
 
@@ -57,6 +59,8 @@ export default function WineDetailPage() {
         const statusResp = await apiClient.get(`/users/${userId}/wines/status/${id}`);
         const r = (statusResp as any)?.rating ?? null;
         setSelectedRating(typeof r === 'number' && r >= 1 && r <= 5 ? r : null);
+        const existingReview = (statusResp as any)?.review ?? '';
+        setReview(typeof existingReview === 'string' ? existingReview : '');
       } catch (e) {
         console.error('Error fetching rating status:', e);
       }
@@ -93,8 +97,9 @@ export default function WineDetailPage() {
       await apiClient.post(`/users/${userId}/wines/status`, {
         wine: Number(id),
         rating: selectedRating ?? null,
+        review: (review?.trim()?.length ?? 0) > 0 ? review.trim() : null,
       });
-      Alert.alert('Listo', 'Tu registro fue guardado.');
+      Alert.alert('Listo', 'Registramos tu experiencia correctamente.');
     } catch (e) {
       console.error('Error guardando rating', e);
       Alert.alert('Error', 'No se pudo guardar. Intenta nuevamente.');
@@ -155,9 +160,26 @@ export default function WineDetailPage() {
       <Text className="text-lg mb-2 text-white"><Text className="font-semibold">Bodega:</Text> {wine.winery}</Text>
       <Text className="text-lg mb-4 text-white"><Text className="font-semibold">Añadas:</Text> {formatArrayField(wine.vintages)}</Text>
 
+      {(wine.summary ?? '').trim().length > 0 && (
+        <View className="mb-4 p-4 rounded-lg bg-gray-800 border border-gray-700">
+          <Text className="text-white font-semibold mb-2">✨ Resumen de opiniones hecho con IA</Text>
+          <Text className="text-gray-200">{wine.summary}</Text>
+        </View>
+      )}
+
       <View className="mt-2 mb-4">
         <Text className="text-2xl font-bold mb-2 text-white">¿Probaste este vino?</Text>
-        <Text className="text-gray-300 mb-3">Podés dejar la calificación en blanco.</Text>
+        <Text className="text-gray-300 mb-3">Registrá tu experiencia para ajustar nuestras recomendaciones. No es necesario que escribas una opinión ni que lo califiques.</Text>
+        <TextInput
+          className="mb-3 p-3 min-h-[100px] rounded-lg bg-gray-800 text-white border border-gray-700"
+          placeholder="¿Qué te pareció este vino? Contanos tu opinión."
+          placeholderTextColor="#9CA3AF"
+          multiline
+          numberOfLines={4}
+          value={review}
+          onChangeText={setReview}
+          textAlignVertical="top"
+        />
         <View className="flex-row items-center justify-between mb-3">
           <Text className="text-gray-400 mr-2">No me gustó</Text>
           <View className="flex-row items-center">
@@ -172,7 +194,7 @@ export default function WineDetailPage() {
           </View>
           <Text className="text-gray-400 ml-2">Me encantó</Text>
         </View>
-        <Button title={saving ? 'Guardando...' : 'Guardar'} onPress={onSaveRating} variant="primary" disabled={saving} />
+        <Button title={saving ? 'Guardando...' : 'Registrar experiencia'} onPress={onSaveRating} variant="primary" disabled={saving} />
       </View>
 
       <Button title="Volver" onPress={() => router.back()} variant="secondary" />
