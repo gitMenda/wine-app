@@ -71,8 +71,6 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   const [loading, setLoading] = useState(false);
   const [loadingOptions, setLoadingOptions] = useState(false);
 
-  // ID de usuario fijo para las llamadas a la API
-  const HARDCODED_USER_ID = "23847412-8ab0-46fc-81b1-81b4193227e6";
 
   const { user } = useAuth();
 
@@ -156,26 +154,14 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       
       console.log('Sending onboarding data to API:', payload);
       
-      // URL para la petición - usar el ID real del usuario, no el hardcodeado
-      const url = `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/preferences/users/${user?.id || HARDCODED_USER_ID}/onboarding`;
-      
-      // Usar fetch directamente para tener control total sobre el formato
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API error response:', response.status, errorText);
-        throw new Error(`Error de API: ${response.status}`);
+      // Validar que existe un usuario autenticado
+      if (!user?.id) {
+        throw new Error('No hay usuario autenticado para completar el onboarding');
       }
-      
-      const responseData = await response.json();
+
+      // Enviar los datos usando apiClient para manejar autenticación y refresh de token
+      const endpoint = `/preferences/users/${user.id}/onboarding`;
+      const responseData = await apiClient.post(endpoint, payload);
       console.log('API response success:', responseData);
       
       setIsCompleted(true);
