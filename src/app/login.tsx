@@ -7,7 +7,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth(); // Obtener user desde el inicio
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -22,8 +22,13 @@ export default function LoginScreen() {
       if (error) {
         Alert.alert('Error', 'Las credenciales ingresadas no son validas');
       } else {
-        // Navigation will be handled by the auth state change
-        router.replace('/');
+        setTimeout(() => {
+          if (!user?.onboardingCompleted) {
+            router.replace('/(onboarding)/welcome');
+          } else {
+            router.replace('/home');
+          }
+        }, 100); 
       }
     } catch (error) {
       Alert.alert('Error', 'Error inesperado. Intente de nuevo en unos momentos.');
@@ -58,7 +63,7 @@ export default function LoginScreen() {
       />
 
       <TouchableOpacity 
-        className="bg-blue-600 p-4 rounded-lg mb-4"
+        className="bg-burgundy-600 p-4 rounded-lg mb-4"
         onPress={handleLogin}
         disabled={loading}
       >
@@ -68,13 +73,29 @@ export default function LoginScreen() {
       </TouchableOpacity>
 
       <TouchableOpacity>
-        <Text className="text-blue-500 text-center mb-2">Olvidaste tu contraseña?</Text>
+        <Text className="text-burgundy-500 text-center mb-2">Olvidaste tu contraseña?</Text>
       </TouchableOpacity>
 
       <TouchableOpacity>
         <Text className="text-gray-500 text-center">
-          Todavía no tenes una cuenta? Registrate <Text className="text-blue-500" onPress={() => router.push('/register')}>acá</Text>
+          Todavía no tenes una cuenta? Registrate <Text className="text-burgundy-500" onPress={() => router.push('/register')}>acá</Text>
         </Text>
+      </TouchableOpacity>
+
+      {/* Agregar botón de diagnóstico */}
+      <TouchableOpacity 
+        className="bg-gray-500 p-4 rounded-lg mb-4 mt-2"
+        onPress={async () => {
+          try {
+            const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/ping`);
+            const text = await response.text();
+            Alert.alert('Conexión', `Respuesta: ${text}`);
+          } catch (e) {
+            Alert.alert('Error', `No se pudo conectar: ${e.message}`);
+          }
+        }}
+      >
+        <Text className="text-white text-center">Verificar Conexión</Text>
       </TouchableOpacity>
     </View>
   );

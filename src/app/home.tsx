@@ -80,65 +80,6 @@ export default function HomeScreen() {
             <Text className="text-gray-300 text-sm">En restaurantes</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Recently Viewed Section */}
-        <View className="mb-6">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-white text-xl font-bold">Vinos Probados</Text>
-            <TouchableOpacity onPress={() => router.push('/history')}>
-              <Text className="text-burgundy-400">Ver todos</Text>
-            </TouchableOpacity>
-          </View>
-          
-          <View className="flex-row gap-4">
-            {/* Wine Item 1 */}
-            <TouchableOpacity 
-              className="bg-burgundy-800 rounded-xl p-4 flex-1"
-              onPress={() => router.push('/wine/1')}
-            >
-              <View className="flex-row items-center mb-3">
-                <View className="bg-burgundy-900 w-10 h-10 rounded-full mr-3" />
-                <View>
-                  <Text className="text-white font-semibold">Malbec Reserva</Text>
-                  <Text className="text-burgundy-300 text-xs">Bodega Norton</Text>
-                </View>
-              </View>
-              <Text className="text-gray-300 text-sm">Tannat elegante con notas de frutos rojos</Text>
-            </TouchableOpacity>
-            
-            {/* Wine Item 2 */}
-            <TouchableOpacity 
-              className="bg-burgundy-800 rounded-xl p-4 flex-1"
-              onPress={() => router.push('/wine/2')}
-            >
-              <View className="flex-row items-center mb-3">
-                <View className="bg-burgundy-900 w-10 h-10 rounded-full mr-3" />
-                <View>
-                  <Text className="text-white font-semibold">Cabernet Sauvignon</Text>
-                  <Text className="text-burgundy-300 text-xs">Viña Concha y Toro</Text>
-                </View>
-              </View>
-              <Text className="text-gray-300 text-sm">Complejo con taninos maduros</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Favorites Section */}
-        <View>
-          <Text className="text-white text-xl font-bold mb-4">Tus Favoritos</Text>
-          <View className="flex-row gap-4">
-            <TouchableOpacity 
-              className="bg-gradient-to-r from-burgundy-700 to-burgundy-900 rounded-xl p-4 flex-1"
-              onPress={() => router.push('/favorites')}
-            >
-              <View className="flex-row items-center mb-3">
-                <FontAwesome name="heart" color="white" size={16} style={{marginRight: 8}} />
-                <Text className="text-white font-semibold">Carmenère</Text>
-              </View>
-              <Text className="text-gray-300 text-sm">Perfecto para carnes rojas</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
       </ScrollView>
     </View>
   );

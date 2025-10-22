@@ -9,16 +9,24 @@ export interface WineImageProps {
   className?: string; // allow tailwind/nativewind overrides
 }
 
-// Get initials: first letter of first two words, uppercased
+// Get initials: first alphanumeric character of first two words, uppercased
 export const getWineInitials = (name: string): string => {
-  if (!name) return '';
-  return name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(w => w.charAt(0).toUpperCase())
-    .slice(0, 2)
-    .join('');
+    if (!name) return '';
+    return name
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(w => {
+            for (const char of w) {
+                if (/[a-z0-9]/i.test(char)) {
+                    return char.toUpperCase();
+                }
+            }
+            return '';
+        })
+        .filter(Boolean)
+        .slice(0, 2)
+        .join('');
 };
 
 // Deterministic bg color class from name
