@@ -39,6 +39,7 @@ interface Wine {
   region: string;
   winery: string;
   vintages: string;
+  summary?: string | null;
   id?: string;
 }
 
@@ -50,6 +51,7 @@ export default function WineDetailPage() {
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [isToggling, setIsToggling] = useState<boolean>(false);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [review, setReview] = useState<string>('');
   const [saving, setSaving] = useState<boolean>(false);
   
   // Use current user ID instead of hardcoded ID
@@ -78,6 +80,8 @@ export default function WineDetailPage() {
         const statusResp = await apiClient.get(`/users/${userId}/wines/status/${id}`);
         const r = (statusResp as any)?.rating ?? null;
         setSelectedRating(typeof r === 'number' && r >= 1 && r <= 5 ? r : null);
+        const existingReview = (statusResp as any)?.review ?? '';
+        setReview(typeof existingReview === 'string' ? existingReview : '');
       } catch (e) {
         console.error('Error fetching rating status:', e);
         // Silently fail - user might not have rated this wine yet
@@ -115,8 +119,9 @@ export default function WineDetailPage() {
       await apiClient.post(`/users/${userId}/wines/status`, {
         wine: Number(id),
         rating: selectedRating ?? null,
+        review: (review?.trim()?.length ?? 0) > 0 ? review.trim() : null,
       });
-      Alert.alert('Listo', 'Tu registro fue guardado.');
+      Alert.alert('Listo', 'Registramos tu experiencia correctamente.');
     } catch (e) {
       console.error('Error guardando rating', e);
       Alert.alert('Error', 'No se pudo guardar. Intenta nuevamente.');
