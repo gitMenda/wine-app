@@ -6,6 +6,7 @@ import { apiClient } from '@/lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import { useAuth } from '@/hooks/useAuth';
+import HorizontalScroll from '@/components/HorizontalScroll';
 import {
   ArrowLeft,
   MapPin,
@@ -16,6 +17,7 @@ import {
   Grape,
   Calendar,
   Utensils,
+  MessageSquareHeart,
 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { cssInterop } from "nativewind";
@@ -54,6 +56,7 @@ export default function WineDetailPage() {
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [review, setReview] = useState<string>('');
   const [saving, setSaving] = useState<boolean>(false);
+  const [selectedVintage, setSelectedVintage] = useState<string | null>(null);
   
   // Use current user ID instead of hardcoded ID
   const userId = user?.id || user?.sub;
@@ -304,35 +307,44 @@ export default function WineDetailPage() {
 
         {/* Vintage Years */}
         <View className="mb-6 bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
-          <View className="flex-row items-center mb-3">
+          <View className="flex-row items-center mb-2 px-1">
             <Calendar color="#fca5a5" size={20} />
             <Text className="text-white text-xl font-bold ml-2">
-              Añadas
+              Años de cosecha
             </Text>
           </View>
-          <Text className="text-burgundy-200">{formatArrayField(wine.vintages)}</Text>
+          <HorizontalScroll
+            vintagesString={formatArrayField(wine.vintages)}
+            onVintageSelect={(v) => setSelectedVintage(v)}
+            selectedVintage={selectedVintage}
+          />
         </View>
 
+          {(wine.summary ?? '').trim().length > 0 && (
+              <View className="mb-2 bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
+                  <Text className="text-white text-xl font-bold mb-2">✨ Resumen de opiniones hecho con IA</Text>
+                  <Text className="text-burgundy-200 mb-2">{wine.summary}</Text>
+              </View>
+          )}
+
         {/* Rating Section - FIXED LAYOUT */}
-        <View className="mt-6 mb-8">
-          <Text className="text-2xl font-bold mb-2 text-burgundy-800">¿Probaste este vino?</Text>
-            <Text className="text-burgundy-400 mb-3">Registrá tu experiencia para ajustar nuestras recomendaciones. No es necesario que escribas una opinión ni que lo califiques.</Text>
-            <TextInput
-                className="mb-3 p-3 min-h-[100px] rounded-lg bg-burgundy-800 text-gray border border-burgundy-700"
-                placeholder="¿Qué te pareció este vino? Contanos tu opinión."
-                placeholderTextColor="#9CA3AF"
-                multiline
-                numberOfLines={4}
-                value={review}
-                onChangeText={setReview}
-                textAlignVertical="top"
-            />
-          <View className="bg-burgundy-800/80 rounded-2xl p-4 border border-burgundy-700/50">
-            {/* Rating labels on top */}
-            <View className="flex-row justify-between mb-1">
-              <Text className="text-burgundy-300">No me gustó</Text>
-              <Text className="text-burgundy-300">Me encantó</Text>
-            </View>
+        <View className="mb-2 bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
+          <View className="flex-row items-center">
+              <MessageSquareHeart color="#fca5a5" size={20} />
+              <Text className="text-white text-xl font-bold ml-2">¿Probaste este vino?</Text>
+          </View>
+            <View className="mb-2 bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
+                <Text className="text-burgundy-300 mb-3">Registrá tu experiencia para ajustar nuestras recomendaciones. No es necesario que escribas una opinión ni que lo califiques.</Text>
+                <TextInput
+                    className="mb-3 p-3 min-h-[100px] rounded-lg bg-burgundy-800 text-white border border-burgundy-700"
+                    placeholder="¿Qué te pareció este vino? Contanos tu opinión."
+                    placeholderTextColor="#9CA3AF"
+                    multiline
+                    numberOfLines={4}
+                    value={review}
+                    onChangeText={setReview}
+                    textAlignVertical="top"
+                />
             
             {/* Stars in center */}
             <View className="flex-row justify-center my-2">
@@ -349,14 +361,18 @@ export default function WineDetailPage() {
                 );
               })}
             </View>
+            <View className="flex-row justify-between mb-4">
+                <Text className="text-burgundy-300">No me gustó</Text>
+                <Text className="text-burgundy-300">Me encantó</Text>
+            </View>
             
             <TouchableOpacity 
-              className="bg-burgundy-700 py-3 rounded-xl items-center mt-4"
+              className="bg-burgundy-500 py-3 rounded-xl items-center mt-4"
               onPress={onSaveRating}
               disabled={saving || !userId}
             >
               <Text className="text-white font-bold text-base">
-                {saving ? 'Guardando...' : 'Guardar Valoración'}
+                {saving ? 'Guardando...' : 'Registrar experiencia'}
               </Text>
             </TouchableOpacity>
           </View>
