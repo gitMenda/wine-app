@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import {View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator, TextInput} from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
@@ -295,7 +295,7 @@ export default function WineDetailPage() {
           <View className="flex-row items-center mb-3">
             <Utensils color="#fca5a5" size={20} />
             <Text className="text-white text-xl font-bold ml-2">
-              Armonización
+              Acompañalo con...
             </Text>
           </View>
           <Text className="text-burgundy-200">{formatArrayField(wine.harmonize)}</Text>
@@ -315,7 +315,17 @@ export default function WineDetailPage() {
         {/* Rating Section - FIXED LAYOUT */}
         <View className="mt-6 mb-8">
           <Text className="text-2xl font-bold mb-2 text-burgundy-800">¿Probaste este vino?</Text>
-          <Text className="text-burgundy-300 mb-3">Dejá tu calificación para recordarlo.</Text>
+            <Text className="text-burgundy-400 mb-3">Registrá tu experiencia para ajustar nuestras recomendaciones. No es necesario que escribas una opinión ni que lo califiques.</Text>
+            <TextInput
+                className="mb-3 p-3 min-h-[100px] rounded-lg bg-burgundy-800 text-gray border border-burgundy-700"
+                placeholder="¿Qué te pareció este vino? Contanos tu opinión."
+                placeholderTextColor="#9CA3AF"
+                multiline
+                numberOfLines={4}
+                value={review}
+                onChangeText={setReview}
+                textAlignVertical="top"
+            />
           <View className="bg-burgundy-800/80 rounded-2xl p-4 border border-burgundy-700/50">
             {/* Rating labels on top */}
             <View className="flex-row justify-between mb-1">
