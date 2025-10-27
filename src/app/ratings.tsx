@@ -171,7 +171,7 @@ export default function MisVinosPage() {
 
     const header = (
         <View className="mb-4">
-            <Text className="text-3xl font-bold text-white">Mis vinos</Text>
+            <Text className="text-3xl font-bold text-white">Mis experiencias</Text>
         </View>
     );
 
