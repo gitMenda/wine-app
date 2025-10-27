@@ -32,6 +32,7 @@ interface Wine {
   elaborate: string;
   grapes: string;
   harmonize: string;
+  harmonizeEs: string;
   abv: number;
   body: string;
   acidity: string;
@@ -298,7 +299,7 @@ export default function WineDetailPage() {
               Acompañalo con...
             </Text>
           </View>
-          <Text className="text-burgundy-200">{formatArrayField(wine.harmonize)}</Text>
+          <Text className="text-burgundy-200">{formatArrayField(wine.harmonizeEs)}</Text>
         </View>
 
         {/* Vintage Years */}
