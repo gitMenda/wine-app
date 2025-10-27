@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import WineImage from "@/components/WineImage";
+import GradientText from "@/components/GradientText";
 
 interface Wine {
   wineId: number;
@@ -23,7 +24,17 @@ interface Wine {
   vintages: string;
   id?: string;
   isFavorite?: boolean;
+  score?: number;
 }
+
+const styles = StyleSheet.create({
+    scoreText: {
+        marginTop: 4,
+        fontSize: 16,
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+});
 
 export default function RecommendationsPage() {
   const params = useLocalSearchParams<{ user_id?: string; limit?: string }>();
@@ -33,7 +44,6 @@ export default function RecommendationsPage() {
   const [togglingFavorites, setTogglingFavorites] = useState<Set<number>>(new Set());
 
   const effectiveUserId = useMemo(() => {
-    // Fallback to the same hardcoded user as search page if not provided
     return (params.user_id as string) || '5ebaba97-9e1d-41ad-ba40-c0fd5a07c339';
   }, [params.user_id]);
 
@@ -43,7 +53,6 @@ export default function RecommendationsPage() {
     setError(null);
     try {
       const data = await apiClient.get(`/users/recommendations?user_id=${encodeURIComponent(effectiveUserId)}&limit=10`);
-      // Expected shape: { user_id: string, recommendations: WineLike[] }
       const recs = (data?.recommendations ?? []) as any[];
       const normalized: Wine[] = recs.map((w: any) => ({
         wineId: w.wineId ?? w.id ?? w.wine_id,
@@ -60,6 +69,7 @@ export default function RecommendationsPage() {
         winery: w.winery,
         vintages: w.vintages,
         isFavorite: w.isFavorite ?? false,
+        score: typeof w.score === 'number' ? Math.max(0, Math.min(1, w.score)) : undefined,
       }));
       setResults(normalized);
     } catch (e: any) {
@@ -113,11 +123,16 @@ export default function RecommendationsPage() {
         <Text className="text-gray-300 mb-1">País: {item.country}</Text>
         <Text className="text-gray-300 mb-1">Región: {item.region}</Text>
         <Text className="text-gray-300">Bodega: {item.winery}</Text>
+          {typeof item.score === 'number' && (
+              <GradientText value={item.score} style={styles.scoreText}>
+                  {Math.round(item.score * 100)}% compatible con vos
+              </GradientText>
+          )}
       </TouchableOpacity>
       <View className="mt-3" />
       <Button
-        title="¿Probaste este vino?"
-        variant="secondary"
+        title="Ver más información..."
+        variant="primary"
         onPress={() => router.push(`/wine/${item.wineId}`)}
       />
     </View>
@@ -125,7 +140,7 @@ export default function RecommendationsPage() {
 
     return (
         <View className="flex-1 p-4 dark:bg-gray-900">
-            <Text className="text-2xl font-bold mb-2 text-white">Nuestras recomendaciones para vos</Text>
+            <Text className="text-2xl font-bold mb-2 text-white mt-6">Nuestras recomendaciones</Text>
             {loading && <Text className="mt-4 text-white">Cargando...</Text>}
             {error && (
                 <View className="items-center">
