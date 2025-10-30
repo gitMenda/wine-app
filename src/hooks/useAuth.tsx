@@ -1,6 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { apiClient } from '@/lib/api';
-import { getAccessToken, setAccessToken, removeAccessToken } from '@/lib/tokenStorage';
+import { getAccessToken, setAccessToken, removeAccessToken, getRefreshToken, setRefreshToken, removeRefreshToken } from '@/lib/tokenStorage';
 
 // Tipo para el usuario autenticado con GUID y estado de onboarding
 type AuthUser = {
@@ -74,15 +74,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Función para actualizar el token - se llama solo cuando es necesario
   const refreshToken = async (): Promise<boolean> => {
     try {
-      const token = await getAccessToken();
-      if (!token) return false;
-      
-      // Llamar al endpoint de refresh
-      const res = await apiClient.post('/auth/refresh', { token });
-      
-      if (res?.access_token) {
-        await setAccessToken(res.access_token);
-        const decoded = decodeJwt(res.access_token);
+      const rToken = await getRefreshToken();
+      if (!rToken) return false;
+
+      // Llamar al endpoint de refresh con el refreshToken guardado
+      const res = await apiClient.post('/auth/refresh', { refreshToken: rToken });
+
+      // Aceptar ambos formatos (camelCase y snake_case)
+      const newAccess = res?.accessToken || res?.access_token;
+      const newRefresh = res?.refreshToken || res?.refresh_token;
+
+      if (newAccess) {
+        await setAccessToken(newAccess);
+        if (newRefresh) {
+          await setRefreshToken(newRefresh);
+        }
+        const decoded = decodeJwt(newAccess);
         setUser({
           id: decoded?.sub || decoded?.id,
           email: decoded?.email,
@@ -106,6 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // CORRECCIÓN AQUÍ: Aceptar ambos formatos (camelCase y snake_case)
       const access_token = res?.accessToken || res?.access_token;
+      const refresh_token = res?.refreshToken || res?.refresh_token;
 
       if (!access_token) {
         console.error("Respuesta del servidor sin token:", res);
@@ -113,6 +121,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       await setAccessToken(access_token);
+      if (refresh_token) {
+        await setRefreshToken(refresh_token);
+      }
       const decoded = decodeJwt(access_token);
       
       // Guardar el usuario con su GUID y estado de onboarding
@@ -144,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await removeAccessToken();
+    await removeRefreshToken();
     setUser(null);
   };
 

@@ -1,4 +1,4 @@
-import { getAccessToken, setAccessToken } from '@/lib/tokenStorage';
+import { getAccessToken, setAccessToken, getRefreshToken, setRefreshToken } from '@/lib/tokenStorage';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 
@@ -167,19 +167,19 @@ export const apiClient = {
 
     refreshPromise = (async () => {
       try {
-        const token = await getAccessToken();
-        if (!token) {
-          console.log('No token available for refresh');
+        const rToken = await getRefreshToken();
+        if (!rToken) {
+          console.log('No refresh token available for refresh');
           return false;
         }
 
-        // Llamar al endpoint de refresh directamente
+        // Llamar al endpoint de refresh directamente usando refreshToken en el cuerpo
         const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify({ refreshToken: rToken }),
         });
 
         if (!response.ok) {
@@ -188,12 +188,17 @@ export const apiClient = {
         }
 
         const data = await response.json();
-        if (data?.access_token) {
+        const newAccess = data?.accessToken || data?.access_token;
+        const newRefresh = data?.refreshToken || data?.refresh_token;
+        if (newAccess) {
           console.log('Successfully obtained new access token');
-          await setAccessToken(data.access_token);
+          await setAccessToken(newAccess);
+          if (newRefresh) {
+            await setRefreshToken(newRefresh);
+          }
           return true;
         }
-        console.log('Refresh response did not include access_token');
+        console.log('Refresh response did not include access token');
         return false;
       } catch (e) {
         console.error('Error al refrescar token directamente:', e);
