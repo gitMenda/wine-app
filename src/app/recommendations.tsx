@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
@@ -138,10 +138,18 @@ export default function RecommendationsPage() {
     </View>
   );
 
+    if (loading) {
+        return (
+            <View className="flex-1 justify-center items-center dark:bg-gray-900">
+                <ActivityIndicator color="#fff" />
+                <Text className="text-white mt-3">Cargando...</Text>
+            </View>
+        );
+    }
+
     return (
         <View className="flex-1 p-4 dark:bg-gray-900">
             <Text className="text-2xl font-bold mb-2 text-white mt-6">Nuestras recomendaciones</Text>
-            {loading && <Text className="mt-4 text-white">Cargando...</Text>}
             {error && (
                 <View className="items-center">
                     <Text className="text-white mb-4">{error}</Text>
