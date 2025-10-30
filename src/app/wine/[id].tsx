@@ -18,6 +18,7 @@ import {
   Calendar,
   Utensils,
   MessageSquareHeart,
+  Sparkles,
 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { cssInterop } from "nativewind";
@@ -57,6 +58,7 @@ export default function WineDetailPage() {
   const [review, setReview] = useState<string>('');
   const [saving, setSaving] = useState<boolean>(false);
   const [selectedVintage, setSelectedVintage] = useState<string | null>(null);
+  const [wineIconActive, setWineIconActive] = useState<boolean>(false);
   
   // Use current user ID instead of hardcoded ID
   const userId = user?.id || user?.sub;
@@ -83,12 +85,16 @@ export default function WineDetailPage() {
       try {
         const statusResp = await apiClient.get(`/users/${userId}/wines/status/${id}`);
         const r = (statusResp as any)?.rating ?? null;
-        setSelectedRating(typeof r === 'number' && r >= 1 && r <= 5 ? r : null);
+        const validRating = typeof r === 'number' && r >= 1 && r <= 5 ? r : null;
+        setSelectedRating(validRating);
+        // Toggle wine icon based on whether there is a valid rating stored for this user and wine
+        setWineIconActive(validRating != null);
         const existingReview = (statusResp as any)?.review ?? '';
         setReview(typeof existingReview === 'string' ? existingReview : '');
       } catch (e) {
         console.error('Error fetching rating status:', e);
         // Silently fail - user might not have rated this wine yet
+        setWineIconActive(false);
       }
     };
     fetchRating();
@@ -173,6 +179,19 @@ export default function WineDetailPage() {
           <Text className="text-burgundy-300 text-xl font-bold flex-1 text-center">
             {wine.wineName}
           </Text>
+          <TouchableOpacity
+            className="p-2"
+            onPress={() => {
+              setWineIconActive(prev => !prev);
+              onSaveRating();
+            }}
+          >
+            <Ionicons
+              name={wineIconActive ? 'wine' : 'wine-outline'}
+              size={28}
+              color={wineIconActive ? '#4d1835' : '#6b7280'}
+            />
+          </TouchableOpacity>
           <TouchableOpacity className="p-2" onPress={onToggleFavorite}>
             <Ionicons
               name={favoriteIconName(isFavorite, isToggling)}
@@ -322,7 +341,10 @@ export default function WineDetailPage() {
 
           {(wine.summary ?? '').trim().length > 0 && (
               <View className="mb-2 bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
-                  <Text className="text-white text-xl font-bold mb-2">✨ Resumen de opiniones hecho con IA</Text>
+                  <View className="flex-row items-center">
+                    <Sparkles color="#fca5a5" size={20}/>
+                    <Text className="text-white text-xl font-bold ml-2">Resumen de opiniones hecho con IA</Text>
+                  </View>
                   <Text className="text-burgundy-200 mb-2">{wine.summary}</Text>
               </View>
           )}
