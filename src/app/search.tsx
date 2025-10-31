@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import WineImage from "@/components/WineImage";
 import FilterModal, { WineFilters } from '@/components/FilterModal';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Wine {
   wineId: number;
@@ -33,7 +34,8 @@ export default function SearchPage() {
   const [togglingFavorites, setTogglingFavorites] = useState<Set<number>>(new Set());
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [activeFilters, setActiveFilters] = useState<WineFilters>({});
-  const userId = '5ebaba97-9e1d-41ad-ba40-c0fd5a07c339';
+  const { user } = useAuth();
+  const userId = user?.id || user?.sub;
 
   const handleSearch = async (specificFilters?: WineFilters) => {
     // Usa los filtros específicos proporcionados o los del estado
@@ -77,9 +79,31 @@ export default function SearchPage() {
         region: w.region,
         winery: w.winery,
         vintages: w.vintages,
-        isFavorite: w.isFavorite ?? false,
+        // Por defecto, asumir no favorito. Luego lo confirmamos con el endpoint de status si hay sesión.
+        isFavorite: false,
       }));
       setResults(normalized);
+
+      // Si hay usuario autenticado, consultar el estado de cada vino para obtener isFavorite real
+      if (userId && normalized.length > 0) {
+        try {
+          const updated = await Promise.all(
+            normalized.map(async (w) => {
+              try {
+                const status = await apiClient.get(`/users/${userId}/wines/status/${w.wineId}`);
+                const isFav = !!(status as any)?.isFavorite;
+                return { ...w, isFavorite: isFav };
+              } catch (e) {
+                // Si falla la consulta del estado de un vino, devolvemos el original
+                return w;
+              }
+            })
+          );
+          setResults(updated);
+        } catch (e) {
+          // Ignorar errores globales de esta actualización para no romper la búsqueda
+        }
+      }
     } catch (error) {
       console.error('Error fetching wines:', error);
       Alert.alert('Error', 'No se pudieron cargar los resultados');
@@ -109,6 +133,10 @@ export default function SearchPage() {
 
   const onToggleFavorite = async (wine: Wine) => {
     if (togglingFavorites.has(wine.wineId)) return;
+    if (!userId) {
+      Alert.alert('Sesión requerida', 'Debes iniciar sesión para gestionar favoritos.');
+      return;
+    }
     setTogglingFavorites(prev => new Set(prev).add(wine.wineId));
     const prevFav = !!wine.isFavorite;
     setResults(prev => prev.map(w => w.wineId === wine.wineId ? { ...w, isFavorite: !prevFav } : w));

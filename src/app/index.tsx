@@ -110,12 +110,6 @@ function Content({ user }: { user: any }) {
                   />
                 </>
               )}
-              
-              <Button
-                title="Ver Home (Demo)"
-                onPress={() => router.push('/home')}
-                variant="secondary"
-              />
             </View>
           </View>
         </View>

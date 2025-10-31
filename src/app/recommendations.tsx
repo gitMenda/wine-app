@@ -1,12 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { router } from 'expo-router';
 import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import WineImage from "@/components/WineImage";
 import GradientText from "@/components/GradientText";
+import { useAuth } from '@/hooks/useAuth';
 
 interface Wine {
   wineId: number;
@@ -37,22 +38,23 @@ const styles = StyleSheet.create({
 });
 
 export default function RecommendationsPage() {
-  const params = useLocalSearchParams<{ user_id?: string; limit?: string }>();
+  const { user } = useAuth();
+  const userId = user?.id || user?.sub;
   const [results, setResults] = useState<Wine[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [togglingFavorites, setTogglingFavorites] = useState<Set<number>>(new Set());
 
-  const effectiveUserId = useMemo(() => {
-    return (params.user_id as string) || '5ebaba97-9e1d-41ad-ba40-c0fd5a07c339';
-  }, [params.user_id]);
-
 
   const fetchRecommendations = async () => {
+    if (!userId) {
+      // If there's no authenticated user yet, wait without throwing an error
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
-      const data = await apiClient.get(`/users/recommendations?user_id=${encodeURIComponent(effectiveUserId)}&limit=10`);
+      const data = await apiClient.get(`/users/recommendations?user_id=${encodeURIComponent(userId)}&limit=10`);
       const recs = (data?.recommendations ?? []) as any[];
       const normalized: Wine[] = recs.map((w: any) => ({
         wineId: w.wineId ?? w.id ?? w.wine_id,
@@ -84,15 +86,19 @@ export default function RecommendationsPage() {
   useEffect(() => {
     fetchRecommendations();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectiveUserId]);
+  }, [userId]);
 
   const onToggleFavorite = async (wine: Wine) => {
     if (togglingFavorites.has(wine.wineId)) return;
+    if (!userId) {
+      Alert.alert('Sesión requerida', 'Debes iniciar sesión para gestionar favoritos.');
+      return;
+    }
     setTogglingFavorites(prev => new Set(prev).add(wine.wineId));
     const prevFav = !!wine.isFavorite;
     setResults(prev => prev.map(w => w.wineId === wine.wineId ? { ...w, isFavorite: !prevFav } : w));
     try {
-      await toggleFavoriteApi(effectiveUserId, wine.wineId, prevFav);
+      await toggleFavoriteApi(userId, wine.wineId, prevFav);
     } catch (e) {
       Alert.alert('Error', 'No se pudo actualizar el favorito. Intenta nuevamente.');
       setResults(prev => prev.map(w => w.wineId === wine.wineId ? { ...w, isFavorite: prevFav } : w));
@@ -138,15 +144,29 @@ export default function RecommendationsPage() {
     </View>
   );
 
+    if (loading) {
+        return (
+            <View className="flex-1 justify-center items-center dark:bg-gray-900">
+                <ActivityIndicator color="#fff" />
+                <Text className="text-white mt-3">Cargando...</Text>
+            </View>
+        );
+    }
+
     return (
         <View className="flex-1 p-4 dark:bg-gray-900">
             <Text className="text-2xl font-bold mb-2 text-white mt-6">Nuestras recomendaciones</Text>
-            {loading && <Text className="mt-4 text-white">Cargando...</Text>}
             {error && (
                 <View className="items-center">
                     <Text className="text-white mb-4">{error}</Text>
                     <View className="space-y-2 w-full items-center">
-                        <Button title="Reintentar" onPress={fetchRecommendations} variant="primary" />
+                        <Button title="Reintentar" onPress={() => {
+                            if (!userId) {
+                                Alert.alert('Sesión requerida', 'Debes iniciar sesión para ver recomendaciones.');
+                                return;
+                            }
+                            fetchRecommendations();
+                        }} variant="primary" />
                         <Button title="Volver" variant="secondary" onPress={() => router.back()} />
                     </View>
                 </View>

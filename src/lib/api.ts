@@ -1,4 +1,4 @@
-import { getAccessToken, setAccessToken } from '@/lib/tokenStorage';
+import { getAccessToken, setAccessToken, getRefreshToken, setRefreshToken } from '@/lib/tokenStorage';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
 
@@ -59,11 +59,14 @@ export const apiClient = {
 
     try {
       console.log(`Making POST request to: ${endpoint}`);
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const init: RequestInit = {
         method: 'POST',
         headers,
-        body: JSON.stringify(data),
-      });
+      };
+      if (data !== null && data !== undefined) {
+        (init as any).body = JSON.stringify(data);
+      }
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, init);
 
       // Manejar error 401
       if (response.status === 401 && retryCount === 0) {
@@ -84,9 +87,19 @@ export const apiClient = {
         throw new Error(`Error: ${response.status}`);
       }
 
-      const result = await response.json();
-      console.log(`POST response from ${endpoint}:`, result);
-      return result;
+      // Algunas respuestas (201/204) pueden no tener cuerpo
+      if (response.status === 204) return null;
+      const text = await response.text();
+      if (!text) return null;
+      try {
+        const result = JSON.parse(text);
+        console.log(`POST response from ${endpoint}:`, result);
+        return result;
+      } catch (e) {
+        // No es JSON, devolver texto plano
+        console.log(`POST response (non-JSON) from ${endpoint}:`, text);
+        return text as any;
+      }
     } catch (error) {
       console.error(`POST request failed for ${endpoint}:`, error);
       throw error;
@@ -133,11 +146,14 @@ export const apiClient = {
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
     try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      const init: RequestInit = {
         method: 'DELETE',
         headers,
-        body: JSON.stringify(data),
-      });
+      };
+      if (data !== null && data !== undefined) {
+        (init as any).body = JSON.stringify(data);
+      }
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, init);
 
       // Manejar error 401
       if (response.status === 401 && retryCount === 0) {
@@ -148,7 +164,14 @@ export const apiClient = {
       }
 
       if (!response.ok) throw new Error(`Error: ${response.status}`);
-      return response.json();
+      if (response.status === 204) return null;
+      const text = await response.text();
+      if (!text) return null;
+      try {
+        return JSON.parse(text);
+      } catch (e) {
+        return text as any;
+      }
     } catch (error) {
       console.error(`DELETE request failed for ${endpoint}:`, error);
       throw error;
@@ -167,19 +190,19 @@ export const apiClient = {
 
     refreshPromise = (async () => {
       try {
-        const token = await getAccessToken();
-        if (!token) {
-          console.log('No token available for refresh');
+        const rToken = await getRefreshToken();
+        if (!rToken) {
+          console.log('No refresh token available for refresh');
           return false;
         }
 
-        // Llamar al endpoint de refresh directamente
+        // Llamar al endpoint de refresh directamente usando refreshToken en el cuerpo
         const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify({ refreshToken: rToken }),
         });
 
         if (!response.ok) {
@@ -188,12 +211,17 @@ export const apiClient = {
         }
 
         const data = await response.json();
-        if (data?.access_token) {
+        const newAccess = data?.accessToken || data?.access_token;
+        const newRefresh = data?.refreshToken || data?.refresh_token;
+        if (newAccess) {
           console.log('Successfully obtained new access token');
-          await setAccessToken(data.access_token);
+          await setAccessToken(newAccess);
+          if (newRefresh) {
+            await setRefreshToken(newRefresh);
+          }
           return true;
         }
-        console.log('Refresh response did not include access_token');
+        console.log('Refresh response did not include access token');
         return false;
       } catch (e) {
         console.error('Error al refrescar token directamente:', e);

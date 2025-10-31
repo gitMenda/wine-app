@@ -6,6 +6,7 @@ import { apiClient } from '@/lib/api';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import { Ionicons } from '@expo/vector-icons';
 import WineImage from '@/components/WineImage';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Wine {
     wineId: number;
@@ -39,11 +40,13 @@ export default function MisVinosPage() {
     const [error, setError] = useState<string | null>(null);
     const [togglingFavorites, setTogglingFavorites] = useState<Set<number>>(new Set());
 
-    const userId = '5ebaba97-9e1d-41ad-ba40-c0fd5a07c339';
+    const { user, loading: authLoading } = useAuth();
+    const userId = user?.id || user?.sub;
 
     useEffect(() => {
         let mounted = true;
         const fetchData = async () => {
+            if (!userId) return; // Wait for user session
             setLoading(true);
             setError(null);
             try {
@@ -95,10 +98,14 @@ export default function MisVinosPage() {
 
         fetchData();
         return () => { mounted = false; };
-    }, []);
+    }, [userId]);
 
     const toggleFavorite = async (wineId: number, currentFavoriteStatus: boolean, wineName: string) => {
         if (togglingFavorites.has(wineId)) return;
+        if (!userId) {
+            Alert.alert('Sesión requerida', 'Debes iniciar sesión para gestionar favoritos.');
+            return;
+        }
 
         setTogglingFavorites(prev => new Set(prev).add(wineId));
 
@@ -268,6 +275,10 @@ export default function MisVinosPage() {
             <View className="flex-1 justify-center items-center p-4 dark:bg-gray-900">
                 <Text className="text-white mb-4">{error}</Text>
                 <Button title="Reintentar" onPress={() => {
+                    if (!userId) {
+                        Alert.alert('Sesión requerida', 'Debes iniciar sesión para cargar tus vinos.');
+                        return;
+                    }
                     setLoading(true);
                     setError(null);
                     setTimeout(() => {
