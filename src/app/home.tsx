@@ -22,7 +22,9 @@ export default function HomeScreen() {
             <Text className="text-white text-2xl font-bold">TuVino</Text>
             <Text className="text-burgundy-200 mt-1">El camino simple a tu copa perfecta.</Text>
           </View>
-          <TouchableOpacity className="bg-burgundy-700 p-3 rounded-full">
+          <TouchableOpacity className="bg-burgundy-700 p-3 rounded-full"
+            onPress={() => router.push('/profile')}
+          >
             <UserRound color="white" size={24} />
           </TouchableOpacity>
         </View>
