@@ -11,25 +11,25 @@ export default function WelcomeScreen() {
     <View className="flex-1 bg-white dark:bg-black" style={{ paddingTop: top }}>
       <View className="flex-1 justify-center px-8">
         <View className="items-center mb-12">
-          <Text className="text-4xl font-bold text-burgundy-600 mb-4">
-            Welcome to TuVino! 🍷
+          <Text className="text-3xl font-bold text-burgundy-600 mb-4">
+            ¡Bienvenido a TuVino! 🍷
           </Text>
           <Text className="text-lg text-center text-gray-700 dark:text-gray-300 leading-relaxed">
-            Let's personalize your wine journey with a few quick questions. 
-            This will help us recommend the perfect wines for you.
+              Queremos que tu experiencia con el vino sea única.
+              Respondé unas preguntas rápidas para ayudarte a descubrir los mejores vinos.
           </Text>
         </View>
 
         <View className="space-y-4">
           <View className="bg-burgundy-50 dark:bg-burgundy-900/20 p-4 rounded-lg">
             <Text className="text-burgundy-700 dark:text-burgundy-300 text-center font-medium">
-              ✨ Takes less than 2 minutes
+              ✨ Te va a llevar menos de 2 minutos
             </Text>
           </View>
           
           <Button
-            title="Get Started"
-            onPress={() => router.push('/(onboarding)/experience')}
+            title="Empezar"
+            onPress={() => router.push('/(onboarding)/name')}
             variant="primary"
           />
         </View>

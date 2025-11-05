@@ -45,10 +45,10 @@ export default function AbvScreen() {
       <ScrollView className="flex-1 px-8 py-6">
         <View className="mb-8">
           <Text className="text-2xl font-bold text-black dark:text-white mb-2">
-            What alcohol level do you prefer?
+            ¿Qué tanto alcohol preferis en un vino?
           </Text>
           <Text className="text-gray-600 dark:text-gray-400">
-            Choose according to your preference for alcohol intensity.
+            Elegí de acuerdo a tu preferencia en cuanto a la cantidad de alcohol.
           </Text>
         </View>
         <View className="mb-8">

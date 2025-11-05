@@ -59,10 +59,10 @@ export default function WineTypesScreen() {
       <ScrollView className="flex-1 px-8 py-6">
         <View className="mb-8">
           <Text className="text-2xl font-bold text-black dark:text-white mb-2">
-            Which wine types interest you?
+            ¿Qué tipos de vino preferís?
           </Text>
           <Text className="text-gray-600 dark:text-gray-400">
-            Select all that apply. You can always change this later.
+            Seleccioná los que más te gusten. Podrás modificar tus selecciones cuando quieras.
           </Text>
         </View>
 
@@ -87,10 +87,10 @@ export default function WineTypesScreen() {
 
       <View className="px-8 pb-8">
         <Text className="text-center text-gray-500 dark:text-gray-400 mb-4">
-          {selectedTypes.length} selected
+          {selectedTypes.length} opciones seleccionadas
         </Text>
         <Button
-          title="Continue"
+          title="Continuar"
           onPress={handleContinue}
           variant={selectedTypes.length > 0 ? "primary" : "secondary"}
           disabled={selectedTypes.length === 0}

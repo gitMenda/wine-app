@@ -45,10 +45,10 @@ export default function IntensitiesScreen() {
       <ScrollView className="flex-1 px-8 py-6">
         <View className="mb-8">
           <Text className="text-2xl font-bold text-black dark:text-white mb-2">
-            What intensity do you prefer in wine?
+            ¿Qué intensidad preferis en un vino?
           </Text>
           <Text className="text-gray-600 dark:text-gray-400">
-            Intensity is the strength of the wine's aromas and flavors.
+              La intensidad es la fuerza de los aromas y sabores del vino.
           </Text>
         </View>
         <View className="mb-8">

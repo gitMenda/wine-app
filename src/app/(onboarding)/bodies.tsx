@@ -46,10 +46,10 @@ export default function BodiesScreen() {
       <ScrollView className="flex-1 px-8 py-6">
         <View className="mb-8">
           <Text className="text-2xl font-bold text-black dark:text-white mb-2">
-            What body do you prefer in wine?
+            ¿Qué tipo de cuerpo preferis en un vino?
           </Text>
           <Text className="text-gray-600 dark:text-gray-400">
-            Body is the weight or fullness of the wine in your mouth.
+              El cuerpo es el peso o la sensación de plenitud del vino en la boca.
           </Text>
         </View>
         <View className="mb-8">
