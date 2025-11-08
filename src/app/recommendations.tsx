@@ -6,7 +6,6 @@ import { apiClient } from '@/lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import WineImage from "@/components/WineImage";
-import GradientText from "@/components/GradientText";
 import { useAuth } from '@/hooks/useAuth';
 
 interface Wine {
