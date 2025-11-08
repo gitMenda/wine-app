@@ -17,7 +17,6 @@ export const apiClient = {
     if (token) headers['Authorization'] = `Bearer ${token}`;
 
     try {
-      console.log(`Making GET request to: ${endpoint}`);
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'GET',
         headers,
