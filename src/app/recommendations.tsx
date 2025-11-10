@@ -6,7 +6,6 @@ import { apiClient } from '@/lib/api';
 import { Ionicons } from '@expo/vector-icons';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import WineImage from "@/components/WineImage";
-import GradientText from "@/components/GradientText";
 import { useAuth } from '@/hooks/useAuth';
 
 interface Wine {
@@ -35,6 +34,192 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textAlign: 'center',
     },
+    container: {
+        flex: 1,
+        backgroundColor: '#000000', // Black background like home
+    },
+    header: {
+        backgroundColor: '#F8D7DA', // Rosé Blush header
+        paddingTop: 60,
+        paddingBottom: 24,
+        paddingHorizontal: 24,
+    },
+    headerTitle: {
+        color: '#3E2723', // Barrel Brown
+        fontSize: 24,
+        fontWeight: 'bold',
+    },
+    headerSubtitle: {
+        color: '#6B1E3A', // Malbec Plum
+        marginTop: 4,
+        fontSize: 14,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#000000',
+    },
+    loadingText: {
+        color: '#F5F0E6', // Cork Beige
+        marginTop: 16,
+        fontSize: 16,
+    },
+    wineCard: {
+        backgroundColor: '#F5F0E6', // Cork Beige cards
+        padding: 20,
+        margin: 8,
+        borderRadius: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    wineTitle: {
+        color: '#3E2723', // Barrel Brown
+        fontSize: 18,
+        fontWeight: 'bold',
+        flex: 1,
+        marginRight: 8,
+    },
+    wineDetail: {
+        color: '#3E2723', // Barrel Brown
+        opacity: 0.7,
+        marginBottom: 4,
+        fontSize: 14,
+    },
+    errorContainer: {
+        alignItems: 'center',
+        padding: 20,
+    },
+    errorText: {
+        color: '#D32F2F', // Garnacha Red for errors
+        marginBottom: 16,
+        textAlign: 'center',
+        fontSize: 16,
+    },
+    heroCard: {
+        backgroundColor: '#6B1E3A', // Malbec Plum like home screen
+        padding: 24,
+        margin: 8,
+        borderRadius: 24,
+        minHeight: 200,
+        borderWidth: 2,
+        borderColor: '#8B2E4A', // Darker border
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    heroWineTitle: {
+        color: '#F5F0E6', // Cork Beige on dark background
+        fontSize: 22,
+        fontWeight: 'bold',
+        flex: 1,
+        marginRight: 8,
+        textAlign: 'center',
+    },
+    heroWineDetail: {
+        color: '#F8D7DA', // Rosé Blush for subtitles
+        opacity: 1,
+        marginBottom: 4,
+        fontSize: 16,
+        textAlign: 'center',
+    },
+    heroCompatibilityLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#F5F0E6', // Cork Beige on dark
+        marginBottom: 6,
+        textAlign: 'center',
+    },
+    heroChip: {
+        backgroundColor: '#F5F0E6',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 12,
+    },
+    heroChipText: {
+        color: '#6B1E3A',
+        fontSize: 12,
+        fontWeight: '600',
+    },
+    heroPrimaryAction: {
+        backgroundColor: '#FFD54F',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 8,
+        flex: 1,
+    },
+    heroSecondaryAction: {
+        backgroundColor: 'transparent',
+        borderWidth: 1,
+        borderColor: '#F5F0E6', // Cork Beige border on dark background
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 8,
+    },
+    compatibilityBar: {
+        height: 6,
+        backgroundColor: '#E7DFD6',
+        borderRadius: 3,
+        marginVertical: 8,
+        overflow: 'hidden',
+    },
+    compatibilityFill: {
+        height: '100%',
+        borderRadius: 3,
+    },
+    compatibilityLabel: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#3E2723',
+        marginBottom: 4,
+    },
+    wineChips: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+        marginVertical: 8,
+    },
+    chip: {
+        backgroundColor: '#F8D7DA',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
+    chipText: {
+        color: '#3E2723',
+        fontSize: 12,
+        fontWeight: '500',
+    },
+    actionButtons: {
+        flexDirection: 'row',
+        gap: 8,
+        marginTop: 12,
+    },
+    primaryAction: {
+        backgroundColor: '#6B1E3A',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
+        flex: 1,
+    },
+    secondaryAction: {
+        backgroundColor: 'transparent',
+        borderWidth: 1,
+        borderColor: '#6B1E3A',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
+    },
+    actionText: {
+        textAlign: 'center',
+        fontSize: 14,
+        fontWeight: '600',
+    },
 });
 
 export default function RecommendationsPage() {
@@ -44,6 +229,7 @@ export default function RecommendationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [togglingFavorites, setTogglingFavorites] = useState<Set<number>>(new Set());
+  const [showAllRecommendations, setShowAllRecommendations] = useState(false);
 
 
   const fetchRecommendations = async () => {
@@ -88,6 +274,14 @@ export default function RecommendationsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
+  const getCompatibilityLevel = (score?: number) => {
+    if (!score) return { level: 'Sin datos', color: '#9CA3AF', bgColor: '#F3F4F6' };
+    if (score >= 0.8) return { level: 'Muy alta', color: '#059669', bgColor: '#ECFDF5' };
+    if (score >= 0.6) return { level: 'Alta', color: '#0891B2', bgColor: '#F0F9FF' };
+    if (score >= 0.4) return { level: 'Media', color: '#EA580C', bgColor: '#FFF7ED' };
+    return { level: 'Baja', color: '#DC2626', bgColor: '#FEF2F2' };
+  };
+
   const onToggleFavorite = async (wine: Wine) => {
     if (togglingFavorites.has(wine.wineId)) return;
     if (!userId) {
@@ -99,6 +293,7 @@ export default function RecommendationsPage() {
     setResults(prev => prev.map(w => w.wineId === wine.wineId ? { ...w, isFavorite: !prevFav } : w));
     try {
       await toggleFavoriteApi(userId, wine.wineId, prevFav);
+      Alert.alert('', prevFav ? 'Eliminado de favoritos' : 'Guardado en tus experiencias');
     } catch (e) {
       Alert.alert('Error', 'No se pudo actualizar el favorito. Intenta nuevamente.');
       setResults(prev => prev.map(w => w.wineId === wine.wineId ? { ...w, isFavorite: prevFav } : w));
@@ -111,72 +306,254 @@ export default function RecommendationsPage() {
     }
   };
 
-  const renderItem = ({ item }: { item: Wine }) => (
-    <View className="bg-gray-800 p-4 m-2 rounded-lg shadow-md border border-gray-600">
-      <TouchableOpacity onPress={() => router.push(`/wine/${item.wineId}`)}>
-          <View className="flex-row justify-between items-center mb-2">
-              <WineImage name={item.wineName} size={48} rounded className="mr-3" />
-              <Text className="text-xl font-bold text-white flex-1 mr-2" numberOfLines={2}>{item.wineName}</Text>
-              <TouchableOpacity className="p-1" onPress={() => onToggleFavorite(item)}>
-                  <Ionicons
-                      name={favoriteIconName(!!item.isFavorite, togglingFavorites.has(item.wineId))}
-                      size={22}
-                      color={favoriteIconColor(!!item.isFavorite, togglingFavorites.has(item.wineId))}
-                  />
-              </TouchableOpacity>
+  const renderItem = ({ item, index }: { item: Wine; index: number }) => {
+    const isHeroCard = index === 0; // Only first recommendation as hero card
+    const compatibility = getCompatibilityLevel(item.score);
+    
+    if (isHeroCard) {
+      return (
+        <View style={styles.heroCard}>
+          {/* Wine Header */}
+          <View className="flex-row justify-between items-start mb-4">
+            <WineImage name={item.wineName} size={48} rounded className="mr-3" />
+            <View className="flex-1">
+              <Text style={styles.heroWineTitle} numberOfLines={2}>{item.wineName}</Text>
+              <Text style={styles.heroWineDetail}>
+                {item.type} • {item.region}
+              </Text>
+            </View>
+            <TouchableOpacity 
+              className="p-2" 
+              onPress={() => onToggleFavorite(item)}
+              style={{ minWidth: 48, minHeight: 48, justifyContent: 'center', alignItems: 'center' }}
+            >
+              <Ionicons
+                name={favoriteIconName(!!item.isFavorite, togglingFavorites.has(item.wineId))}
+                size={22}
+                color={favoriteIconColor(!!item.isFavorite, togglingFavorites.has(item.wineId))}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Compatibility Meter */}
+          <View className="mb-4">
+            <Text style={styles.heroCompatibilityLabel}>
+              Compatibilidad: {compatibility.level}
+            </Text>
+            <View style={[styles.compatibilityBar, { backgroundColor: 'rgba(245, 240, 230, 0.3)' }]}>
+              <View 
+                style={[
+                  styles.compatibilityFill, 
+                  { 
+                    width: `${(item.score || 0) * 100}%`, 
+                    backgroundColor: '#FFD54F' 
+                  }
+                ]} 
+              />
+            </View>
+          </View>
+
+          {/* Wine Details Chips */}
+          <View style={[styles.wineChips, { marginBottom: 16 }]}>
+            <View style={styles.heroChip}>
+              <Text style={styles.heroChipText}>{item.winery}</Text>
+            </View>
+            <View style={styles.heroChip}>
+              <Text style={styles.heroChipText}>{item.body}</Text>
+            </View>
+            {item.grapes && (
+              <View style={styles.heroChip}>
+                <Text style={styles.heroChipText}>{item.grapes}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
+            <TouchableOpacity 
+              style={styles.heroPrimaryAction}
+              onPress={() => router.push(`/wine/${item.wineId}`)}
+            >
+              <Text style={[styles.actionText, { color: '#3E2723' }]}>Ver detalles</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.heroSecondaryAction}
+              onPress={() => Alert.alert('', 'Vamos a mostrarte menos vinos similares')}
+            >
+              <Text style={[styles.actionText, { color: '#F5F0E6' }]}>Menos como este</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <Text className="text-gray-300 mb-1">Tipo: {item.type}</Text>
-        <Text className="text-gray-300 mb-1">País: {item.country}</Text>
-        <Text className="text-gray-300 mb-1">Región: {item.region}</Text>
-        <Text className="text-gray-300">Bodega: {item.winery}</Text>
-          {typeof item.score === 'number' && (
-              <GradientText value={item.score} style={styles.scoreText}>
-                  {Math.round(item.score * 100)}% compatible con vos
-              </GradientText>
-          )}
-      </TouchableOpacity>
-      <View className="mt-3" />
-      <Button
-        title="Ver más información..."
-        variant="primary"
-        onPress={() => router.push(`/wine/${item.wineId}`)}
-      />
-    </View>
-  );
+      );
+    }
+
+    // Regular card for items beyond top 3
+    return (
+      <View style={styles.wineCard}>
+        {/* Wine Header */}
+        <View className="flex-row justify-between items-start mb-3">
+          <WineImage name={item.wineName} size={48} rounded className="mr-3" />
+          <View className="flex-1">
+            <Text style={styles.wineTitle} numberOfLines={2}>{item.wineName}</Text>
+          </View>
+          <TouchableOpacity 
+            className="p-2" 
+            onPress={() => onToggleFavorite(item)}
+            style={{ minWidth: 48, minHeight: 48, justifyContent: 'center', alignItems: 'center' }}
+          >
+            <Ionicons
+              name={favoriteIconName(!!item.isFavorite, togglingFavorites.has(item.wineId))}
+              size={22}
+              color={favoriteIconColor(!!item.isFavorite, togglingFavorites.has(item.wineId))}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Compatibility Meter */}
+        <View className="mb-3">
+          <Text style={styles.compatibilityLabel}>
+            Compatibilidad: {compatibility.level}
+          </Text>
+          <View style={styles.compatibilityBar}>
+            <View 
+              style={[
+                styles.compatibilityFill, 
+                { 
+                  width: `${(item.score || 0) * 100}%`, 
+                  backgroundColor: compatibility.color 
+                }
+              ]} 
+            />
+          </View>
+        </View>
+
+        {/* Wine Details Chips */}
+        <View style={styles.wineChips}>
+          <View style={styles.chip}>
+            <Text style={styles.chipText}>{item.winery}</Text>
+          </View>
+          <View style={styles.chip}>
+            <Text style={styles.chipText}>{item.type}</Text>
+          </View>
+          <View style={styles.chip}>
+            <Text style={styles.chipText}>{item.body}</Text>
+          </View>
+          <View style={styles.chip}>
+            <Text style={styles.chipText}>{item.region}</Text>
+          </View>
+        </View>
+
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity 
+            style={styles.primaryAction}
+            onPress={() => router.push(`/wine/${item.wineId}`)}
+          >
+            <Text style={[styles.actionText, { color: '#F5F0E6' }]}>Ver detalles</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.secondaryAction}
+            onPress={() => Alert.alert('', 'Vamos a mostrarte menos vinos similares')}
+          >
+            <Text style={[styles.actionText, { color: '#6B1E3A' }]}>Menos como este</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
 
     if (loading) {
         return (
-            <View className="flex-1 justify-center items-center dark:bg-gray-900">
-                <ActivityIndicator color="#fff" />
-                <Text className="text-white mt-3">Cargando...</Text>
+            <View style={styles.container}>
+                {/* Header */}
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>Sugerencias</Text>
+                    <Text style={styles.headerSubtitle}>Encontrando los mejores vinos para vos...</Text>
+                </View>
+                
+                {/* Loading State */}
+                <View style={styles.loadingContainer}>
+                    <View className="items-center">
+                        <ActivityIndicator size="large" color="#6B1E3A" />
+                        <Text style={styles.loadingText}>Analizando tus preferencias</Text>
+                        <Text style={[styles.loadingText, { fontSize: 14, marginTop: 8, opacity: 0.7 }]}>
+                            Esto puede tomar unos segundos...
+                        </Text>
+                    </View>
+                </View>
             </View>
         );
     }
 
     return (
-        <View className="flex-1 p-4 dark:bg-gray-900">
-            <Text className="text-2xl font-bold mb-2 text-white mt-6">Nuestras recomendaciones</Text>
-            {error && (
-                <View className="items-center">
-                    <Text className="text-white mb-4">{error}</Text>
-                    <View className="space-y-2 w-full items-center">
-                        <Button title="Reintentar" onPress={() => {
-                            if (!userId) {
-                                Alert.alert('Sesión requerida', 'Debes iniciar sesión para ver recomendaciones.');
-                                return;
-                            }
-                            fetchRecommendations();
-                        }} variant="primary" />
-                        <Button title="Volver" variant="secondary" onPress={() => router.back()} />
+        <View style={styles.container}>
+            {/* Header */}
+            <View style={styles.header}>
+                <Text style={styles.headerTitle}>Tus recomendaciones</Text>
+                <Text style={styles.headerSubtitle}>
+                    Vinos seleccionados según tus gustos. Ajustá tus preferencias para mejorar los resultados.
+                </Text>
+            </View>
+            
+            {/* Content */}
+            <View className="flex-1 px-4 py-4">
+                {error ? (
+                    <View style={styles.errorContainer}>
+                        <Text style={styles.errorText}>{error}</Text>
+                        <View className="space-y-2 w-full items-center">
+                            <Button title="Reintentar" onPress={() => {
+                                if (!userId) {
+                                    Alert.alert('Sesión requerida', 'Debes iniciar sesión para ver recomendaciones.');
+                                    return;
+                                }
+                                fetchRecommendations();
+                            }} variant="primary" />
+                            <Button title="Volver" variant="secondary" onPress={() => router.back()} />
+                        </View>
                     </View>
-                </View>
-            )}
-            <FlatList
-                data={results}
-                keyExtractor={(item) => item.wineId.toString()}
-                renderItem={renderItem}
-                className="mt-4"
-            />
+                ) : results.length === 0 ? (
+                    /* Empty State */
+                    <View className="flex-1 justify-center items-center px-8">
+                        <Text style={{ fontSize: 48, marginBottom: 16 }}>🍷</Text>
+                        <Text style={styles.wineTitle}>Aún no hay recomendaciones.</Text>
+                        <Text style={[styles.wineDetail, { textAlign: 'center', marginTop: 8, marginBottom: 24 }]}>
+                            Completá tus gustos para obtener sugerencias personalizadas.
+                        </Text>
+                        <View className="w-full space-y-3">
+                            <Button title="Editar gustos" variant="primary" onPress={() => router.push('/preferences')} />
+                            <Button title="Explorar catálogo" variant="secondary" onPress={() => router.push('/search')} />
+                        </View>
+                    </View>
+                ) : (
+                    <FlatList
+                        data={showAllRecommendations ? results : results.slice(0, 3)}
+                        keyExtractor={(item) => item.wineId.toString()}
+                        renderItem={renderItem}
+                        showsVerticalScrollIndicator={false}
+                        ListHeaderComponent={
+                            <View className="mb-4">
+                                <Text style={[styles.wineDetail, { fontSize: 16, marginBottom: 8 }]}>
+                                    {showAllRecommendations ? results.length : Math.min(3, results.length)} de {results.length} recomendaciones
+                                </Text>
+                            </View>
+                        }
+                        ListFooterComponent={
+                            !showAllRecommendations && results.length > 3 ? (
+                                <View className="mt-6 mb-4">
+                                    <TouchableOpacity 
+                                        style={styles.primaryAction}
+                                        onPress={() => setShowAllRecommendations(true)}
+                                    >
+                                        <Text style={[styles.actionText, { color: '#F5F0E6' }]}>
+                                            Ver más recomendaciones ({results.length - 3} restantes)
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            ) : null
+                        }
+                    />
+                )}
+            </View>
         </View>
     );
 }

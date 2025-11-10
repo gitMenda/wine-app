@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, FlatList, TouchableOpacity, Alert, StyleSheet, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import Button from '@/components/Button';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiClient } from '@/lib/api';
 import { Ionicons } from '@expo/vector-icons';
+import { Search, Filter, X } from 'lucide-react-native';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import WineImage from "@/components/WineImage";
 import FilterModal, { WineFilters } from '@/components/FilterModal';
@@ -31,6 +32,7 @@ export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Wine[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [togglingFavorites, setTogglingFavorites] = useState<Set<number>>(new Set());
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [activeFilters, setActiveFilters] = useState<WineFilters>({});
@@ -45,6 +47,7 @@ export default function SearchPage() {
     if (!query.trim() && !hasActiveFilters(filtersToUse)) return;
     
     setLoading(true);
+    setHasSearched(true);
     try {
       const params = new URLSearchParams();
       
@@ -173,13 +176,136 @@ export default function SearchPage() {
     </TouchableOpacity>
   );
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#000000',
+    },
+    header: {
+      backgroundColor: '#F8D7DA',
+      paddingBottom: 24,
+      paddingHorizontal: 24,
+    },
+    headerTitle: {
+      color: '#3E2723',
+      fontSize: 24,
+      fontWeight: 'bold',
+    },
+    searchContainer: {
+      backgroundColor: '#F5F0E6',
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      marginBottom: 16,
+    },
+    searchInput: {
+      flex: 1,
+      color: '#3E2723',
+      fontSize: 16,
+      marginLeft: 8,
+    },
+    wineCard: {
+      backgroundColor: '#F5F0E6',
+      padding: 20,
+      marginHorizontal: 16,
+      marginBottom: 16,
+      borderRadius: 16,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    wineName: {
+      color: '#3E2723',
+      fontSize: 18,
+      fontWeight: 'bold',
+      flex: 1,
+      marginRight: 8,
+    },
+    chipsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+      marginVertical: 8,
+    },
+    chip: {
+      backgroundColor: '#F8D7DA',
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 12,
+    },
+    chipText: {
+      color: '#3E2723',
+      fontSize: 12,
+      fontWeight: '500',
+    },
+    badge: {
+      backgroundColor: '#FFD54F',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 8,
+      marginBottom: 8,
+      alignSelf: 'flex-start',
+    },
+    badgeText: {
+      color: '#3E2723',
+      fontSize: 11,
+      fontWeight: 'bold',
+    },
+    actionButton: {
+      backgroundColor: '#6B1E3A',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 10,
+      marginTop: 12,
+    },
+    actionButtonText: {
+      color: '#F5F0E6',
+      fontSize: 15,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    filterChip: {
+      backgroundColor: '#6B1E3A',
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 20,
+      marginRight: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    filterChipText: {
+      color: '#F5F0E6',
+      fontSize: 13,
+      fontWeight: '600',
+      marginRight: 4,
+    },
+  });
+
   const renderItem = ({ item }: { item: Wine }) => (
-    <View className="bg-gray-800 p-4 m-2 rounded-lg shadow-md border border-gray-600">
+    <View style={styles.wineCard}>
       <TouchableOpacity onPress={() => router.push(`/wine/${item.wineId}`)}>
-        <View className="flex-row justify-between items-center mb-2">
+        {/* Badges */}
+        {item.isFavorite && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>⭐ Favorito</Text>
+          </View>
+        )}
+
+        {/* Wine Header */}
+        <View className="flex-row justify-between items-start mb-3">
           <WineImage name={item.wineName} size={48} rounded className="mr-3" />
-          <Text className="text-xl font-bold text-white flex-1 mr-2" numberOfLines={2}>{item.wineName}</Text>
-          <TouchableOpacity className="p-1" onPress={() => onToggleFavorite(item)}>
+          <Text style={styles.wineName} numberOfLines={2}>
+            {item.wineName}
+          </Text>
+          <TouchableOpacity 
+            className="p-2" 
+            onPress={() => onToggleFavorite(item)}
+            style={{ minWidth: 48, minHeight: 48, justifyContent: 'center', alignItems: 'center' }}
+          >
             <Ionicons
               name={favoriteIconName(!!item.isFavorite, togglingFavorites.has(item.wineId))}
               size={22}
@@ -187,57 +313,166 @@ export default function SearchPage() {
             />
           </TouchableOpacity>
         </View>
-        <Text className="text-gray-300 mb-1">Tipo: {item.type}</Text>
-        <Text className="text-gray-300 mb-1">País: {item.country}</Text>
-        <Text className="text-gray-300 mb-1">Región: {item.region}</Text>
-        <Text className="text-gray-300">Bodega: {item.winery}</Text>
+
+        {/* Wine Details Chips */}
+        <View style={styles.chipsContainer}>
+          <View style={styles.chip}>
+            <Text style={styles.chipText}>{item.winery}</Text>
+          </View>
+          <View style={styles.chip}>
+            <Text style={styles.chipText}>{item.type}</Text>
+          </View>
+          {item.body && (
+            <View style={styles.chip}>
+              <Text style={styles.chipText}>{item.body}</Text>
+            </View>
+          )}
+          <View style={styles.chip}>
+            <Text style={styles.chipText}>{item.region}</Text>
+          </View>
+        </View>
       </TouchableOpacity>
-      <View className="mt-3" />
-      <Button
-        title="¿Probaste este vino?"
-        variant="secondary"
+
+      {/* Action Button */}
+      <TouchableOpacity 
+        style={styles.actionButton}
         onPress={() => router.push(`/wine/${item.wineId}`)}
-      />
+      >
+        <Text style={styles.actionButtonText}>
+          ¿Lo conocés? Contanos tu experiencia
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 
+  const { top } = useSafeAreaInsets();
+
+  const renderActiveFilters = () => {
+    if (!hasActiveFilters()) return null;
+
+    return (
+      <View className="flex-row flex-wrap mb-4">
+        {Object.entries(activeFilters).map(([key, value]) => {
+          if (!value || value === '' || key === 'wine_name') return null;
+          return (
+            <View key={key} style={styles.filterChip}>
+              <Text style={styles.filterChipText}>{value}</Text>
+              <TouchableOpacity onPress={() => {
+                const newFilters = { ...activeFilters };
+                delete newFilters[key as keyof WineFilters];
+                setActiveFilters(newFilters);
+                handleSearch(newFilters);
+              }}>
+                <X color="#F5F0E6" size={16} />
+              </TouchableOpacity>
+            </View>
+          );
+        })}
+      </View>
+    );
+  };
+
   return (
-    <View className="flex-1 p-4 pt-8 dark:bg-gray-900">
-      <Text className="text-2xl font-bold mb-4 text-white">Buscar Vinos</Text>
-      
-      <View className="flex-row items-center mb-4">
-        <TextInput
-          className="border border-gray-600 p-2 flex-1 rounded bg-gray-800 text-white"
-          placeholder="Ingresa el nombre del vino..."
-          placeholderTextColor="#888"
-          value={query}
-          onChangeText={setQuery}
-        />
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: top }]}>
+        <Text style={styles.headerTitle}>Catálogo de Vinos</Text>
+        <Text style={{ color: '#6B1E3A', marginTop: 4, fontSize: 14 }}>
+          Explorá, filtrá y encontrá tu próximo favorito
+        </Text>
+      </View>
+
+      <View className="px-4 py-4">
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <Search color="#6B1E3A" size={20} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscá por nombre, estilo o región…"
+            placeholderTextColor="#9CA3AF"
+            value={query}
+            onChangeText={setQuery}
+            onSubmitEditing={() => handleSearch()}
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery('')}>
+              <X color="#6B1E3A" size={20} />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Filter Button */}
         <TouchableOpacity 
-          className="ml-2 p-2 bg-burgundy-600 rounded"
-          onPress={() => handleSearch()}
+          className="flex-row items-center justify-center py-3 px-4 rounded-xl mb-4"
+          style={{ backgroundColor: hasActiveFilters() ? '#6B1E3A' : '#F5F0E6' }}
+          onPress={() => setIsFilterModalVisible(true)}
         >
-          <Ionicons name="search" size={24} color="white" />
+          <Filter 
+            color={hasActiveFilters() ? '#F5F0E6' : '#6B1E3A'} 
+            size={18} 
+          />
+          <Text 
+            className="ml-2 font-semibold"
+            style={{ color: hasActiveFilters() ? '#F5F0E6' : '#6B1E3A' }}
+          >
+            {hasActiveFilters() ? `Filtros (${Object.values(activeFilters).filter(v => v !== undefined && v !== '').length})` : 'Filtros avanzados'}
+          </Text>
         </TouchableOpacity>
+
+        {/* Active Filters Chips */}
+        {renderActiveFilters()}
       </View>
       
-      {renderFiltersButton()}
-      
-      {loading && <Text className="mt-4 text-white">Cargando...</Text>}
-      
-      {results.length > 0 ? (
+      {/* Results */}
+      {loading ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#6B1E3A" />
+          <Text className="text-white text-lg mt-4">Buscando vinos...</Text>
+          <Text style={{ color: '#9CA3AF', fontSize: 14, marginTop: 8 }}>
+            Esto puede tomar unos segundos
+          </Text>
+        </View>
+      ) : results.length > 0 ? (
         <FlatList
           data={results}
           keyExtractor={(item) => item.wineId.toString()}
           renderItem={renderItem}
-          className="mt-2"
+          showsVerticalScrollIndicator={false}
         />
+      ) : hasSearched ? (
+        // Empty State with illustration - only show after a search has been performed
+        <View className="flex-1 justify-center items-center px-8">
+          <Text style={{ fontSize: 64, marginBottom: 16 }}>🍷</Text>
+          <Text className="text-white text-2xl font-bold text-center mb-3">
+            No encontramos vinos
+          </Text>
+          <Text className="text-gray-400 text-base text-center mb-6">
+            Probá con otros términos de búsqueda o ajustá los filtros para explorar más opciones
+          </Text>
+          <TouchableOpacity 
+            className="px-6 py-3 rounded-xl"
+            style={{ backgroundColor: '#6B1E3A' }}
+            onPress={() => {
+              setQuery('');
+              setActiveFilters({});
+              setResults([]);
+              setHasSearched(false);
+            }}
+          >
+            <Text className="text-white font-semibold">Limpiar búsqueda</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
-        !loading && query && (
-          <View className="flex-1 justify-center items-center">
-            <Text className="text-white text-lg">No se encontraron resultados</Text>
-          </View>
-        )
+        // Initial State
+        <View className="flex-1 justify-center items-center px-8">
+          <Text style={{ fontSize: 64, marginBottom: 16 }}>🔍</Text>
+          <Text className="text-white text-2xl font-bold text-center mb-3">
+            Comenzá tu búsqueda
+          </Text>
+          <Text className="text-gray-400 text-base text-center">
+            Usá la barra de búsqueda o los filtros para encontrar el vino perfecto
+          </Text>
+        </View>
       )}
       
       <FilterModal 
