@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { OnboardingProvider } from "@/hooks/useOnboarding";
@@ -6,6 +6,7 @@ import { Text, ActivityIndicator, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
 import { Slot } from "expo-router";
+import { apiClient } from "@/lib/api";
 
 // Auth guard component that handles redirects
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -29,18 +30,33 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
       // Redirect to login if not authenticated
       console.log("User not authenticated, redirecting to login");
       router.replace("/login");
-    } else if (user) {
-      // If user is authenticated
-      const needsOnboarding = user.onboardingCompleted === false;
+      return;
+    }
 
-      if (needsOnboarding && !inOnboardingGroup) {
-        console.log("User needs onboarding, redirecting...");
-        // Add a delay to ensure contexts are ready
-        setTimeout(() => {
-          router.replace("/(onboarding)/welcome");
-        }, 300);
-      } else if (!needsOnboarding && (inAuthGroup || inOnboardingGroup)) {
-        // If onboarding is complete but user is in auth or onboarding screens
+    // If authenticated, perform server-side onboarding check on non-auth routes
+    const shouldCheckServer = !!user && !inOnboardingGroup && segments[0] !== "login" && segments[0] !== "register";
+    if (shouldCheckServer && user?.id) {
+      let cancelled = false;
+      (async () => {
+        try {
+          const profile = await apiClient.get(`/users/${user.id}`);
+          const completed = profile?.onboarding_completed ?? profile?.onboardingCompleted;
+          if (!cancelled && completed === false) {
+            console.log("Server indicates onboarding not completed. Redirecting to welcome.");
+            router.replace("/(onboarding)/welcome");
+          }
+        } catch (e) {
+          // Errors like 401 are handled by apiClient (may clear tokens and trigger auth guard next render)
+          console.log("Failed to fetch user profile for onboarding check", e);
+        }
+      })();
+      return;
+    }
+
+    // If user manually navigates to auth or onboarding but already completed, send home
+    if (user) {
+      const needsOnboardingLocal = user.onboardingCompleted === false;
+      if (!needsOnboardingLocal && (inAuthGroup || inOnboardingGroup)) {
         router.replace("/");
       }
     }

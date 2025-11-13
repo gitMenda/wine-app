@@ -79,11 +79,7 @@ function Content({ user }: { user: any }) {
                   <Button
                     title="Continuar a la App"
                     onPress={() => {
-                      if (user.onboardingCompleted === false) {
-                        router.push('/(onboarding)/welcome');
-                      } else {
                         router.push('/home');
-                      }
                     }}
                     variant="primary"
                   />

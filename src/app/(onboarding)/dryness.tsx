@@ -45,10 +45,10 @@ export default function DrynessScreen() {
       <ScrollView className="flex-1 px-8 py-6">
         <View className="mb-8">
           <Text className="text-2xl font-bold text-black dark:text-white mb-2">
-            How sweet do you like your wine?
+              ¿Qué tan seco preferis que sea un vino?
           </Text>
           <Text className="text-gray-600 dark:text-gray-400">
-            Sweetness ranges from dry (no sugar) to sweet.
+              La sequedad define el dulzor del vino y la textura que se siente en la boca.
           </Text>
         </View>
         <View className="mb-8">

@@ -1,6 +1,9 @@
-import { getAccessToken, setAccessToken, getRefreshToken, setRefreshToken } from '@/lib/tokenStorage';
+import { getAccessToken, setAccessToken, getRefreshToken, setRefreshToken, removeAccessToken, removeRefreshToken } from '@/lib/tokenStorage';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
+
+// Helper to detect auth endpoints where Authorization should not be sent and refresh shouldn't run
+const isAuthEndpoint = (endpoint: string) => endpoint.startsWith('/auth/');
 
 // Control para evitar múltiples intentos simultáneos de refresh
 let isRefreshing = false;
@@ -14,7 +17,8 @@ export const apiClient = {
     };
 
     const token = await getAccessToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const addAuth = !!token && !isAuthEndpoint(endpoint);
+    if (addAuth) headers['Authorization'] = `Bearer ${token}`;
 
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -22,8 +26,8 @@ export const apiClient = {
         headers,
       });
 
-      // Manejar error 401 (token expirado)
-      if (response.status === 401 && retryCount === 0) {
+      // Manejar error 401 (token expirado) solo si se envió Authorization
+      if (response.status === 401 && retryCount === 0 && addAuth) {
         console.log('Token expired, attempting refresh');
         const refreshed = await this.refreshTokenDirectly();
         if (refreshed) {
@@ -54,7 +58,8 @@ export const apiClient = {
     };
 
     const token = await getAccessToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const addAuth = !!token && !isAuthEndpoint(endpoint);
+    if (addAuth) headers['Authorization'] = `Bearer ${token}`;
 
     try {
       console.log(`Making POST request to: ${endpoint}`);
@@ -67,8 +72,8 @@ export const apiClient = {
       }
       const response = await fetch(`${API_BASE_URL}${endpoint}`, init);
 
-      // Manejar error 401
-      if (response.status === 401 && retryCount === 0) {
+      // Manejar error 401 solo si se envió Authorization
+      if (response.status === 401 && retryCount === 0 && addAuth) {
         console.log('Token expired, attempting refresh');
         const refreshed = await this.refreshTokenDirectly();
         if (refreshed) {
@@ -111,7 +116,8 @@ export const apiClient = {
     };
 
     const token = await getAccessToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const addAuth = !!token && !isAuthEndpoint(endpoint);
+    if (addAuth) headers['Authorization'] = `Bearer ${token}`;
 
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -120,11 +126,13 @@ export const apiClient = {
         body: JSON.stringify(data),
       });
 
-      // Manejar error 401
-      if (response.status === 401 && retryCount === 0) {
+      // Manejar error 401 solo si se envió Authorization
+      if (response.status === 401 && retryCount === 0 && addAuth) {
         const refreshed = await this.refreshTokenDirectly();
         if (refreshed) {
           return this.put(endpoint, data, retryCount + 1);
+        } else {
+          throw new Error('Session expired');
         }
       }
 
@@ -142,7 +150,8 @@ export const apiClient = {
     };
 
     const token = await getAccessToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const addAuth = !!token && !isAuthEndpoint(endpoint);
+    if (addAuth) headers['Authorization'] = `Bearer ${token}`;
 
     try {
       const init: RequestInit = {
@@ -154,11 +163,13 @@ export const apiClient = {
       }
       const response = await fetch(`${API_BASE_URL}${endpoint}`, init);
 
-      // Manejar error 401
-      if (response.status === 401 && retryCount === 0) {
+      // Manejar error 401 solo si se envió Authorization
+      if (response.status === 401 && retryCount === 0 && addAuth) {
         const refreshed = await this.refreshTokenDirectly();
         if (refreshed) {
           return this.delete(endpoint, data, retryCount + 1);
+        } else {
+          throw new Error('Session expired');
         }
       }
 
@@ -206,6 +217,13 @@ export const apiClient = {
 
         if (!response.ok) {
           console.error(`Refresh token failed with status: ${response.status}`);
+          if (response.status === 401) {
+            // Refresh token is invalid/expired: log the user out by clearing tokens
+            try {
+              await removeAccessToken();
+              await removeRefreshToken();
+            } catch {}
+          }
           return false;
         }
 

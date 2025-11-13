@@ -24,6 +24,7 @@ export default function HomeScreen() {
           </View>
           <TouchableOpacity 
             style={{ backgroundColor: '#6B1E3A', padding: 12, borderRadius: 50 }}
+
             onPress={() => router.push('/profile')}
           >
             <UserRound color="white" size={24} />

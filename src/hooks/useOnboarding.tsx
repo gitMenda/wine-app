@@ -18,6 +18,7 @@ export interface PreferenceOption {
 }
 
 export interface OnboardingData {
+  name: string;
   experienceLevel: string;
   preferredTypes: string[];
   budget: string;
@@ -37,6 +38,7 @@ interface OnboardingContextType {
   isOptionSelected: (optionId: number) => boolean;
   toggleOptionSelection: (optionId: number) => void;
   completeOnboarding: (onboardingData: Omit<OnboardingData, 'selectedOptionIds'>) => Promise<boolean>;
+  updateName: (name: string) => void;
   updateExperienceLevel: (level: string) => void;
   updatePreferredTypes: (types: string[]) => void;
   updateBudget: (budget: string) => void;
@@ -46,6 +48,7 @@ interface OnboardingContextType {
 }
 
 const initialData: OnboardingData = {
+  name: '',
   experienceLevel: '',
   preferredTypes: [],
   budget: '',
@@ -143,13 +146,44 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
         ...onboardingData
       };
 
-      // Verificar selecciones
-      if (persistentData.selectedOptionIds.length === 0) {
-        throw new Error('Por favor selecciona al menos una opción en cada categoría');
+      // Helper para obtener el ID seleccionado por categoría
+      const getSelectedId = (categoryName: string): number | null => {
+        const optionsInCategory = apiOptions.filter(
+          (opt) => opt.category && opt.category.name === categoryName
+        );
+        const selectedInCategory = optionsInCategory.filter((opt) =>
+          persistentData.selectedOptionIds.includes(opt.id)
+        );
+        if (selectedInCategory.length === 0) return null;
+        // Tomar el primer ID seleccionado (asumiendo 1 selección por categoría)
+        return selectedInCategory[0].id;
+      };
+
+      // Obtener IDs requeridos
+      const typeVal = getSelectedId('types');
+      const bodyVal = getSelectedId('bodies');
+      const intensityVal = getSelectedId('intensities');
+      const drynessVal = getSelectedId('dryness');
+      const abvVal = getSelectedId('abv');
+
+      // Validaciones específicas
+      if (
+        typeVal === null ||
+        bodyVal === null ||
+        intensityVal === null ||
+        drynessVal === null ||
+        abvVal === null
+      ) {
+        throw new Error('Por favor selecciona al menos una opción en cada categoría (tipo, cuerpo, intensidad, sequedad y ABV)');
       }
 
       const payload = {
-        option_ids: persistentData.selectedOptionIds
+        name: (persistentData.name || '').trim(),
+        type: typeVal,
+        body: bodyVal,
+        intensity: intensityVal,
+        dryness: drynessVal,
+        abv: abvVal,
       };
       
       console.log('Sending onboarding data to API:', payload);
@@ -160,7 +194,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       }
 
       // Enviar los datos usando apiClient para manejar autenticación y refresh de token
-      const endpoint = `/preferences/users/${user.id}/onboarding`;
+      const endpoint = `/users/${user.id}/preferences`;
       const responseData = await apiClient.post(endpoint, payload);
       console.log('API response success:', responseData);
       
@@ -205,6 +239,11 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     setData(persistentData);
   };
 
+  const updateName = (name: string) => {
+    persistentData = { ...persistentData, name };
+    setData(persistentData);
+  };
+
   return (
     <OnboardingContext.Provider value={{
       isCompleted,
@@ -222,6 +261,7 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
       updateOccasions,
       updateTastingNotes,
       updateLearningGoals,
+      updateName, 
     }}>
       {children}
     </OnboardingContext.Provider>
