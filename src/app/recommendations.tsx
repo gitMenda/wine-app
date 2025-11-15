@@ -4,8 +4,10 @@ import { router } from 'expo-router';
 import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
 import { Ionicons } from '@expo/vector-icons';
+import { Filter, X } from 'lucide-react-native';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import WineImage from "@/components/WineImage";
+import FilterModal, { WineFilters } from '@/components/FilterModal';
 import { useAuth } from '@/hooks/useAuth';
 
 interface Wine {
@@ -25,6 +27,18 @@ interface Wine {
   id?: string;
   isFavorite?: boolean;
   score?: number;
+}
+
+interface RecommendationFilters {
+  wine_name?: string;
+  wine_type?: string;
+  body?: string;
+  dryness?: string;
+  winery?: string;
+  country?: string;
+  region?: string;
+  min_abv?: number;
+  max_abv?: number;
 }
 
 const styles = StyleSheet.create({
@@ -220,6 +234,22 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
     },
+    filterChip: {
+        backgroundColor: '#6B1E3A',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 8,
+        marginBottom: 8,
+    },
+    filterChipText: {
+        color: '#F5F0E6',
+        fontSize: 14,
+        fontWeight: '500',
+        marginRight: 4,
+    },
 });
 
 export default function RecommendationsPage() {
@@ -230,17 +260,35 @@ export default function RecommendationsPage() {
   const [error, setError] = useState<string | null>(null);
   const [togglingFavorites, setTogglingFavorites] = useState<Set<number>>(new Set());
   const [showAllRecommendations, setShowAllRecommendations] = useState(false);
+  
+  // Estados para filtros
+  const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<RecommendationFilters>({});
 
-
-  const fetchRecommendations = async () => {
+  const fetchRecommendations = async (filters: RecommendationFilters = {}) => {
     if (!userId) {
-      // If there's no authenticated user yet, wait without throwing an error
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      const data = await apiClient.get(`/users/recommendations?user_id=${encodeURIComponent(userId)}&limit=10`);
+      const params = new URLSearchParams();
+      
+      // Parámetros obligatorios
+      params.append('user_id', userId);
+      params.append('limit', '10');
+      params.append('use_cache', 'true');
+      
+      // Agregar filtros opcionales si existen
+      if (filters.wine_type) params.append('wine_type', filters.wine_type);
+      if (filters.body) params.append('body', filters.body);
+      if (filters.dryness) params.append('dryness', filters.dryness);
+      if (filters.min_abv !== undefined) params.append('abv', filters.min_abv.toString());
+      if (filters.winery) params.append('winery', filters.winery);
+      if (filters.country) params.append('country', filters.country);
+      if (filters.region) params.append('region', filters.region);
+
+      const data = await apiClient.get(`/users/recommendations?${params.toString()}`);
       const recs = (data?.recommendations ?? []) as any[];
       const normalized: Wine[] = recs.map((w: any) => ({
         wineId: w.wineId ?? w.id ?? w.wine_id,
@@ -270,9 +318,56 @@ export default function RecommendationsPage() {
   };
 
   useEffect(() => {
-    fetchRecommendations();
+    fetchRecommendations(activeFilters);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
+
+  const hasActiveFilters = (filters = activeFilters) => {
+    return Object.values(filters).some(value => 
+      value !== undefined && value !== '' && value !== null
+    );
+  };
+
+  const handleApplyFilters = (filters: RecommendationFilters) => {
+    setActiveFilters(filters);
+    fetchRecommendations(filters);
+  };
+
+  const clearFilters = () => {
+    setActiveFilters({});
+    fetchRecommendations({});
+  };
+
+  const renderActiveFilters = () => {
+    if (!hasActiveFilters()) return null;
+
+    return (
+      <View className="flex-row flex-wrap mb-4">
+        {Object.entries(activeFilters).map(([key, value]) => {
+          if (!value || value === '' || key === 'wine_name') return null;
+          return (
+            <View key={key} style={styles.filterChip}>
+              <Text style={styles.filterChipText}>{value}</Text>
+              <TouchableOpacity onPress={() => {
+                const newFilters = { ...activeFilters };
+                delete newFilters[key as keyof RecommendationFilters];
+                setActiveFilters(newFilters);
+                fetchRecommendations(newFilters);
+              }}>
+                <X color="#F5F0E6" size={16} />
+              </TouchableOpacity>
+            </View>
+          );
+        })}
+        <TouchableOpacity 
+          className="ml-2 px-3 py-1 bg-red-600 rounded-full"
+          onPress={clearFilters}
+        >
+          <Text className="text-white text-xs font-semibold">Limpiar todo</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   const getCompatibilityLevel = (score?: number) => {
     if (!score) return { level: 'Sin datos', color: '#9CA3AF', bgColor: '#F3F4F6' };
@@ -497,6 +592,27 @@ export default function RecommendationsPage() {
             
             {/* Content */}
             <View className="flex-1 px-4 py-4">
+                {/* Filter Button */}
+                <TouchableOpacity 
+                  className="flex-row items-center justify-center py-3 px-4 rounded-xl mb-4"
+                  style={{ backgroundColor: hasActiveFilters() ? '#6B1E3A' : '#F5F0E6' }}
+                  onPress={() => setIsFilterModalVisible(true)}
+                >
+                  <Filter 
+                    color={hasActiveFilters() ? '#F5F0E6' : '#6B1E3A'} 
+                    size={18} 
+                  />
+                  <Text 
+                    className="ml-2 font-semibold"
+                    style={{ color: hasActiveFilters() ? '#F5F0E6' : '#6B1E3A' }}
+                  >
+                    {hasActiveFilters() ? `Filtros (${Object.values(activeFilters).filter(v => v !== undefined && v !== '').length})` : 'Filtrar recomendaciones'}
+                  </Text>
+                </TouchableOpacity>
+
+                {/* Active Filters Chips */}
+                {renderActiveFilters()}
+
                 {error ? (
                     <View style={styles.errorContainer}>
                         <Text style={styles.errorText}>{error}</Text>
@@ -506,7 +622,7 @@ export default function RecommendationsPage() {
                                     Alert.alert('Sesión requerida', 'Debes iniciar sesión para ver recomendaciones.');
                                     return;
                                 }
-                                fetchRecommendations();
+                                fetchRecommendations(activeFilters);
                             }} variant="primary" />
                             <Button title="Volver" variant="secondary" onPress={() => router.back()} />
                         </View>
@@ -515,13 +631,22 @@ export default function RecommendationsPage() {
                     /* Empty State */
                     <View className="flex-1 justify-center items-center px-8">
                         <Text style={{ fontSize: 48, marginBottom: 16 }}>🍷</Text>
-                        <Text style={styles.wineTitle}>Aún no hay recomendaciones.</Text>
+                        <Text style={styles.wineTitle}>
+                          {hasActiveFilters() ? 'No hay recomendaciones con estos filtros.' : 'Aún no hay recomendaciones.'}
+                        </Text>
                         <Text style={[styles.wineDetail, { textAlign: 'center', marginTop: 8, marginBottom: 24 }]}>
-                            Completá tus gustos para obtener sugerencias personalizadas.
+                          {hasActiveFilters() 
+                            ? 'Probá ajustando los filtros para ver más opciones.'
+                            : 'Completá tus gustos para obtener sugerencias personalizadas.'
+                          }
                         </Text>
                         <View className="w-full space-y-3">
-                            <Button title="Editar gustos" variant="primary" onPress={() => router.push('/preferences')} />
-                            <Button title="Explorar catálogo" variant="secondary" onPress={() => router.push('/search')} />
+                          {hasActiveFilters() ? (
+                            <Button title="Limpiar filtros" variant="primary" onPress={clearFilters} />
+                          ) : (
+                            <Button title="Editar gustos" variant="primary" onPress={() => router.push('/profile')} />
+                          )}
+                          <Button title="Explorar catálogo" variant="secondary" onPress={() => router.push('/search')} />
                         </View>
                     </View>
                 ) : (
@@ -534,26 +659,36 @@ export default function RecommendationsPage() {
                             <View className="mb-4">
                                 <Text style={[styles.wineDetail, { fontSize: 16, marginBottom: 8 }]}>
                                     {showAllRecommendations ? results.length : Math.min(3, results.length)} de {results.length} recomendaciones
+                                    {hasActiveFilters() && (
+                                      <Text style={{ color: '#6B1E3A' }}> (filtradas)</Text>
+                                    )}
                                 </Text>
                             </View>
                         }
                         ListFooterComponent={
-                            !showAllRecommendations && results.length > 3 ? (
-                                <View className="mt-6 mb-4">
-                                    <TouchableOpacity 
-                                        style={styles.primaryAction}
-                                        onPress={() => setShowAllRecommendations(true)}
-                                    >
-                                        <Text style={[styles.actionText, { color: '#F5F0E6' }]}>
-                                            Ver más recomendaciones ({results.length - 3} restantes)
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
-                            ) : null
+                          !showAllRecommendations && results.length > 3 ? (
+                            <View className="mt-6 mb-4">
+                              <TouchableOpacity 
+                                style={styles.primaryAction}
+                                onPress={() => setShowAllRecommendations(true)}
+                              >
+                                <Text style={[styles.actionText, { color: '#F5F0E6' }]}>
+                                  Ver más recomendaciones ({results.length - 3} restantes)
+                                </Text>
+                              </TouchableOpacity>
+                            </View>
+                          ) : null
                         }
                     />
                 )}
             </View>
+            
+            <FilterModal 
+              visible={isFilterModalVisible}
+              onClose={() => setIsFilterModalVisible(false)}
+              onApplyFilters={handleApplyFilters}
+              initialFilters={activeFilters}
+            />
         </View>
     );
 }
