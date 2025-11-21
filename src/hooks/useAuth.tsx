@@ -51,6 +51,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const token = await getAccessToken();
         if (token) {
           const decoded = decodeJwt(token);
+          
+          console.log('=== INITIAL AUTH CHECK ===');
+          console.log('Stored Access Token:', token);
+          console.log('Token length:', token.length);
+          console.log('Decoded token payload:', JSON.stringify(decoded, null, 2));
+          console.log('User ID from token:', decoded?.sub || decoded?.id);
+          console.log('User email:', decoded?.email);
+          console.log('==========================');
+          
           // Asegurarse de guardar el GUID del usuario (sub es el subject en JWT)
           setUser({
             id: decoded?.sub || decoded?.id,
@@ -58,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             ...decoded
           });
         } else {
+          console.log('No stored token found on app initialization');
           setUser(null);
         }
       } catch (error) {
@@ -90,6 +100,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await setRefreshToken(newRefresh);
         }
         const decoded = decodeJwt(newAccess);
+        
+        console.log('=== TOKEN REFRESHED ===');
+        console.log('New Access Token:', newAccess);
+        console.log('Token length:', newAccess.length);
+        console.log('Decoded token payload:', JSON.stringify(decoded, null, 2));
+        console.log('User ID from token:', decoded?.sub || decoded?.id);
+        console.log('=======================');
+        
         setUser({
           id: decoded?.sub || decoded?.id,
           email: decoded?.email,
@@ -125,6 +143,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await setRefreshToken(refresh_token);
       }
       const decoded = decodeJwt(access_token);
+      
+      console.log('=== AUTHENTICATION SUCCESS ===');
+      console.log('Access Token:', access_token);
+      console.log('Token length:', access_token.length);
+      console.log('Decoded token payload:', JSON.stringify(decoded, null, 2));
+      console.log('User ID from token:', decoded?.sub || decoded?.id);
+      console.log('User email:', decoded?.email);
+      console.log('Refresh token present:', !!refresh_token);
+      console.log('================================');
       
       // Guardar el usuario con su GUID y estado de onboarding
       setUser({

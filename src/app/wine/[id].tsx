@@ -152,7 +152,7 @@ export default function WineDetailPage() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-[#2c0d0d]">
+      <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#fca5a5" />
         <Text className="text-white mt-4">Cargando...</Text>
       </View>
@@ -161,7 +161,7 @@ export default function WineDetailPage() {
 
   if (!wine) {
     return (
-      <View className="flex-1 justify-center items-center bg-[#2c0d0d]">
+      <View className="flex-1 justify-center items-center">
         <Text className="text-lg text-white">Vino no encontrado</Text>
         <Button title="Volver" onPress={() => router.back()} style={{ marginTop: 20, marginBottom: 20 }} />
       </View>
@@ -169,7 +169,7 @@ export default function WineDetailPage() {
   }
 
   return (
-    <View className="flex-1 bg-[#f6ecd9]">
+    <View className="flex-1">
       <ScrollView className="flex-1 px-4 py-6">
         {/* Header with back button */}
         <View className="flex-row items-center justify-between mb-4">

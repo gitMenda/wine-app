@@ -36,29 +36,28 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#000000', // Black background like home
     },
     header: {
-        backgroundColor: '#F8D7DA', // Rosé Blush header
+        backgroundColor: 'transparent',
         paddingTop: 60,
         paddingBottom: 24,
         paddingHorizontal: 24,
     },
     headerTitle: {
-        color: '#3E2723', // Barrel Brown
+        color: '#CECCCD',
         fontSize: 24,
         fontWeight: 'bold',
     },
     headerSubtitle: {
-        color: '#6B1E3A', // Malbec Plum
+        color: '#CECCCD',
         marginTop: 4,
         fontSize: 14,
+        opacity: 0.8,
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#000000',
     },
     loadingText: {
         color: '#F5F0E6', // Cork Beige
@@ -464,11 +463,10 @@ export default function RecommendationsPage() {
 
     if (loading) {
         return (
-            <View style={styles.container}>
+            <View className="flex-1" style={styles.container}>
                 {/* Header */}
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>Sugerencias</Text>
-                    <Text style={styles.headerSubtitle}>Encontrando los mejores vinos para vos...</Text>
                 </View>
                 
                 {/* Loading State */}
@@ -486,13 +484,10 @@ export default function RecommendationsPage() {
     }
 
     return (
-        <View style={styles.container}>
+        <View className="flex-1 bg-background" style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Tus recomendaciones</Text>
-                <Text style={styles.headerSubtitle}>
-                    Vinos seleccionados según tus gustos. Ajustá tus preferencias para mejorar los resultados.
-                </Text>
             </View>
             
             {/* Content */}

@@ -1,6 +1,17 @@
 import { getAccessToken, setAccessToken, getRefreshToken, setRefreshToken, removeAccessToken, removeRefreshToken } from '@/lib/tokenStorage';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_BACKEND_URL + '/api';
+const getApiBaseUrl = () => {
+  const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+  if (!backendUrl) {
+    console.error('EXPO_PUBLIC_BACKEND_URL is not set');
+    throw new Error('Backend URL is not configured');
+  }
+  const baseUrl = backendUrl.replace(/\/+$/, '');
+  return `${baseUrl}/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
+console.log('API Base URL configured:', API_BASE_URL);
 
 // Helper to detect auth endpoints where Authorization should not be sent and refresh shouldn't run
 const isAuthEndpoint = (endpoint: string) => endpoint.startsWith('/auth/');
@@ -62,7 +73,8 @@ export const apiClient = {
     if (addAuth) headers['Authorization'] = `Bearer ${token}`;
 
     try {
-      console.log(`Making POST request to: ${endpoint}`);
+      const fullUrl = `${API_BASE_URL}${endpoint}`;
+      console.log(`Making POST request to: ${fullUrl}`);
       const init: RequestInit = {
         method: 'POST',
         headers,
@@ -70,7 +82,7 @@ export const apiClient = {
       if (data !== null && data !== undefined) {
         (init as any).body = JSON.stringify(data);
       }
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, init);
+      const response = await fetch(fullUrl, init);
 
       // Manejar error 401 solo si se envió Authorization
       if (response.status === 401 && retryCount === 0 && addAuth) {
@@ -105,7 +117,8 @@ export const apiClient = {
         return text as any;
       }
     } catch (error) {
-      console.error(`POST request failed for ${endpoint}:`, error);
+      const fullUrl = `${API_BASE_URL}${endpoint}`;
+      console.error(`POST request failed for ${fullUrl}:`, error);
       throw error;
     }
   },

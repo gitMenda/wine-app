@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, Alert, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '@/components/Button';
 import { useOnboarding } from '@/hooks/useOnboarding';
 
 export default function CompleteScreen() {
-  const { top } = useSafeAreaInsets();
   const { completeOnboarding, data } = useOnboarding();
   const [submitting, setSubmitting] = useState(false);
 
@@ -46,7 +44,7 @@ export default function CompleteScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white dark:bg-black justify-center" style={{ paddingTop: top }}>
+    <View className="flex-1 bg-white dark:bg-black justify-center">
       <View className="px-8">
         <View className="items-center mb-12">
           <Text className="text-6xl mb-6">🎉</Text>

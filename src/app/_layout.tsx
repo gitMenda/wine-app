@@ -3,10 +3,16 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { OnboardingProvider } from "@/hooks/useOnboarding";
 import { Text, ActivityIndicator, View } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import "../global.css";
 import { Slot } from "expo-router";
 import { apiClient } from "@/lib/api";
+import { LinearGradient } from "expo-linear-gradient";
+import { cssInterop } from "nativewind";
+
+cssInterop(LinearGradient, {
+  className: "style",
+});
 
 // Auth guard component that handles redirects
 function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -66,7 +72,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" color="#722F37" />
+        <ActivityIndicator size="large" color="#45081E" />
         <Text style={{ marginTop: 10 }}>Cargando...</Text>
       </View>
     );
@@ -75,13 +81,31 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function SafeAreaWrapper({ children }: { children: React.ReactNode }) {
+  const { top } = useSafeAreaInsets();
+  
+  return (
+    <LinearGradient
+      colors={['#0E0206', '#0C0105', '#080203', '#050102', '#000000']}
+      locations={[0, 0.2, 0.4, 0.7, 1]}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+      style={{ flex: 1, paddingTop: top }}
+    >
+      {children}
+    </LinearGradient>
+  );
+}
+
 export default function Layout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
         <OnboardingProvider>
           <AuthGuard>
-            <Slot />
+            <SafeAreaWrapper>
+              <Slot />
+            </SafeAreaWrapper>
           </AuthGuard>
         </OnboardingProvider>
       </AuthProvider>
