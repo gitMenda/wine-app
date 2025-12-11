@@ -57,31 +57,40 @@ export const apiClient = {
       'Content-Type': 'application/json',
     };
 
-    const token = await getAccessToken();
-    const addAuth = !!token && !isAuthEndpoint(endpoint);
-    if (addAuth) headers['Authorization'] = `Bearer ${token}`;
+    const isAuth = endpoint.includes('/auth/');
+    
+    if (!isAuth) {
+      const token = await getAccessToken();
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+
+    // ========== LOGS COMPLETOS ==========
+    console.log('========== POST REQUEST DEBUG ==========');
+    console.log('Endpoint:', endpoint);
+    console.log('Full URL:', `${API_BASE_URL}${endpoint}`);
+    console.log('Is Auth Endpoint:', isAuth);
+    console.log('Headers:', JSON.stringify(headers, null, 2));
+    console.log('Body:', JSON.stringify(data, null, 2));
+    console.log('========================================');
 
     try {
-      console.log(`Making POST request to: ${endpoint}`);
-      const init: RequestInit = {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers,
-      };
-      if (data !== null && data !== undefined) {
-        (init as any).body = JSON.stringify(data);
-      }
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, init);
+        body: JSON.stringify(data),
+      });
 
-      // Manejar error 401 solo si se envió Authorization
-      if (response.status === 401 && retryCount === 0 && addAuth) {
+      console.log('Response status:', response.status);
+      console.log('Response headers:', JSON.stringify(response.headers, null, 2));
+
+      // Retry con refresh SOLO si no es endpoint de auth
+      if (response.status === 401 && retryCount === 0 && !isAuth) {
         console.log('Token expired, attempting refresh');
         const refreshed = await this.refreshTokenDirectly();
         if (refreshed) {
-          console.log('Token refreshed successfully, retrying request');
           return this.post(endpoint, data, retryCount + 1);
-        } else {
-          console.log('Token refresh failed');
-          throw new Error('Session expired');
         }
       }
 
@@ -91,18 +100,16 @@ export const apiClient = {
         throw new Error(`Error: ${response.status}`);
       }
 
-      // Algunas respuestas (201/204) pueden no tener cuerpo
       if (response.status === 204) return null;
       const text = await response.text();
+      console.log('Response text:', text);
+      
       if (!text) return null;
+      
       try {
-        const result = JSON.parse(text);
-        console.log(`POST response from ${endpoint}:`, result);
-        return result;
+        return JSON.parse(text);
       } catch (e) {
-        // No es JSON, devolver texto plano
-        console.log(`POST response (non-JSON) from ${endpoint}:`, text);
-        return text as any;
+        return text;
       }
     } catch (error) {
       console.error(`POST request failed for ${endpoint}:`, error);
