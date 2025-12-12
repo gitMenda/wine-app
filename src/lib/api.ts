@@ -14,7 +14,7 @@ const API_BASE_URL = getApiBaseUrl();
 console.log('API Base URL configured:', API_BASE_URL);
 
 // Helper to detect auth endpoints where Authorization should not be sent and refresh shouldn't run
-const isAuthEndpoint = (endpoint: string) => endpoint.startsWith('/auth/');
+const isAuthEndpoint = (endpoint: string) => endpoint.includes('/auth/');
 
 // Control para evitar múltiples intentos simultáneos de refresh
 let isRefreshing = false;
@@ -68,32 +68,28 @@ export const apiClient = {
       'Content-Type': 'application/json',
     };
 
-    const token = await getAccessToken();
-    const addAuth = !!token && !isAuthEndpoint(endpoint);
-    if (addAuth) headers['Authorization'] = `Bearer ${token}`;
+    const isAuth = isAuthEndpoint(endpoint);
+    
+    if (!isAuth) {
+      const token = await getAccessToken();
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
 
     try {
-      const fullUrl = `${API_BASE_URL}${endpoint}`;
-      console.log(`Making POST request to: ${fullUrl}`);
-      const init: RequestInit = {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: 'POST',
         headers,
-      };
-      if (data !== null && data !== undefined) {
-        (init as any).body = JSON.stringify(data);
-      }
-      const response = await fetch(fullUrl, init);
+        body: JSON.stringify(data),
+      });
 
-      // Manejar error 401 solo si se envió Authorization
-      if (response.status === 401 && retryCount === 0 && addAuth) {
+      // Retry con refresh SOLO si no es endpoint de auth
+      if (response.status === 401 && retryCount === 0 && !isAuth) {
         console.log('Token expired, attempting refresh');
         const refreshed = await this.refreshTokenDirectly();
         if (refreshed) {
-          console.log('Token refreshed successfully, retrying request');
           return this.post(endpoint, data, retryCount + 1);
-        } else {
-          console.log('Token refresh failed');
-          throw new Error('Session expired');
         }
       }
 
@@ -103,22 +99,18 @@ export const apiClient = {
         throw new Error(`Error: ${response.status}`);
       }
 
-      // Algunas respuestas (201/204) pueden no tener cuerpo
       if (response.status === 204) return null;
       const text = await response.text();
+      
       if (!text) return null;
+      
       try {
-        const result = JSON.parse(text);
-        console.log(`POST response from ${endpoint}:`, result);
-        return result;
+        return JSON.parse(text);
       } catch (e) {
-        // No es JSON, devolver texto plano
-        console.log(`POST response (non-JSON) from ${endpoint}:`, text);
         return text as any;
       }
     } catch (error) {
-      const fullUrl = `${API_BASE_URL}${endpoint}`;
-      console.error(`POST request failed for ${fullUrl}:`, error);
+      console.error(`POST request failed for ${endpoint}:`, error);
       throw error;
     }
   },
@@ -232,10 +224,8 @@ export const apiClient = {
           console.error(`Refresh token failed with status: ${response.status}`);
           if (response.status === 401) {
             // Refresh token is invalid/expired: log the user out by clearing tokens
-            try {
-              await removeAccessToken();
-              await removeRefreshToken();
-            } catch {}
+            await removeAccessToken();
+            await removeRefreshToken();
           }
           return false;
         }
