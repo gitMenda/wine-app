@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import {
     UserRound,
@@ -10,13 +10,51 @@ import {
 import { router } from 'expo-router';
 import { LinearGradient } from "expo-linear-gradient";
 import { cssInterop } from "nativewind";
+import {apiClient} from "@/lib/api";
+import {useAuth} from "@/hooks/useAuth";
+import { User } from "@/types"
 
 cssInterop(LinearGradient, {
   className: "style",
 });
 
 export default function HomeScreen() {
-  return (
+    const { user } = useAuth();
+    const userId = user?.id || user?.sub;
+
+    const [userInfo, setUserInfo] = useState<User>();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchUser = useCallback(async () => {
+        if (!userId) return;
+
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await apiClient.get(`/users/${encodeURIComponent(userId)}`);
+            const normalized = {
+                uid: data?.uid,
+                username: data?.username,
+                email: data?.email,
+                onBoardingCompleted: data?.onBoardingCompleted
+            };
+            setUserInfo(normalized as User);
+        } catch (e: any) {
+            console.error('Error fetching user:', e);
+            setError('No se pudo cargar el usuario.');
+        } finally {
+            setLoading(false);
+        }
+    }, [userId]);
+
+    useEffect(() => {
+        if (userId) {
+            fetchUser();
+        }
+    }, [fetchUser, userId]);
+
+    return (
     <View className="flex-1">
       {/* Header */}
       <View style={{ paddingBottom: 24, paddingHorizontal: 24 }}>
@@ -24,7 +62,7 @@ export default function HomeScreen() {
           <View>
             <Text className="text-text" style={{ fontSize: 24, fontWeight: 'bold' }}>TuVino</Text>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             className="bg-primary"
             style={{ padding: 12, borderRadius: 50 }}
             onPress={() => router.push('/profile')}
@@ -38,14 +76,15 @@ export default function HomeScreen() {
       <ScrollView className="flex-1 px-6 py-8" showsVerticalScrollIndicator={false}>
         {/* Welcome Section - Minimized */}
         <View className="mb-4">
-          <Text className="text-text text-xl font-semibold mb-1">Hola, ¡Bienvenido!</Text>
+          <Text className="text-text text-xl font-semibold mb-1">¡Bienvenido {userInfo?.username || ''}!</Text>
+          <Text className="text-text text-xl font-semibold mb-1">¿Qué hacemos hoy?</Text>
         </View>
 
         {/* Hero Card - Sugerencias */}
         <View className="mb-4">
-          <TouchableOpacity 
+          <TouchableOpacity
             className="w-full rounded-3xl shadow-lg overflow-hidden border border-primary"
-            style={{ 
+            style={{
               minHeight: 120
             }}
             onPress={() => router.push('/recommendations')}
@@ -55,7 +94,7 @@ export default function HomeScreen() {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               className="flex-1"
-              style={{ 
+              style={{
                 padding: 20,
                 borderRadius: 16
               }}
@@ -65,9 +104,9 @@ export default function HomeScreen() {
               </View>
               <Text className="text-lg font-semibold mb-2 text-text">Sugerencias</Text>
               <Text className="text-sm text-text opacity-70 mb-3">Obtené recomendaciones en base a tus gustos.</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 className="rounded-2xl items-center bg-accent self-start"
-                style={{ 
+                style={{
                   paddingVertical: 8,
                   paddingHorizontal: 16,
                 }}
@@ -87,9 +126,9 @@ export default function HomeScreen() {
         {/* Secondary Features Grid */}
         <View className="flex-row flex-wrap gap-4 mb-10">
           {/* Profile Card */}
-          <TouchableOpacity 
+          <TouchableOpacity
             className="flex-1 min-w-[45%] rounded-3xl shadow-lg overflow-hidden border border-primary"
-            style={{ 
+            style={{
               minHeight: 120
             }}
             onPress={() => router.push('/ratings')}
@@ -110,9 +149,9 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           {/* Search Card */}
-          <TouchableOpacity 
+          <TouchableOpacity
             className="flex-1 min-w-[45%] rounded-3xl shadow-lg overflow-hidden border border-primary"
-            style={{ 
+            style={{
               minHeight: 120
             }}
             onPress={() => router.push('/search')}
@@ -133,9 +172,9 @@ export default function HomeScreen() {
           </TouchableOpacity>
 
           {/* Scan Card */}
-          <TouchableOpacity 
+          <TouchableOpacity
             className="w-full rounded-3xl shadow-lg overflow-hidden border border-primary"
-            style={{ 
+            style={{
               minHeight: 80
             }}
             onPress={() => router.push('/scan')}

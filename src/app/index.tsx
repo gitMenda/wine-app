@@ -58,7 +58,7 @@ function Content({ user }: { user: any }) {
                 role="heading"
                 className="text-3xl text-center native:text-5xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl"
               >
-                Welcome to
+                Bienvenido a
               </Text>
               <Text
                 role="heading"
@@ -67,7 +67,7 @@ function Content({ user }: { user: any }) {
                 TuVino
               </Text>
               <Text className="mx-auto max-w-[700px] text-lg text-center text-gray-700 md:text-xl dark:text-gray-400">
-                Your first wine advisor 
+                Tu recomendador de vino personal
               </Text>
             </View>
 
@@ -125,7 +125,7 @@ function Header() {
             className="text-md font-medium hover:underline web:underline-offset-4"
             href="/"
           >
-            <Text>About</Text>
+            <Text>Acerca de TuVino</Text>
           </Link>
         </View>
       </View>
@@ -138,7 +138,7 @@ function Footer() {
     <View className="flex shrink-0 bg-gray-100 native:hidden">
       <View className="py-6 flex-1 items-start px-4 md:px-6 ">
         <Text className={"text-center text-gray-700"}>
-          © {new Date().getFullYear()} Me
+          © {new Date().getFullYear()} TuVino
         </Text>
       </View>
     </View>

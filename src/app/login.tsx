@@ -81,22 +81,6 @@ export default function LoginScreen() {
           Todavía no tenes una cuenta? Registrate <Text className="text-burgundy-500" onPress={() => router.push('/register')}>acá</Text>
         </Text>
       </TouchableOpacity>
-
-      {/* Agregar botón de diagnóstico */}
-      <TouchableOpacity 
-        className="bg-gray-500 p-4 rounded-lg mb-4 mt-2"
-        onPress={async () => {
-          try {
-            const response = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/auth/ping`);
-            const text = await response.text();
-            Alert.alert('Conexión', `Respuesta: ${text}`);
-          } catch (e) {
-            Alert.alert('Error', `No se pudo conectar: ${e.message}`);
-          }
-        }}
-      >
-        <Text className="text-white text-center">Verificar Conexión</Text>
-      </TouchableOpacity>
     </View>
   );
 }
