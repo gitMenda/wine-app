@@ -1,6 +1,6 @@
 import { Link, router } from "expo-router";
-import React from "react";
-import { Text, View, ActivityIndicator } from "react-native";
+import React, {useState} from "react";
+import {Text, View, ActivityIndicator, Modal} from "react-native";
 import { useAuth } from '@/hooks/useAuth';
 import Button from "@/components/Button";
 
@@ -114,23 +114,52 @@ function Content({ user }: { user: any }) {
 }
 
 function Header() {
-  return (
-    <View>
-      <View className="px-4 lg:px-6 h-14 flex items-center flex-row justify-between">
-        <Link className="font-bold flex-1 items-center justify-center" href="/">
-          <Text>TuVino</Text>
-        </Link>
-        <View className="flex flex-row gap-4 sm:gap-6">
-          <Link
-            className="text-md font-medium hover:underline web:underline-offset-4"
-            href="/"
-          >
-            <Text>Acerca de TuVino</Text>
-          </Link>
+    const [modalVisible, setModalVisible] = useState(false);
+    return (
+        <View>
+            <View className="px-4 lg:px-6 h-14 flex items-center flex-row justify-between">
+                <View className="flex flex-row gap-4 sm:gap-6">
+
+                    <Text onPress={() => setModalVisible(true)} className="text-md font-medium hover:underline text-gray-300">
+                        Acerca de TuVino
+                    </Text>
+
+                </View>
+            </View>
+
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View className="flex-1 justify-center items-center bg-black/60 p-4">
+
+                    <View className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-md p-6 shadow-xl">
+
+                        <Text className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                            Acerca de TuVino
+                        </Text>
+
+                        <View className="space-y-3 mb-6">
+                            <Text className="text-gray-600 dark:text-gray-300">
+                                Esta aplicación fue desarrollada en el marco del trabajo profesional para la carrera de Ingenieria Informática de la Facultad de Ingenieria de Buenos Aires (FIUBA).
+                            </Text>
+                            <Text className="text-gray-600 dark:text-gray-300 text-center mt-6">
+                                © 2025 TuVino - todos los derechos reservados.
+                            </Text>
+                        </View>
+
+                        <View className="flex-row justify-end">
+                            <Button onPress={() => setModalVisible(false)} title="Cerrar" variant="secondary" />
+                        </View>
+
+                    </View>
+                </View>
+            </Modal>
+
         </View>
-      </View>
-    </View>
-  );
+    );
 }
 
 function Footer() {

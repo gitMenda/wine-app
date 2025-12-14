@@ -356,7 +356,7 @@ export default function WineDetailPage() {
               <Text className="text-white text-xl font-bold ml-2">¿Probaste este vino?</Text>
           </View>
             <View className="mb-2 bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
-                <Text className="text-burgundy-300 mb-3">Registrá tu experiencia para ajustar nuestras recomendaciones. No es necesario que escribas una opinión ni que lo califiques.</Text>
+                <Text className="text-burgundy-300 mb-3">¡Registrá tu experiencia para ajustar nuestras recomendaciones!</Text>
                 <TextInput
                     className="mb-3 p-3 min-h-[100px] rounded-lg bg-burgundy-800 text-white border border-burgundy-700"
                     placeholder="¿Qué te pareció este vino? Contanos tu opinión."

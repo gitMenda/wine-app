@@ -25,7 +25,7 @@ export default function AbvScreen() {
 
   const handleContinue = () => {
     if (abvOptions.some(opt => isOptionSelected(opt.id))) {
-      router.push('/(onboarding)/acidity');
+      router.push('/(onboarding)/complete');
     }
   };
 
