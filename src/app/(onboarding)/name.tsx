@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import Button from '@/components/Button';
 import { useOnboarding } from '@/hooks/useOnboarding';
 
 export default function NameScreen() {
-  const { top, bottom } = useSafeAreaInsets();
   const { data, updateName } = useOnboarding();
   const [name, setName] = useState<string>(data.name || '');
 
@@ -26,7 +24,7 @@ export default function NameScreen() {
 
   return (
     <KeyboardAvoidingKeyboardWrapper>
-      <View className="flex-1 bg-white dark:bg-black" style={{ paddingTop: top }}>
+      <View className="flex-1 bg-white dark:bg-black">
         <View className="flex-1 px-8 py-6">
           <View className="mb-8">
             <Text className="text-2xl font-bold text-black dark:text-white mb-2">
@@ -49,7 +47,7 @@ export default function NameScreen() {
           />
         </View>
 
-        <View className="px-8 pb-8" style={{ paddingBottom: bottom || 16 }}>
+        <View className="px-8 pb-8">
           <Button
             title="Continuar"
             onPress={handleContinue}

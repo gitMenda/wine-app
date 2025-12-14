@@ -323,7 +323,8 @@ export default function MisVinosPage() {
     }
 
     return (
-        <ScrollView className="flex-1 p-4 pt-8 dark:bg-gray-900">
+        <View className="flex-1 dark:bg-gray-900">
+        <ScrollView className="flex-1 p-4 pt-8">
             {header}
 
             <View className="mb-6">
@@ -367,5 +368,6 @@ export default function MisVinosPage() {
             </View>
             <View className="h-6" />
         </ScrollView>
+        </View>
     );
 }

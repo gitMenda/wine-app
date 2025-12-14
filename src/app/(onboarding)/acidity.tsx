@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '@/components/Button';
 import OnboardingOption from '@/components/OnboardingOption';
 
@@ -24,7 +23,6 @@ const acidityOptions = [
 ];
 
 export default function AcidityScreen() {
-  const { top } = useSafeAreaInsets();
   const [selectedAcidity, setSelectedAcidity] = useState<string>('');
 
   const handleContinue = () => {
@@ -34,7 +32,7 @@ export default function AcidityScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white dark:bg-black" style={{ paddingTop: top }}>
+    <View className="flex-1 bg-white dark:bg-black">
       <ScrollView className="flex-1 px-8 py-6">
         <View className="mb-8">
           <Text className="text-2xl font-bold text-black dark:text-white mb-2">

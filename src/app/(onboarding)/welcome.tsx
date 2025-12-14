@@ -1,14 +1,11 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '@/components/Button';
 
 export default function WelcomeScreen() {
-  const { top } = useSafeAreaInsets();
-
   return (
-    <View className="flex-1 bg-white dark:bg-black" style={{ paddingTop: top }}>
+    <View className="flex-1 bg-white dark:bg-black">
       <View className="flex-1 justify-center px-8">
         <View className="items-center mb-12">
           <Text className="text-3xl font-bold text-burgundy-600 mb-4">

@@ -4,35 +4,40 @@ import { Settings, Wine, Droplets, Thermometer, Percent, Pencil, ArrowLeft } fro
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
 import { router } from 'expo-router';
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
+import { cssInterop } from "nativewind";
+
+cssInterop(LinearGradient, {
+  className: "style",
+});
 
 const CATEGORY_MAP = {
   types: { label: "Tipo de vino", icon: <Wine color="#3E2723" size={20} /> },
   bodies: { label: "Cuerpo", icon: <Droplets color="#3E2723" size={20} /> },
   intensities: { label: "Intensidad", icon: <Thermometer color="#3E2723" size={20} /> },
-  dryness: { label: "Seco", icon: <Droplets color="#3E2723" size={20} /> },
+  dryness: { label: "Sequedad / Suavidad", icon: <Droplets color="#3E2723" size={20} /> },
   abv: { label: "Alcohol %", icon: <Percent color="#3E2723" size={20} /> },
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000', // Black background like other screens
   },
   header: {
-    backgroundColor: '#F8D7DA', // Rosé Blush header
+    backgroundColor: 'transparent',
     paddingBottom: 24,
     paddingHorizontal: 24,
   },
   headerTitle: {
-    color: '#3E2723', // Barrel Brown
+    color: '#CECCCD',
     fontSize: 24,
     fontWeight: 'bold',
   },
   headerSubtitle: {
-    color: '#6B1E3A', // Malbec Plum
+    color: '#CECCCD',
     marginTop: 4,
     fontSize: 14,
+    opacity: 0.8,
   },
   profileCard: {
     backgroundColor: '#F5F0E6', // Cork Beige
@@ -107,14 +112,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   modalContainer: {
-    backgroundColor: '#F5F0E6', // Cork Beige
+    backgroundColor: 'black',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 24,
     maxHeight: '70%',
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
   modalTitle: {
-    color: '#3E2723', // Barrel Brown
+    color: '#CECCCD',
     fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -123,23 +132,23 @@ const styles = StyleSheet.create({
   modalOption: {
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E7DFD6',
+    borderBottomColor: '#20040E',
   },
   modalOptionText: {
-    color: '#3E2723', // Barrel Brown
+    color: '#CECCCD',
     fontSize: 16,
   },
   modalCancelButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#6B1E3A',
+    borderColor: '#45081E',
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 16,
   },
   modalCancelText: {
-    color: '#6B1E3A', // Malbec Plum
+    color: '#CECCCD',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -147,7 +156,6 @@ const styles = StyleSheet.create({
 
 export default function WineProfileScreen() {
   const { user } = useAuth();
-  const { top } = useSafeAreaInsets();
   const userId = user?.id;
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -211,7 +219,7 @@ export default function WineProfileScreen() {
 
   // Renderiza cada preferencia
   const renderPreferenceItem = (category: string, value: any, onPress: () => void) => {
-    const { label, icon } = CATEGORY_MAP[category];
+    const { label } = CATEGORY_MAP[category];
     let displayValue = '';
     if (options.length && value) {
       const optId = Object.keys(value)[0];
@@ -219,39 +227,31 @@ export default function WineProfileScreen() {
       displayValue = opt ? opt.option : value[optId];
     }
     return (
-      <TouchableOpacity
-        style={[
-          styles.preferenceCard,
-          { marginVertical: 6, opacity: isEditing ? 1 : 0.8 }
-        ]}
-        onPress={onPress}
-        disabled={!isEditing}
-      >
-        <View className="flex-row items-center justify-between mb-3">
-          <View className="flex-row items-center flex-1">
-            {icon}
-            <Text style={styles.preferenceLabel}>{label}</Text>
-          </View>
-          {isEditing && (
-            <View className="w-2 h-2 rounded-full" style={{ backgroundColor: '#6B1E3A' }} />
-          )}
-        </View>
-        <Text style={styles.preferenceValue}>
-          {displayValue || 'Sin preferencia'}
-        </Text>
-      </TouchableOpacity>
+      <View>
+        <TouchableOpacity
+          className="flex-row items-center justify-between py-4"
+          style={{ opacity: isEditing ? 1 : 0.8 }}
+          onPress={onPress}
+          disabled={!isEditing}
+        >
+          <Text className="text-text text-base font-semibold">{label}</Text>
+          <Text className="text-text text-base opacity-70">
+            {displayValue || 'Sin preferencia'}
+          </Text>
+        </TouchableOpacity>
+        <View className="h-px bg-burgundy-800 opacity-30" />
+      </View>
     );
   };
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View className="flex-1" style={styles.container}>
         {/* Header */}
-        <View style={[styles.header, { paddingTop: top }]}>
+        <View style={styles.header}>
           <View className="flex-row justify-between items-center">
             <View>
               <Text style={styles.headerTitle}>Mi Perfil</Text>
-              <Text style={styles.headerSubtitle}>Cargando información...</Text>
             </View>
           </View>
         </View>
@@ -266,16 +266,15 @@ export default function WineProfileScreen() {
 
   if (!loading && !profile) {
     return (
-      <View style={styles.container}>
+      <View className="flex-1" style={styles.container}>
         {/* Header */}
-        <View style={[styles.header, { paddingTop: top }]}>
+        <View style={styles.header}>
           <View className="flex-row justify-between items-center">
             <TouchableOpacity onPress={() => router.back()} className="mr-4">
-              <ArrowLeft color="#3E2723" size={24} />
+              <ArrowLeft color="#CECCCD" size={24} />
             </TouchableOpacity>
             <View className="flex-1">
               <Text style={styles.headerTitle}>Mi Perfil</Text>
-              <Text style={styles.headerSubtitle}>Error al cargar información</Text>
             </View>
           </View>
         </View>
@@ -294,16 +293,15 @@ export default function WineProfileScreen() {
   }
 
   return (
-    <View style={styles.container}>
+      <View className="flex-1" style={styles.container}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: top }]}>
+      <View style={styles.header}>
         <View className="flex-row justify-between items-center">
           <TouchableOpacity onPress={() => router.back()} className="mr-4">
             <ArrowLeft color="#3E2723" size={24} />
           </TouchableOpacity>
           <View className="flex-1">
             <Text style={styles.headerTitle}>Mi Perfil</Text>
-            <Text style={styles.headerSubtitle}>Preferencias y configuración</Text>
           </View>
           <TouchableOpacity
             style={styles.editButton}
@@ -315,25 +313,23 @@ export default function WineProfileScreen() {
       </View>
 
       <ScrollView className="flex-1 px-4 py-4" showsVerticalScrollIndicator={false}>
-        {/* Profile Card */}
-        <View style={styles.profileCard}>
-          <View className="items-center">
-            <View className="w-20 h-20 rounded-full items-center justify-center mb-4" style={{ backgroundColor: '#6B1E3A' }}>
-              <Image
-                source={{ 
-                  uri: `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Usuario')}&background=6B1E3A&color=F5F0E6&size=128`
-                }}
-                className="w-full h-full rounded-full"
-              />
-            </View>
-            <Text style={styles.profileName}>{user?.name || 'Usuario'}</Text>
-            <Text style={styles.profileLevel}>{profile?.level || 'Nivel principiante'}</Text>
+        {/* Profile Section */}
+        <View className="items-center mb-6">
+          <View className="w-20 h-20 rounded-full items-center justify-center mb-4" style={{ backgroundColor: '#6B1E3A' }}>
+            <Image
+              source={{ 
+                uri: `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Usuario')}&background=6B1E3A&color=F5F0E6&size=128`
+              }}
+              className="w-full h-full rounded-full"
+            />
           </View>
+          <Text className="text-text text-2xl font-bold text-center">{user?.name || 'Usuario'}</Text>
+          <Text className="text-burgundy-600 text-base text-center mt-1">{profile?.level || 'Nivel principiante'}</Text>
         </View>
 
         {/* Preferences Section */}
-        <View style={[styles.profileCard, { marginTop: 8 }]}>
-          <Text style={styles.sectionTitle}>Preferencias de Vino</Text>
+        <View className="mb-6">
+          <Text className="text-text text-xl font-bold mb-4">Preferencias de vino</Text>
           {renderPreferenceItem('types', profile?.preferences?.types, () => openPreferenceModal('types'))}
           {renderPreferenceItem('bodies', profile?.preferences?.bodies, () => openPreferenceModal('bodies'))}
           {renderPreferenceItem('intensities', profile?.preferences?.intensities, () => openPreferenceModal('intensities'))}
@@ -343,10 +339,18 @@ export default function WineProfileScreen() {
           {/* Save Button */}
           {isEditing && (
             <TouchableOpacity
-              style={styles.saveButton}
+              className="rounded-3xl overflow-hidden border border-primary mt-4"
               onPress={() => setIsEditing(false)}
             >
-              <Text style={styles.saveButtonText}>Guardar preferencias</Text>
+              <LinearGradient
+                colors={['#300615', '#45081E']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="px-6 py-3 items-center"
+                style={{ borderRadius: 16 }}
+              >
+                <Text className="text-white text-base font-bold">Guardar preferencias</Text>
+              </LinearGradient>
             </TouchableOpacity>
           )}
         </View>
@@ -360,6 +364,11 @@ export default function WineProfileScreen() {
         onRequestClose={() => setModalVisible(false)}
       >
         <View className="flex-1 justify-end">
+          <TouchableOpacity 
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setModalVisible(false)}
+          />
           <View style={styles.modalContainer}>
             <View className="items-center mb-4">
               <View className="w-12 h-1 rounded-full mb-4" style={{ backgroundColor: '#6B1E3A' }}></View>

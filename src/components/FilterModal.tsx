@@ -55,69 +55,73 @@ export default function FilterModal({ visible, onClose, onApplyFilters, initialF
 
   return (
     <Modal visible={visible} animationType="slide" transparent={true}>
-      <View className="flex-1 bg-black/60">
-        <View className="bg-gray-800 rounded-t-xl mt-auto h-4/5">
-          <View className="flex-row justify-between items-center p-4 border-b border-gray-700">
-            <Text className="text-white text-xl font-bold">Filtros de búsqueda</Text>
+      <View className="flex-1">
+        <View className="bg-burgundy-850 rounded-t-xl mt-auto h-4/5 border-t border-primary">
+          <View className="flex-row justify-between items-center p-4 border-b border-primary">
+            <Text className="text-text text-xl font-bold">Filtros de búsqueda</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color="white" />
+              <Ionicons name="close" size={24} color="#CECCCD" />
             </TouchableOpacity>
           </View>
           
           <ScrollView className="p-4">
             <View className="mb-4">
-              <Text className="text-white text-lg mb-2">Tipo de vino</Text>
+              <Text className="text-text text-lg mb-2">Tipo de vino</Text>
               <TextInput
-                className="border border-gray-600 p-2 rounded bg-gray-700 text-white"
+                className="border border-primary p-2 rounded bg-secondary text-text"
                 placeholder="Ej: Tinto, Blanco, Rosado..."
-                placeholderTextColor="#888"
+                placeholderTextColor="#CECCCD"
+                style={{ opacity: 0.6 }}
                 value={filters.wine_type}
                 onChangeText={(text) => handleChange('wine_type', text || undefined)}
               />
             </View>
             
             <View className="mb-4">
-              <Text className="text-white text-lg mb-2">Bodega</Text>
+              <Text className="text-text text-lg mb-2">Bodega</Text>
               <TextInput
-                className="border border-gray-600 p-2 rounded bg-gray-700 text-white"
+                className="border border-primary p-2 rounded bg-secondary text-text"
                 placeholder="Nombre de la bodega"
-                placeholderTextColor="#888"
+                placeholderTextColor="#CECCCD"
+                style={{ opacity: 0.6 }}
                 value={filters.winery}
                 onChangeText={(text) => handleChange('winery', text || undefined)}
               />
             </View>
             
             <View className="mb-4">
-              <Text className="text-white text-lg mb-2">País</Text>
+              <Text className="text-text text-lg mb-2">País</Text>
               <TextInput
-                className="border border-gray-600 p-2 rounded bg-gray-700 text-white"
+                className="border border-primary p-2 rounded bg-secondary text-text"
                 placeholder="País de origen"
-                placeholderTextColor="#888"
+                placeholderTextColor="#CECCCD"
+                style={{ opacity: 0.6 }}
                 value={filters.country}
                 onChangeText={(text) => handleChange('country', text || undefined)}
               />
             </View>
             
             <View className="mb-4">
-              <Text className="text-white text-lg mb-2">Región</Text>
+              <Text className="text-text text-lg mb-2">Región</Text>
               <TextInput
-                className="border border-gray-600 p-2 rounded bg-gray-700 text-white"
+                className="border border-primary p-2 rounded bg-secondary text-text"
                 placeholder="Región de origen"
-                placeholderTextColor="#888"
+                placeholderTextColor="#CECCCD"
+                style={{ opacity: 0.6 }}
                 value={filters.region}
                 onChangeText={(text) => handleChange('region', text || undefined)}
               />
             </View>
             
             <View className="mb-6">
-              <Text className="text-white text-lg mb-2">Graduación alcohólica (ABV)</Text>
+              <Text className="text-text text-lg mb-2">Graduación alcohólica (ABV)</Text>
               <View className="flex-row justify-between mb-1">
-                <Text className="text-gray-400">Min: {filters.min_abv || 0}%</Text>
-                <Text className="text-gray-400">Max: {filters.max_abv || 20}%</Text>
+                <Text className="text-text opacity-60">Min: {filters.min_abv || 0}%</Text>
+                <Text className="text-text opacity-60">Max: {filters.max_abv || 20}%</Text>
               </View>
               <View className="flex-row items-center">
                 <TextInput
-                  className="border border-gray-600 p-2 rounded bg-gray-700 text-white w-16 mr-2"
+                  className="border border-primary p-2 rounded bg-secondary text-text w-16 mr-2"
                   keyboardType="numeric"
                   value={filters.min_abv?.toString() || ''}
                   onChangeText={(value) => handleChange('min_abv', value ? Number(value) : undefined)}
@@ -129,14 +133,14 @@ export default function FilterModal({ visible, onClose, onApplyFilters, initialF
                   step={0.5}
                   value={filters.min_abv || 0}
                   onValueChange={(value) => handleChange('min_abv', value)}
-                  minimumTrackTintColor="#9D174D"
-                  maximumTrackTintColor="#505050"
-                  thumbTintColor="#9D174D"
+                  minimumTrackTintColor="#45081E"
+                  maximumTrackTintColor="#20040E"
+                  thumbTintColor="#45081E"
                 />
               </View>
               <View className="flex-row items-center mt-2">
                 <TextInput
-                  className="border border-gray-600 p-2 rounded bg-gray-700 text-white w-16 mr-2"
+                  className="border border-primary p-2 rounded bg-secondary text-text w-16 mr-2"
                   keyboardType="numeric"
                   value={filters.max_abv?.toString() || ''}
                   onChangeText={(value) => handleChange('max_abv', value ? Number(value) : undefined)}
@@ -148,15 +152,15 @@ export default function FilterModal({ visible, onClose, onApplyFilters, initialF
                   step={0.5}
                   value={filters.max_abv || 20}
                   onValueChange={(value) => handleChange('max_abv', value)}
-                  minimumTrackTintColor="#9D174D"
-                  maximumTrackTintColor="#505050"
-                  thumbTintColor="#9D174D"
+                  minimumTrackTintColor="#45081E"
+                  maximumTrackTintColor="#20040E"
+                  thumbTintColor="#45081E"
                 />
               </View>
             </View>
           </ScrollView>
           
-          <View className="p-4 border-t border-gray-700 flex-row justify-between">
+          <View className="p-4 border-t border-primary flex-row justify-between">
             <Button 
               title="Limpiar" 
               variant="secondary"

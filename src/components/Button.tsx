@@ -10,12 +10,12 @@ type Props = TouchableOpacityProps & {
 
 const variantStyles: Record<Variant, { button: string; text: string }> = {
   primary: {
-    button: "bg-burgundy-600",
-    text: "text-white ",
+    button: "bg-primary",
+    text: "text-text",
   },
   secondary: {
-    button: "bg-burgundy-100",
-    text: "text-burgundy-600",
+    button: "bg-secondary border border-primary",
+    text: "text-text",
   },
   danger: {
     button: "bg-red-100",

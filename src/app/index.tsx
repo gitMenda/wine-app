@@ -2,7 +2,6 @@ import { Link, router } from "expo-router";
 import React from "react";
 import { Text, View, ActivityIndicator } from "react-native";
 import { useAuth } from '@/hooks/useAuth';
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Button from "@/components/Button";
 
 export default function Page() {
@@ -17,7 +16,7 @@ export default function Page() {
   // Muestra loading mientras se chequea auth
   if (authLoading) {
     return (
-      <View className="flex-1 bg-white dark:bg-black justify-center items-center">
+      <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#7c2d12" />
         <Text className="mt-4 text-gray-600 dark:text-gray-400">Cargando...</Text>
       </View>
@@ -25,7 +24,7 @@ export default function Page() {
   }
 
   return (
-    <View className="flex flex-1">
+    <View className="flex-1">
       <Header />
       <Content user={user} />
       <Footer />
@@ -115,9 +114,8 @@ function Content({ user }: { user: any }) {
 }
 
 function Header() {
-  const { top } = useSafeAreaInsets();
   return (
-    <View style={{ paddingTop: top }}>
+    <View>
       <View className="px-4 lg:px-6 h-14 flex items-center flex-row justify-between">
         <Link className="font-bold flex-1 items-center justify-center" href="/">
           <Text>TuVino</Text>
@@ -136,12 +134,8 @@ function Header() {
 }
 
 function Footer() {
-  const { bottom } = useSafeAreaInsets();
   return (
-    <View
-      className="flex shrink-0 bg-gray-100 native:hidden"
-      style={{ paddingBottom: bottom }}
-    >
+    <View className="flex shrink-0 bg-gray-100 native:hidden">
       <View className="py-6 flex-1 items-start px-4 md:px-6 ">
         <Text className={"text-center text-gray-700"}>
           © {new Date().getFullYear()} Me

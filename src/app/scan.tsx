@@ -2,14 +2,18 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Image, Alert, ActivityIndicator } from 'react-native';
 import { Camera, ArrowLeft, ImageIcon, Sparkles } from 'lucide-react-native';
 import { router } from 'expo-router';
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@/hooks/useAuth';
 import { MenuRecommendationResponse } from '@/types/menu';
 import { apiClient } from '@/lib/api';
+import { LinearGradient } from "expo-linear-gradient";
+import { cssInterop } from "nativewind";
+
+cssInterop(LinearGradient, {
+  className: "style",
+});
 
 export default function ScanMenuScreen() {
-  const { top } = useSafeAreaInsets();
   const { user } = useAuth();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -177,18 +181,15 @@ export default function ScanMenuScreen() {
   };
 
   return (
-    <View className="flex-1 bg-black">
+    <View className="flex-1">
       {/* Header */}
-      <View style={{ backgroundColor: '#F8D7DA', paddingTop: top, paddingBottom: 24, paddingHorizontal: 24 }}>
+      <View style={{ paddingBottom: 24, paddingHorizontal: 24 }}>
         <View className="flex-row justify-between items-center">
           <TouchableOpacity onPress={() => router.back()} className="mr-4">
-            <ArrowLeft color="#3E2723" size={24} />
+            <ArrowLeft color="#CECCCD" size={24} />
           </TouchableOpacity>
           <View className="flex-1">
-            <Text style={{ color: '#3E2723', fontSize: 24, fontWeight: 'bold' }}>Escanear Carta</Text>
-            <Text style={{ color: '#6B1E3A', marginTop: 4, fontSize: 14 }}>
-              Fotografiá el menú y encontrá tu vino ideal
-            </Text>
+            <Text className="text-text" style={{ fontSize: 24, fontWeight: 'bold' }}>Escanear Carta</Text>
           </View>
         </View>
       </View>
@@ -196,19 +197,19 @@ export default function ScanMenuScreen() {
       <ScrollView className="flex-1 px-6 py-8" showsVerticalScrollIndicator={false}>
         {/* Hero Section - Only show when no image selected */}
         {!selectedImage && (
-          <View className="mb-8">
+          <View className="mb-4">
             <View className="items-center mb-6">
               <View 
                 className="p-8 rounded-full mb-6"
                 style={{ backgroundColor: '#6B1E3A' }}
               >
-                <Camera color="#F5F0E6" size={48} />
+                <Camera color="#F5F0E6" size={24} />
               </View>
               
-              <Text className="text-white text-2xl font-bold text-center mb-3">
+              <Text className="text-white text-2xl font-bold text-center mb-2">
                 Subí una foto del menú
               </Text>
-              <Text className="text-gray-400 text-lg text-center mb-8">
+              <Text className="text-gray-400 text-md text-center">
                 Nuestro sistema analizará los vinos disponibles y te sugerirá los mejores para vos.
               </Text>
             </View>
@@ -217,7 +218,7 @@ export default function ScanMenuScreen() {
 
         {/* Image Preview - Full Size when uploaded */}
         {selectedImage ? (
-          <View className="mb-8">
+          <View className="mb-4">
             {/* Full size image display */}
             <View 
               className="rounded-2xl overflow-hidden shadow-lg mb-6"
@@ -232,47 +233,55 @@ export default function ScanMenuScreen() {
           </View>
         ) : (
           /* Action Cards - Only show when no image selected */
-          <View className="flex-row flex-wrap gap-4 mb-8">
+          <View className="flex-row flex-wrap gap-4 mb-4">
             {/* Camera Card */}
             <TouchableOpacity 
-              className="flex-1 min-w-[45%] rounded-2xl shadow-lg"
+              className="flex-1 min-w-[45%] rounded-3xl shadow-lg overflow-hidden border border-primary"
               style={{ 
-                backgroundColor: '#F5F0E6',
-                padding: 20,
                 minHeight: 140
               }}
               onPress={takePhoto}
             >
-              <View className="p-3 rounded-full w-12 h-12 items-center justify-center mb-4" style={{ backgroundColor: '#3E2723' }}>
-                <Camera color="#F5F0E6" size={24} />
-              </View>
-              <Text className="text-lg font-semibold mb-2" style={{ color: '#3E2723' }}>
-                Tomar foto
-              </Text>
-              <Text className="text-sm" style={{ color: '#3E2723', opacity: 0.7 }}>
-                Fotografiá directamente el menú del restaurante
-              </Text>
+              <LinearGradient
+                colors={['#300615', '#45081E']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="flex-1 rounded-3xl"
+                style={{ padding: 20 }}
+              >
+                <View className="p-3 rounded-full w-12 h-12 items-center justify-center mb-4 bg-secondary">
+                  <Camera color="#CECCCD" size={24} />
+                </View>
+                <Text className="text-lg font-semibold mb-2 text-text">Tomar foto</Text>
+                <Text className="text-sm text-text opacity-70">
+                  Fotografiá directamente el menú del restaurante
+                </Text>
+              </LinearGradient>
             </TouchableOpacity>
 
             {/* Gallery Card */}
             <TouchableOpacity 
-              className="flex-1 min-w-[45%] rounded-2xl shadow-lg"
+              className="flex-1 min-w-[45%] rounded-3xl shadow-lg overflow-hidden border border-primary"
               style={{ 
-                backgroundColor: '#F5F0E6',
-                padding: 20,
                 minHeight: 140
               }}
               onPress={pickImageFromGallery}
             >
-              <View className="p-3 rounded-full w-12 h-12 items-center justify-center mb-4" style={{ backgroundColor: '#3E2723' }}>
-                <ImageIcon color="#F5F0E6" size={24} />
-              </View>
-              <Text className="text-lg font-semibold mb-2" style={{ color: '#3E2723' }}>
-                Desde galería
-              </Text>
-              <Text className="text-sm" style={{ color: '#3E2723', opacity: 0.7 }}>
-                Subí una foto que ya tengas guardada
-              </Text>
+              <LinearGradient
+                colors={['#300615', '#45081E']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="flex-1 rounded-3xl"
+                style={{ padding: 20 }}
+              >
+                <View className="p-3 rounded-full w-12 h-12 items-center justify-center mb-4 bg-secondary">
+                  <ImageIcon color="#CECCCD" size={24} />
+                </View>
+                <Text className="text-lg font-semibold mb-2 text-text">Desde galería</Text>
+                <Text className="text-sm text-text opacity-70">
+                  Subí una foto que ya tengas guardada
+                </Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         )}
@@ -365,26 +374,33 @@ export default function ScanMenuScreen() {
         {/* Tips Section - Only show when no image selected */}
         {!selectedImage && (
           <View 
-            className="rounded-2xl p-6 mb-8"
-            style={{ backgroundColor: '#F5F0E6' }}
+            className="rounded-3xl overflow-hidden border border-primary mb-4"
           >
-            <Text className="text-lg font-semibold mb-4" style={{ color: '#3E2723' }}>
-              💡 Consejos para mejores resultados
-            </Text>
-            <View className="space-y-3">
-              <Text className="text-sm" style={{ color: '#3E2723', opacity: 0.8 }}>
-                • Asegurate de que el texto sea legible
+            <LinearGradient
+              colors={['#17030B', '#20040E']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              className="rounded-3xl"
+              style={{ padding: 24 }}
+            >
+              <Text className="text-lg font-semibold mb-4 text-text">
+                Consejos para mejores resultados
               </Text>
-              <Text className="text-sm" style={{ color: '#3E2723', opacity: 0.8 }}>
-                • Incluí la sección de vinos completa
-              </Text>
-              <Text className="text-sm" style={{ color: '#3E2723', opacity: 0.8 }}>
-                • Evitá sombras o reflejos en la foto
-              </Text>
-              <Text className="text-sm" style={{ color: '#3E2723', opacity: 0.8 }}>
-                • Una buena iluminación mejora la precisión
-              </Text>
-            </View>
+              <View className="space-y-3">
+                <Text className="text-sm text-text opacity-70">
+                  • Asegurate de que el texto sea legible
+                </Text>
+                <Text className="text-sm text-text opacity-70">
+                  • Incluí la sección de vinos completa
+                </Text>
+                <Text className="text-sm text-text opacity-70">
+                  • Evitá sombras o reflejos en la foto
+                </Text>
+                <Text className="text-sm text-text opacity-70">
+                  • Una buena iluminación mejora la precisión
+                </Text>
+              </View>
+            </LinearGradient>
           </View>
         )}
       </ScrollView>

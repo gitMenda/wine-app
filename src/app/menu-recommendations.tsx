@@ -2,28 +2,27 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, Sparkles, Wine, DollarSign } from 'lucide-react-native';
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MenuWineRecommendation } from '@/types/menu';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
   },
   header: {
-    backgroundColor: '#F8D7DA',
+    backgroundColor: 'transparent',
     paddingBottom: 24,
     paddingHorizontal: 24,
   },
   headerTitle: {
-    color: '#3E2723',
+    color: '#CECCCD',
     fontSize: 24,
     fontWeight: 'bold',
   },
   headerSubtitle: {
-    color: '#6B1E3A',
+    color: '#CECCCD',
     marginTop: 4,
     fontSize: 14,
+    opacity: 0.8,
   },
   summaryCard: {
     backgroundColor: '#F5F0E6',
@@ -175,7 +174,6 @@ const styles = StyleSheet.create({
 });
 
 export default function MenuRecommendationsScreen() {
-  const { top } = useSafeAreaInsets();
   const params = useLocalSearchParams();
   
   // Parse the recommendations data from params
@@ -190,18 +188,15 @@ export default function MenuRecommendationsScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1" style={styles.container}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: top }]}>
+      <View style={styles.header}>
         <View className="flex-row items-center mb-2">
           <TouchableOpacity onPress={() => router.back()} className="mr-4">
             <ArrowLeft color="#3E2723" size={24} />
           </TouchableOpacity>
           <View className="flex-1">
             <Text style={styles.headerTitle}>Recomendaciones del Menú</Text>
-            <Text style={styles.headerSubtitle}>
-              Análisis completado con IA
-            </Text>
           </View>
         </View>
       </View>
