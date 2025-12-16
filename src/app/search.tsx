@@ -41,26 +41,31 @@ export default function SearchPage() {
   const [togglingFavorites, setTogglingFavorites] = useState<Set<number>>(new Set());
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [activeFilters, setActiveFilters] = useState<WineFilters>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
+  const [totalResults, setTotalResults] = useState(0);
   const { user } = useAuth();
   const userId = user?.id || user?.sub;
 
-  const handleSearch = async (specificFilters?: WineFilters) => {
+  const handleSearch = async (specificFilters?: WineFilters, page: number = 1) => {
     // Usa los filtros específicos proporcionados o los del estado
     const filtersToUse = specificFilters || activeFilters;
-    
+
     // No buscar si no hay término ni filtros activos
     if (!query.trim() && !hasActiveFilters(filtersToUse)) return;
-    
+
     setLoading(true);
     setHasSearched(true);
     try {
       const params = new URLSearchParams();
-      
+
       // Añade el término de búsqueda
       if (query.trim()) {
         params.append('wine_name', query);
       }
-      
+
       // Añade todos los filtros activos
       if (filtersToUse.wine_type) params.append('wine_type', filtersToUse.wine_type);
       if (filtersToUse.winery) params.append('winery', filtersToUse.winery);
@@ -69,11 +74,33 @@ export default function SearchPage() {
       if (filtersToUse.min_abv !== undefined) params.append('min_abv', filtersToUse.min_abv.toString());
       if (filtersToUse.max_abv !== undefined) params.append('max_abv', filtersToUse.max_abv.toString());
 
+      // Añade la página
+      params.append('page', page.toString());
+
       // Llama al endpoint correcto con todos los parámetros
       const data = await apiClient.get(`/wines/search?${params.toString()}`);
-      
+
+      // Extrae el array de items y metadata de paginación
+      const winesArray = (data as any)?.items || data;
+      const paginationData = data as any;
+
+      // Actualiza el estado de paginación
+      setCurrentPage(paginationData?.page || 1);
+      setTotalPages(paginationData?.totalPages || 1);
+      setHasNext(paginationData?.hasNext || false);
+      setHasPrevious(paginationData?.hasPrevious || false);
+      setTotalResults(paginationData?.total || 0);
+
+      // Verifica que tengamos un array de vinos
+      if (!winesArray || !Array.isArray(winesArray)) {
+        console.error('API returned invalid data structure:', data);
+        setResults([]);
+        setLoading(false);
+        return;
+      }
+
       // Procesa los resultados
-      const normalized: Wine[] = (data as any[]).map((w: any) => ({
+      const normalized: Wine[] = winesArray.map((w: any) => ({
         wineId: w.wineId ?? w.id ?? w.wine_id,
         wineName: w.wineName ?? w.name ?? w.wine_name,
         type: w.type,
@@ -129,14 +156,31 @@ export default function SearchPage() {
   const handleApplyFilters = (filters: WineFilters) => {
     // Actualiza los filtros en el estado
     setActiveFilters(filters);
-    
+
     // Actualiza el término de búsqueda si existe en los filtros
     if (filters.wine_name) {
       setQuery(filters.wine_name);
     }
-    
-    // IMPORTANTE: Ejecuta una búsqueda inmediatamente con los nuevos filtros
-    handleSearch(filters);
+
+    // IMPORTANTE: Ejecuta una búsqueda inmediatamente con los nuevos filtros, volviendo a la página 1
+    setCurrentPage(1);
+    handleSearch(filters, 1);
+  };
+
+  const handleNextPage = () => {
+    if (hasNext) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      handleSearch(activeFilters, nextPage);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (hasPrevious) {
+      const prevPage = currentPage - 1;
+      setCurrentPage(prevPage);
+      handleSearch(activeFilters, prevPage);
+    }
   };
 
   const onToggleFavorite = async (wine: Wine) => {
@@ -237,7 +281,8 @@ export default function SearchPage() {
                 const newFilters = { ...activeFilters };
                 delete newFilters[key as keyof WineFilters];
                 setActiveFilters(newFilters);
-                handleSearch(newFilters);
+                setCurrentPage(1);
+                handleSearch(newFilters, 1);
               }}>
                 <X color="#F5F0E6" size={16} />
               </TouchableOpacity>
@@ -280,7 +325,10 @@ export default function SearchPage() {
                 placeholderTextColor="#e6b3c4"
                 value={query}
                 onChangeText={setQuery}
-                onSubmitEditing={() => handleSearch()}
+                onSubmitEditing={() => {
+                  setCurrentPage(1);
+                  handleSearch(activeFilters, 1);
+                }}
               />
               {query.length > 0 && (
                 <TouchableOpacity onPress={() => setQuery('')} className="ml-2">
@@ -322,12 +370,65 @@ export default function SearchPage() {
           </Text>
         </View>
       ) : results.length > 0 ? (
-        <FlatList
-          data={results}
-          keyExtractor={(item) => item.wineId.toString()}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-        />
+        <View className="flex-1">
+          <FlatList
+            data={results}
+            keyExtractor={(item) => item.wineId.toString()}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+            ListFooterComponent={
+              <View className="px-4 py-6">
+                {/* Pagination Info */}
+                <Text className="text-gray-400 text-center text-sm mb-4">
+                  Página {currentPage} de {totalPages} • {totalResults} vinos encontrados
+                </Text>
+
+                {/* Pagination Controls */}
+                {(hasPrevious || hasNext) && (
+                  <View className="flex-row justify-center items-center gap-4">
+                    {/* Previous Button */}
+                    <TouchableOpacity
+                      onPress={handlePreviousPage}
+                      disabled={!hasPrevious}
+                      className={`px-6 py-3 rounded-2xl ${hasPrevious ? 'opacity-100' : 'opacity-40'}`}
+                    >
+                      <LinearGradient
+                        colors={hasPrevious ? ['#300615', '#45081E'] : ['#1a1a1a', '#2a2a2a']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        className="px-6 py-3 rounded-2xl"
+                        style={{ borderRadius: 16 }}
+                      >
+                        <Text className={`font-semibold ${hasPrevious ? 'text-white' : 'text-gray-500'}`}>
+                          ← Anterior
+                        </Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+
+                    {/* Next Button */}
+                    <TouchableOpacity
+                      onPress={handleNextPage}
+                      disabled={!hasNext}
+                      className={`px-6 py-3 rounded-2xl ${hasNext ? 'opacity-100' : 'opacity-40'}`}
+                    >
+                      <LinearGradient
+                        colors={hasNext ? ['#300615', '#45081E'] : ['#1a1a1a', '#2a2a2a']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        className="px-6 py-3 rounded-2xl"
+                        style={{ borderRadius: 16 }}
+                      >
+                        <Text className={`font-semibold ${hasNext ? 'text-white' : 'text-gray-500'}`}>
+                          Siguiente →
+                        </Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            }
+          />
+        </View>
       ) : hasSearched ? (
         // Empty State with illustration - only show after a search has been performed
         <View className="flex-1 justify-center items-center px-8">
@@ -344,6 +445,11 @@ export default function SearchPage() {
               setActiveFilters({});
               setResults([]);
               setHasSearched(false);
+              setCurrentPage(1);
+              setTotalPages(1);
+              setHasNext(false);
+              setHasPrevious(false);
+              setTotalResults(0);
             }}
           >
             <LinearGradient
