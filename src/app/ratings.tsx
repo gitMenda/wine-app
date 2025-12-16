@@ -3,10 +3,11 @@ import { View, Text, ScrollView, FlatList, TouchableOpacity, ActivityIndicator, 
 import { router } from 'expo-router';
 import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
-import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
+import { toggleFavoriteApi } from '@/lib/favorites';
 import { Ionicons } from '@expo/vector-icons';
 import WineImage from '@/components/WineImage';
 import { useAuth } from '@/hooks/useAuth';
+import { ArrowLeft } from "lucide-react-native";
 
 interface Wine {
     wineId: number;
@@ -32,7 +33,6 @@ interface RatingItem {
     isFavorite?: boolean;
 }
 
-
 export default function MisVinosPage() {
     const [favorites, setFavorites] = useState<Wine[]>([]);
     const [ratings, setRatings] = useState<RatingItem[]>([]);
@@ -40,13 +40,13 @@ export default function MisVinosPage() {
     const [error, setError] = useState<string | null>(null);
     const [togglingFavorites, setTogglingFavorites] = useState<Set<number>>(new Set());
 
-    const { user, loading: authLoading } = useAuth();
+    const { user } = useAuth();
     const userId = user?.id || user?.sub;
 
     useEffect(() => {
         let mounted = true;
         const fetchData = async () => {
-            if (!userId) return; // Wait for user session
+            if (!userId) return;
             setLoading(true);
             setError(null);
             try {
@@ -144,29 +144,6 @@ export default function MisVinosPage() {
         } catch (error: any) {
             console.error('Error toggling favorite:', error);
             Alert.alert('Error', 'No se pudo actualizar el favorito. Intenta nuevamente.');
-
-            if (currentFavoriteStatus) {
-                const wineToAdd = ratings.find(r => r.wineId === wineId);
-                if (wineToAdd) {
-                    setFavorites(prev => [...prev, { ...wineToAdd, isFavorite: true }]);
-                }
-                setRatings(prev =>
-                    prev.map(item =>
-                        item.wineId === wineId
-                            ? { ...item, isFavorite: true }
-                            : item
-                    )
-                );
-            } else {
-                setFavorites(prev => prev.filter(wine => wine.wineId !== wineId));
-                setRatings(prev =>
-                    prev.map(item =>
-                        item.wineId === wineId
-                            ? { ...item, isFavorite: false }
-                            : item
-                    )
-                );
-            }
         } finally {
             setTogglingFavorites(prev => {
                 const newSet = new Set(prev);
@@ -177,19 +154,28 @@ export default function MisVinosPage() {
     };
 
     const header = (
-        <View className="mb-4">
-            <Text className="text-3xl font-bold text-white">Mis experiencias</Text>
+        <View className="bg-transparent pb-6 px-6">
+            <View className="flex-row justify-between items-center">
+                <TouchableOpacity onPress={() => router.back()} className="mr-4">
+                    <ArrowLeft color="#CECCCD" size={24} />
+                </TouchableOpacity>
+
+                <View className="flex-1">
+                    <Text className="text-[#CECCCD] text-2xl font-bold">
+                        Mis experiencias
+                    </Text>
+                </View>
+            </View>
         </View>
     );
 
     const renderFavorite = ({ item }: { item: Wine }) => (
         <View className="mr-3 w-64">
             <TouchableOpacity
-                className="bg-gray-800 p-4 rounded-lg border border-gray-700 flex-row items-start"
+                className="bg-[#1E191B] border-[#382E32] p-4 rounded-lg border flex-row items-start"
                 onPress={() => router.push(`/wine/${item.wineId}`)}
             >
                 <WineImage name={item.wineName} uri={item.imageUrl} size={48} rounded className="mr-3" />
-
                 <View className="flex-1 flex-row justify-between items-start">
                     <View className="flex-1 mr-2">
                         <Text className="text-white font-semibold mb-1" numberOfLines={2}>{item.wineName}</Text>
@@ -198,11 +184,8 @@ export default function MisVinosPage() {
                             {!!item.country && item.region && <Text className="text-gray-400 text-sm" numberOfLines={1}>{item.region + ', ' + item.country}</Text>}
                         </View>
                     </View>
-
                     <TouchableOpacity
-                        onPress={(e) => {
-                            toggleFavorite(item.wineId, true, item.wineName);
-                        }}
+                        onPress={() => toggleFavorite(item.wineId, true, item.wineName)}
                         className="p-1 ml-2"
                     >
                         <Ionicons
@@ -218,11 +201,10 @@ export default function MisVinosPage() {
 
     const renderRating = ({ item }: { item: RatingItem }) => (
         <TouchableOpacity
-            className="bg-gray-800 p-4 mb-3 rounded-lg border border-gray-700 flex-row items-start"
+            className="bg-[#1E191B] border-[#382E32] p-4 mb-3 rounded-lg border flex-row items-start"
             onPress={() => router.push(`/wine/${item.wineId}`)}
         >
             <WineImage name={item.wineName} uri={item.imageUrl} size={48} rounded className="mr-3" />
-
             <View className="flex-1 flex-row justify-between items-start">
                 <View className="flex-1 mr-2">
                     <View className="flex-row justify-between items-start mb-1">
@@ -244,11 +226,8 @@ export default function MisVinosPage() {
                         )}
                     </View>
                 </View>
-
                 <TouchableOpacity
-                    onPress={(e) => {
-                        toggleFavorite(item.wineId, item.isFavorite || false, item.wineName);
-                    }}
+                    onPress={() => toggleFavorite(item.wineId, item.isFavorite || false, item.wineName)}
                     className="p-1 ml-2"
                 >
                     <Ionicons
@@ -263,7 +242,7 @@ export default function MisVinosPage() {
 
     if (loading) {
         return (
-            <View className="flex-1 justify-center items-center dark:bg-gray-900">
+            <View className="flex-1 justify-center items-center">
                 <ActivityIndicator color="#fff" />
                 <Text className="text-white mt-3">Cargando...</Text>
             </View>
@@ -272,102 +251,60 @@ export default function MisVinosPage() {
 
     if (error) {
         return (
-            <View className="flex-1 justify-center items-center p-4 dark:bg-gray-900">
+            <View className="flex-1 justify-center items-center p-4">
                 <Text className="text-white mb-4">{error}</Text>
-                <Button title="Reintentar" onPress={() => {
-                    if (!userId) {
-                        Alert.alert('Sesión requerida', 'Debes iniciar sesión para cargar tus vinos.');
-                        return;
-                    }
-                    setLoading(true);
-                    setError(null);
-                    setTimeout(() => {
-                        (async () => {
-                            try {
-                                const tupleResponse = await apiClient.get(`/users/${userId}/wines/status`);
-                                const map = new Map<string, any[]>(tupleResponse as [string, any[]][]);
-                                const favArr = map.get('favorite_wines') ?? [];
-                                const tastedArr = map.get('tasted_wines') ?? [];
-                                const favs: Wine[] = (favArr as any[]).map((w) => ({
-                                    wineId: w.id ?? w.wineId ?? w.wine_id,
-                                    wineName: w.name ?? w.wineName ?? w.wine_name,
-                                    type: w.type,
-                                    country: w.country,
-                                    region: w.region,
-                                    winery: w.winery,
-                                    imageUrl: w.imageUrl ?? w.image_url,
-                                    isFavorite: true,
-                                })).filter((w) => typeof w.wineId === 'number' && !!w.wineName);
-                                const rats: RatingItem[] = (tastedArr as any[]).map((r) => ({
-                                    id: r.id,
-                                    wineId: r.id ?? r.wineId ?? r.wine_id,
-                                    wineName: r.name ?? r.wineName ?? r.wine_name ?? 'Vino',
-                                    rating: r.rating ?? null,
-                                    createdAt: r.createdAt ?? r.created_at,
-                                    imageUrl: r.imageUrl ?? r.image_url ?? null,
-                                    isFavorite: r.isFavorite ?? favs.some(fav => fav.wineId === (r.id ?? r.wineId ?? r.wine_id)),
-                                })).filter((r) => typeof r.wineId === 'number');
-                                setFavorites(favs);
-                                setRatings(rats);
-                            } catch (e) {
-                                setError('No se pudieron cargar tus vinos.');
-                            } finally {
-                                setLoading(false);
-                            }
-                        })();
-                    }, 0);
-                }} />
+                <Button title="Reintentar" onPress={() => router.replace(router.pathname)} />
                 <Button title="Volver" variant="secondary" className="mt-2" onPress={() => router.back()} />
             </View>
         );
     }
 
     return (
-        <View className="flex-1 dark:bg-gray-900">
-        <ScrollView className="flex-1 p-4 pt-8">
-            {header}
+        <View className="flex-1">
+            <ScrollView className="flex-1 p-4 pt-8">
+                {header}
 
-            <View className="mb-6">
-                <View className="flex-row justify-between items-center mb-2">
-                    <Text className="text-2xl font-semibold text-white">Favoritos</Text>
-                    {favorites.length > 0 && (
-                        <Text className="text-gray-400">{favorites.length}</Text>
+                <View className="mb-6">
+                    <View className="flex-row justify-between items-center mb-2">
+                        <Text className="text-2xl font-semibold text-[#CECCCD]">Favoritos</Text>
+                        {favorites.length > 0 && (
+                            <Text className="text-gray-400">{favorites.length}</Text>
+                        )}
+                    </View>
+                    {favorites.length === 0 ? (
+                        <View className="bg-secondary border border-primary p-4 rounded-lg border border-gray-700">
+                            <Text className="text-gray-300">Todavía no nos indicaste ningún vino como favorito...</Text>
+                        </View>
+                    ) : (
+                        <FlatList
+                            data={favorites}
+                            keyExtractor={(item) => item.wineId.toString()}
+                            renderItem={renderFavorite}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                        />
                     )}
                 </View>
-                {favorites.length === 0 ? (
-                    <View className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                        <Text className="text-gray-300">Aún no marcaste ningún vino como favorito.</Text>
-                    </View>
-                ) : (
-                    <FlatList
-                        data={favorites}
-                        keyExtractor={(item) => item.wineId.toString()}
-                        renderItem={renderFavorite}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                    />
-                )}
-            </View>
 
-            <View className="mb-2">
-                <View className="flex-row justify-between items-center mb-2">
-                    <Text className="text-2xl font-semibold text-white">Historial</Text>
-                </View>
-                {ratings.length === 0 ? (
-                    <View className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-                        <Text className="text-gray-300">Aún no probaste ningún vino.</Text>
+                <View className="mb-2">
+                    <View className="flex-row justify-between items-center mb-2">
+                        <Text className="text-2xl font-semibold text-[#CECCCD]">Historial</Text>
                     </View>
-                ) : (
-                    <FlatList
-                        data={ratings}
-                        keyExtractor={(item) => String(item.id)}
-                        renderItem={renderRating}
-                        scrollEnabled={false}
-                    />
-                )}
-            </View>
-            <View className="h-6" />
-        </ScrollView>
+                    {ratings.length === 0 ? (
+                        <View className="bg-secondary border border-primary p-4 rounded-lg border border-gray-700">
+                            <Text className="text-gray-300">Todavía no probaste ningún vino.</Text>
+                        </View>
+                    ) : (
+                        <FlatList
+                            data={ratings}
+                            keyExtractor={(item) => String(item.id)}
+                            renderItem={renderRating}
+                            scrollEnabled={false}
+                        />
+                    )}
+                </View>
+                <View className="h-6" />
+            </ScrollView>
         </View>
     );
 }

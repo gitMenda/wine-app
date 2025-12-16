@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Modal, ActivityIndicator, StyleSheet } from 'react-native';
 import { Settings, Wine, Droplets, Thermometer, Percent, Pencil, ArrowLeft } from 'lucide-react-native';
 import { useAuth } from '@/hooks/useAuth';
@@ -6,6 +6,7 @@ import { apiClient } from '@/lib/api';
 import { router } from 'expo-router';
 import { LinearGradient } from "expo-linear-gradient";
 import { cssInterop } from "nativewind";
+import {User} from "@/types/user";
 
 cssInterop(LinearGradient, {
   className: "style",
@@ -168,7 +169,34 @@ export default function WineProfileScreen() {
   const [currentOptions, setCurrentOptions] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Cargar preferencias del usuario
+    const [userInfo, setUserInfo] = useState<User>();
+
+    const fetchUser = useCallback(async () => {
+        if (!userId) return;
+        try {
+            const response = await apiClient.get(`/users/${encodeURIComponent(userId)}`);
+            const data = response.data || response;
+
+            const normalized = {
+                uid: data?.uid,
+                username: data?.username,
+                email: data?.email,
+                onBoardingCompleted: data?.onBoardingCompleted
+            };
+            setUserInfo(normalized as User);
+        } catch (e: any) {
+            console.error('Error fetching user:', e);
+        }
+    }, [userId]);
+
+    useEffect(() => {
+        if (userId) {
+            fetchUser();
+        }
+    }, [fetchUser, userId]);
+
+
+    // Cargar preferencias del usuario
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
@@ -318,12 +346,12 @@ export default function WineProfileScreen() {
           <View className="w-20 h-20 rounded-full items-center justify-center mb-4" style={{ backgroundColor: '#6B1E3A' }}>
             <Image
               source={{ 
-                uri: `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Usuario')}&background=6B1E3A&color=F5F0E6&size=128`
+                uri: `https://ui-avatars.com/api/?name=${encodeURIComponent(userInfo?.username || 'Usuario')}&background=6B1E3A&color=F5F0E6&size=128`
               }}
               className="w-full h-full rounded-full"
             />
           </View>
-          <Text className="text-text text-2xl font-bold text-center">{user?.name || 'Usuario'}</Text>
+          <Text className="text-text text-2xl font-bold text-center">{userInfo?.username || 'Usuario'}</Text>
           <Text className="text-burgundy-600 text-base text-center mt-1">{profile?.level || 'Nivel principiante'}</Text>
         </View>
 
