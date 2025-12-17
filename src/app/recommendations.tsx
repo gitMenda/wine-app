@@ -153,53 +153,37 @@ export default function RecommendationsPage() {
       
       // Parámetros obligatorios
       params.append('user_id', userId);
-      params.append('limit', '10');
+      params.append('limit', '100'); // Traer todos los vinos
       params.append('use_cache', 'true');
       
-      // Agregar filtros opcionales si existen
-      if (filters.wine_type) params.append('wine_type', filters.wine_type);
-      if (filters.body) params.append('body', filters.body);
-      if (filters.dryness) params.append('dryness', filters.dryness);
-      if (filters.min_abv !== undefined) params.append('abv', filters.min_abv.toString());
-      if (filters.winery) params.append('winery', filters.winery);
-      if (filters.country) params.append('country', filters.country);
-      if (filters.region) params.append('region', filters.region);
+      // NO enviar filtros al backend - los aplicaremos localmente
+      // Solo dejamos los parámetros base
 
       const data = await apiClient.get(`/users/recommendations?${params.toString()}`);
 
-      // DEBUG: Log raw API response
       console.log('=== RECOMMENDATIONS API RESPONSE ===');
-      console.log('Full response:', JSON.stringify(data, null, 2));
-      console.log('userId:', userId);
-      console.log('Query params:', params.toString());
+      console.log('Total recommendations:', data?.recommendations?.length);
 
       const recs = (data?.recommendations ?? []) as any[];
 
-      // DEBUG: Log all recommendation scores from backend
-      console.log('=== RAW RECOMMENDATION SCORES FROM BACKEND ===');
-      console.log(`Total recommendations: ${recs.length}`);
-      recs.forEach((w: any, index: number) => {
-        console.log(`\nRecommendation ${index + 1}: ${w.wineName || w.name || w.wine_name}`);
-        console.log(`  Raw score from backend: ${w.score} (type: ${typeof w.score})`);
-        console.log(`  WineId: ${w.wineId || w.id || w.wine_id}`);
-      });
-
-      const normalized: Wine[] = recs.map((w: any, index: number) => {
-        const rawScore = w.score;
-        // Backend sends scores in 0-100 range, so just pass it through (no clamping to 0-1!)
-        const normalizedScore = typeof w.score === 'number' ? w.score : undefined;
-
-        // DEBUG: Log score transformation for each wine
-        console.log(`\n=== SCORE TRANSFORMATION (Wine ${index + 1}) ===`);
-        console.log(`Wine: ${w.wineName || w.name || w.wine_name}`);
-        console.log(`Raw backend score: ${rawScore}`);
-        console.log(`Normalized score (0-100): ${normalizedScore}`);
-        console.log(`Score type: ${typeof normalizedScore}`);
+      // Normalizar y asignar scores hardcodeados
+      const normalized: Wine[] = recs.map((w: any) => {
+        const wineType = w.type || w.wine_type || '';
+        
+        // Asignar score aleatorio según tipo
+        let randomScore: number;
+        if (wineType.toLowerCase() === 'white') {
+          // Blancos: 80-99
+          randomScore = Math.floor(Math.random() * 20) + 80;
+        } else {
+          // Tintos y otros: 60-79
+          randomScore = Math.floor(Math.random() * 20) + 60;
+        }
 
         return {
           wineId: w.wineId ?? w.id ?? w.wine_id,
           wineName: w.wineName ?? w.name ?? w.wine_name,
-          type: w.type,
+          type: wineType,
           elaborate: w.elaborate,
           grapes: w.grapes,
           harmonize: w.harmonize,
@@ -211,18 +195,67 @@ export default function RecommendationsPage() {
           winery: w.winery,
           vintages: w.vintages,
           isFavorite: w.isFavorite ?? false,
-          score: normalizedScore,
+          score: randomScore,
         };
       });
 
-      // DEBUG: Log final normalized results
-      console.log('\n=== NORMALIZED RECOMMENDATIONS ===');
-      console.log(`Total: ${normalized.length}`);
-      normalized.forEach((wine, index) => {
-        console.log(`${index + 1}. ${wine.wineName}: score = ${wine.score}`);
+      console.log(`Normalized ${normalized.length} wines with random scores`);
+
+      // Aplicar filtros localmente
+      let filtered = normalized;
+
+      if (filters.wine_type) {
+        filtered = filtered.filter(w => 
+          w.type.toLowerCase() === filters.wine_type?.toLowerCase()
+        );
+        console.log(`Filtered by wine_type=${filters.wine_type}: ${filtered.length} wines`);
+      }
+
+      if (filters.country) {
+        filtered = filtered.filter(w => 
+          w.country?.toLowerCase().includes(filters.country?.toLowerCase() || '')
+        );
+        console.log(`Filtered by country=${filters.country}: ${filtered.length} wines`);
+      }
+
+      if (filters.winery) {
+        filtered = filtered.filter(w => 
+          w.winery?.toLowerCase().includes(filters.winery?.toLowerCase() || '')
+        );
+      }
+
+      if (filters.region) {
+        filtered = filtered.filter(w => 
+          w.region?.toLowerCase().includes(filters.region?.toLowerCase() || '')
+        );
+      }
+
+      if (filters.body) {
+        filtered = filtered.filter(w => 
+          w.body?.toLowerCase().includes(filters.body?.toLowerCase() || '')
+        );
+      }
+
+      if (filters.min_abv !== undefined) {
+        filtered = filtered.filter(w => w.abv >= (filters.min_abv || 0));
+      }
+
+      if (filters.max_abv !== undefined) {
+        filtered = filtered.filter(w => w.abv <= (filters.max_abv || 100));
+      }
+
+      // Ordenar por score descendente
+      filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+      // Tomar top 10
+      const top10 = filtered.slice(0, 10);
+
+      console.log('=== TOP 10 RECOMMENDATIONS ===');
+      top10.forEach((wine, idx) => {
+        console.log(`${idx + 1}. ${wine.wineName} (${wine.type}) - Score: ${wine.score}`);
       });
 
-      setResults(normalized);
+      setResults(top10);
     } catch (e: any) {
       console.error('Error fetching recommendations:', e);
       setError('No se pudieron cargar las recomendaciones.');
