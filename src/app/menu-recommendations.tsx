@@ -1,8 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ArrowLeft, Sparkles, Wine, DollarSign } from 'lucide-react-native';
+import { ArrowLeft, Sparkles, Wine, DollarSign, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { MenuWineRecommendation } from '@/types/menu';
+import { LinearGradient } from "expo-linear-gradient";
+import { cssInterop } from "nativewind";
+
+cssInterop(LinearGradient, {
+  className: "style",
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -24,73 +30,63 @@ const styles = StyleSheet.create({
     fontSize: 14,
     opacity: 0.8,
   },
-  summaryCard: {
-    backgroundColor: '#F5F0E6',
-    padding: 20,
-    margin: 16,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  summaryText: {
-    color: '#3E2723',
-    fontSize: 16,
-    lineHeight: 24,
-  },
   heroWineCard: {
-    backgroundColor: '#6B1E3A',
-    padding: 24,
     margin: 16,
     borderRadius: 24,
-    minHeight: 200,
-    borderWidth: 2,
-    borderColor: '#8B2E4A',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  regularWineCard: {
-    backgroundColor: '#F5F0E6',
-    padding: 20,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    borderRadius: 16,
+    minHeight: 140,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  heroWineName: {
-    color: '#F5F0E6',
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  heroWineCardInner: {
+    padding: 20,
+    borderRadius: 24,
+  },
+  regularWineCard: {
+    marginHorizontal: 16,
     marginBottom: 16,
+    borderRadius: 24,
+    minHeight: 140,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#2A2A2A',
+  },
+  regularWineCardInner: {
+    padding: 20,
+    borderRadius: 24,
+  },
+  heroWineName: {
+    color: '#CECCCD',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   regularWineName: {
-    color: '#3E2723',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 12,
+    color: '#CECCCD',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   heroReason: {
-    color: '#F8D7DA',
-    fontSize: 16,
-    lineHeight: 24,
-    textAlign: 'center',
-    marginBottom: 16,
+    color: '#CECCCD',
+    fontSize: 14,
+    lineHeight: 20,
+    opacity: 0.7,
+    marginBottom: 12,
   },
   regularReason: {
-    color: '#3E2723',
-    fontSize: 15,
-    lineHeight: 22,
-    opacity: 0.8,
+    color: '#CECCCD',
+    fontSize: 14,
+    lineHeight: 20,
+    opacity: 0.7,
     marginBottom: 12,
   },
   detailsRow: {
@@ -100,31 +96,31 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   heroChip: {
-    backgroundColor: '#F5F0E6',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    backgroundColor: 'rgba(204, 204, 205, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
   regularChip: {
-    backgroundColor: '#F8D7DA',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    backgroundColor: 'rgba(204, 204, 205, 0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
   heroChipText: {
-    color: '#6B1E3A',
-    fontSize: 13,
-    fontWeight: '600',
+    color: '#CECCCD',
+    fontSize: 12,
+    fontWeight: '500',
   },
   regularChipText: {
-    color: '#3E2723',
-    fontSize: 13,
+    color: '#CECCCD',
+    fontSize: 12,
     fontWeight: '500',
   },
   actionButton: {
@@ -142,26 +138,26 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   badge: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    backgroundColor: '#FFD54F',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    backgroundColor: '#AA9D15',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 12,
-    zIndex: 10,
+    alignSelf: 'flex-start',
+    marginBottom: 12,
   },
   badgeText: {
-    color: '#3E2723',
-    fontSize: 12,
+    color: '#0E0206',
+    fontSize: 11,
     fontWeight: 'bold',
   },
   iconCircle: {
-    padding: 16,
+    padding: 12,
     borderRadius: 50,
-    backgroundColor: '#F5F0E6',
-    alignSelf: 'center',
-    marginBottom: 16,
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
   sectionTitle: {
     color: '#F5F0E6',
@@ -175,17 +171,22 @@ const styles = StyleSheet.create({
 
 export default function MenuRecommendationsScreen() {
   const params = useLocalSearchParams();
-  
+  const [isExpanded, setIsExpanded] = useState(false);
+
   // Parse the recommendations data from params
   const summary = params.summary as string || 'Encontramos vinos perfectos para vos en este menú.';
   const recommendationsData = params.recommendations as string;
-  
+
   let recommendations: MenuWineRecommendation[] = [];
   try {
     recommendations = recommendationsData ? JSON.parse(recommendationsData) : [];
   } catch (e) {
     console.error('Error parsing recommendations:', e);
   }
+
+  // Count lines in summary text (rough estimate: ~40 chars per line on mobile)
+  const estimatedLines = Math.ceil(summary.length / 40);
+  const needsExpansion = estimatedLines > 10;
 
   return (
     <View className="flex-1" style={styles.container}>
@@ -201,78 +202,89 @@ export default function MenuRecommendationsScreen() {
         </View>
       </View>
 
-      <ScrollView 
-        className="flex-1" 
+      <ScrollView
+        className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}
       >
-        {/* Summary Card */}
-        <View style={styles.summaryCard}>
-          <View className="flex-row items-start mb-3">
-            <View style={{ marginRight: 12 }}>
-              <Sparkles color="#6B1E3A" size={24} />
-            </View>
-            <View className="flex-1">
-              <Text className="font-bold mb-2" style={{ color: '#3E2723', fontSize: 16 }}>
-                Análisis del menú
-              </Text>
-              <Text style={styles.summaryText}>
-                {summary}
-              </Text>
-            </View>
+        {/* Summary Section - No Card */}
+        <View className="px-4 mb-6 mt-2">
+          <View className="flex-row items-center mb-3">
+            <Sparkles color="#AA9D15" size={20} />
+            <Text className="font-bold ml-2" style={{ color: '#CECCCD', fontSize: 16 }}>
+              Análisis del menú
+            </Text>
           </View>
+          <Text
+            style={{ color: '#CECCCD', fontSize: 14, lineHeight: 20 }}
+            numberOfLines={needsExpansion && !isExpanded ? 10 : undefined}
+          >
+            {summary}
+          </Text>
+          {needsExpansion && (
+            <TouchableOpacity
+              onPress={() => setIsExpanded(!isExpanded)}
+              className="flex-row items-center mt-2"
+            >
+              <Text style={{ color: '#AA9D15', fontSize: 14, fontWeight: '600' }}>
+                {isExpanded ? 'Leer menos' : 'Leer más'}
+              </Text>
+              {isExpanded ? (
+                <ChevronUp color="#AA9D15" size={16} style={{ marginLeft: 4 }} />
+              ) : (
+                <ChevronDown color="#AA9D15" size={16} style={{ marginLeft: 4 }} />
+              )}
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Top Recommendation - Hero Card */}
         {recommendations.length > 0 && (
           <>
             <Text style={styles.sectionTitle}>Tu mejor opción</Text>
-            <View style={styles.heroWineCard}>
-              {/* Best Match Badge */}
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>Mejor Match</Text>
-              </View>
+            <View style={styles.heroWineCard} className="border border-primary">
+              <LinearGradient
+                colors={['#300615', '#45081E']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.heroWineCardInner}
+              >
+                {/* Best Match Badge */}
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>Mejor Match</Text>
+                </View>
 
-              {/* Icon */}
-              <View style={styles.iconCircle}>
-                <Wine color="#6B1E3A" size={32} />
-              </View>
+                {/* Icon */}
+                <View style={styles.iconCircle} className="bg-secondary">
+                  <Wine color="#CECCCD" size={24} />
+                </View>
 
-              {/* Wine Name */}
-              <Text style={styles.heroWineName}>
-                {recommendations[0].wine_name}
-              </Text>
+                {/* Wine Name */}
+                <Text style={styles.heroWineName}>
+                  {recommendations[0].wine_name}
+                </Text>
 
-              {/* Reason */}
-              <Text style={styles.heroReason}>
-                {recommendations[0].reason}
-              </Text>
+                {/* Reason */}
+                <Text style={styles.heroReason}>
+                  {recommendations[0].reason}
+                </Text>
 
-              {/* Details */}
-              <View style={styles.detailsRow}>
-                {recommendations[0].wine_type && (
-                  <View style={styles.heroChip}>
-                    <Wine color="#6B1E3A" size={14} />
-                    <Text style={styles.heroChipText}>{recommendations[0].wine_type}</Text>
-                  </View>
-                )}
-                {recommendations[0].estimated_price && (
-                  <View style={styles.heroChip}>
-                    <DollarSign color="#6B1E3A" size={14} />
-                    <Text style={styles.heroChipText}>{recommendations[0].estimated_price}</Text>
-                  </View>
-                )}
-              </View>
-
-              {/* Decorative circles */}
-              <View 
-                className="absolute -bottom-2 -right-2 w-16 h-16 rounded-full opacity-10"
-                style={{ backgroundColor: '#F5F0E6' }}
-              />
-              <View 
-                className="absolute -top-2 -left-2 w-12 h-12 rounded-full opacity-10"
-                style={{ backgroundColor: '#F5F0E6' }}
-              />
+                {/* Details */}
+                <View style={styles.detailsRow}>
+                  {recommendations[0].wine_type && (
+                    <View style={styles.heroChip}>
+                      <Wine color="#CECCCD" size={12} />
+                      <Text style={styles.heroChipText}>{recommendations[0].wine_type}</Text>
+                    </View>
+                  )}
+                  {recommendations[0].estimated_price && (
+                    <View style={styles.heroChip}>
+                      <DollarSign color="#CECCCD" size={12} />
+                      <Text style={styles.heroChipText}>{recommendations[0].estimated_price}</Text>
+                    </View>
+                  )}
+                </View>
+              </LinearGradient>
             </View>
           </>
         )}
@@ -280,34 +292,41 @@ export default function MenuRecommendationsScreen() {
         {/* Other Recommendations */}
         {recommendations.length > 1 && (
           <>
-            <Text style={styles.sectionTitle}>Otras excelentes opciones</Text>
+            <Text style={styles.sectionTitle}>Otras opciones</Text>
             {recommendations.slice(1).map((wine, index) => (
               <View key={index} style={styles.regularWineCard}>
-                {/* Wine Name */}
-                <Text style={styles.regularWineName}>
-                  {wine.wine_name}
-                </Text>
+                <LinearGradient
+                  colors={['#0D0D0D', '#0E0E0E']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.regularWineCardInner}
+                >
+                  {/* Wine Name */}
+                  <Text style={styles.regularWineName}>
+                    {wine.wine_name}
+                  </Text>
 
-                {/* Reason */}
-                <Text style={styles.regularReason}>
-                  {wine.reason}
-                </Text>
+                  {/* Reason */}
+                  <Text style={styles.regularReason}>
+                    {wine.reason}
+                  </Text>
 
-                {/* Details */}
-                <View style={styles.detailsRow}>
-                  {wine.wine_type && (
-                    <View style={styles.regularChip}>
-                      <Wine color="#3E2723" size={14} />
-                      <Text style={styles.regularChipText}>{wine.wine_type}</Text>
-                    </View>
-                  )}
-                  {wine.estimated_price && (
-                    <View style={styles.regularChip}>
-                      <DollarSign color="#3E2723" size={14} />
-                      <Text style={styles.regularChipText}>{wine.estimated_price}</Text>
-                    </View>
-                  )}
-                </View>
+                  {/* Details */}
+                  <View style={styles.detailsRow}>
+                    {wine.wine_type && (
+                      <View style={styles.regularChip}>
+                        <Wine color="#CECCCD" size={12} />
+                        <Text style={styles.regularChipText}>{wine.wine_type}</Text>
+                      </View>
+                    )}
+                    {wine.estimated_price && (
+                      <View style={styles.regularChip}>
+                        <DollarSign color="#CECCCD" size={12} />
+                        <Text style={styles.regularChipText}>{wine.estimated_price}</Text>
+                      </View>
+                    )}
+                  </View>
+                </LinearGradient>
               </View>
             ))}
           </>

@@ -234,30 +234,6 @@ export default function ScanMenuScreen() {
         ) : (
           /* Action Cards - Only show when no image selected */
           <View className="flex-row flex-wrap gap-4 mb-4">
-            {/* Camera Card */}
-            <TouchableOpacity 
-              className="flex-1 min-w-[45%] rounded-3xl shadow-lg overflow-hidden border border-primary"
-              style={{ 
-                minHeight: 140
-              }}
-              onPress={takePhoto}
-            >
-              <LinearGradient
-                colors={['#300615', '#45081E']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                className="flex-1 rounded-3xl"
-                style={{ padding: 20 }}
-              >
-                <View className="p-3 rounded-full w-12 h-12 items-center justify-center mb-4 bg-secondary">
-                  <Camera color="#CECCCD" size={24} />
-                </View>
-                <Text className="text-lg font-semibold mb-2 text-text">Tomar foto</Text>
-                <Text className="text-sm text-text opacity-70">
-                  Fotografiá directamente el menú del restaurante
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
 
             {/* Gallery Card */}
             <TouchableOpacity 
@@ -289,67 +265,36 @@ export default function ScanMenuScreen() {
         {/* Analyze Hero Button */}
         {selectedImage && (
           <View className="mb-8">
-            <TouchableOpacity 
-              className="rounded-3xl shadow-2xl overflow-hidden"
-              style={{ 
-                backgroundColor: '#6B1E3A', 
-                minHeight: 200,
-                borderWidth: 2,
-                borderColor: '#8B2E4A'
+            <TouchableOpacity
+              className="rounded-3xl shadow-lg overflow-hidden border border-primary"
+              style={{
+                minHeight: 140
               }}
               onPress={analyzeMenu}
               disabled={isAnalyzing}
             >
-              {/* Badge */}
-              <View 
-                className="absolute top-4 right-4 px-3 py-1 rounded-full z-10"
-                style={{ backgroundColor: '#FFD54F' }}
+              <LinearGradient
+                colors={['#300615', '#45081E']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                className="flex-1 rounded-3xl"
+                style={{ padding: 20 }}
               >
-                <Text className="text-xs font-bold" style={{ color: '#3E2723' }}>
-                  {isAnalyzing ? 'Procesando...' : 'Listo para analizar'}
-                </Text>
-              </View>
-
-              <View className="px-8 py-10">
-                <View className="items-center mb-8">
-                  <View 
-                    className="p-6 rounded-full mb-5"
-                    style={{ backgroundColor: '#F5F0E6' }}
-                  >
-                    {isAnalyzing ? (
-                      <ActivityIndicator size="large" color="#6B1E3A" />
-                    ) : (
-                      <Sparkles color="#6B1E3A" size={42} />
-                    )}
-                  </View>
-                  
-                  <Text className="text-2xl font-bold text-center mb-3" style={{ color: '#F5F0E6' }}>
-                    {isAnalyzing ? 'Analizando menú...' : 'Analizar y obtener sugerencias'}
-                  </Text>
-                  <Text className="text-lg text-center mb-8" style={{ color: '#F8D7DA' }}>
-                    {isAnalyzing ? 'Esto puede tomar unos segundos' : 'Descubrí qué vinos del menú son perfectos para vos'}
-                  </Text>
+                <View className="p-3 rounded-full w-12 h-12 items-center justify-center mb-4 bg-secondary">
+                  {isAnalyzing ? (
+                    <ActivityIndicator size="small" color="#CECCCD" />
+                  ) : (
+                    <Sparkles color="#CECCCD" size={24} />
+                  )}
                 </View>
 
-                {/* CTA Text - Enhanced visibility */}
-                {!isAnalyzing && (
-                  <View className="items-center">
-                    <Text className="text-lg font-bold text-center" style={{ color: '#FFD54F' }}>
-                      Tocar para comenzar análisis
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-              {/* Subtle decoration */}
-              <View 
-                className="absolute -bottom-2 -right-2 w-16 h-16 rounded-full opacity-10"
-                style={{ backgroundColor: '#F5F0E6' }}
-              />
-              <View 
-                className="absolute -top-2 -left-2 w-12 h-12 rounded-full opacity-10"
-                style={{ backgroundColor: '#F5F0E6' }}
-              />
+                <Text className="text-lg font-semibold mb-2 text-text">
+                  {isAnalyzing ? 'Analizando menú...' : 'Analizar y obtener sugerencias'}
+                </Text>
+                <Text className="text-sm text-text opacity-70">
+                  {isAnalyzing ? 'Esto puede tomar unos segundos' : 'Descubrí qué vinos del menú son perfectos para vos'}
+                </Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         )}
@@ -373,34 +318,24 @@ export default function ScanMenuScreen() {
 
         {/* Tips Section - Only show when no image selected */}
         {!selectedImage && (
-          <View 
-            className="rounded-3xl overflow-hidden border border-primary mb-4"
-          >
-            <LinearGradient
-              colors={['#17030B', '#20040E']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              className="rounded-3xl"
-              style={{ padding: 24 }}
-            >
-              <Text className="text-lg font-semibold mb-4 text-text">
-                Consejos para mejores resultados
+          <View className="mb-4 mt-4 px-2">
+            <Text className="text-lg font-semibold mb-4 text-text">
+              Consejos para mejores resultados
+            </Text>
+            <View className="space-y-3">
+              <Text className="text-sm text-text opacity-70">
+                • Asegurate de que el texto sea legible
               </Text>
-              <View className="space-y-3">
-                <Text className="text-sm text-text opacity-70">
-                  • Asegurate de que el texto sea legible
-                </Text>
-                <Text className="text-sm text-text opacity-70">
-                  • Incluí la sección de vinos completa
-                </Text>
-                <Text className="text-sm text-text opacity-70">
-                  • Evitá sombras o reflejos en la foto
-                </Text>
-                <Text className="text-sm text-text opacity-70">
-                  • Una buena iluminación mejora la precisión
-                </Text>
-              </View>
-            </LinearGradient>
+              <Text className="text-sm text-text opacity-70">
+                • Incluí la sección de vinos completa
+              </Text>
+              <Text className="text-sm text-text opacity-70">
+                • Evitá sombras o reflejos en la foto
+              </Text>
+              <Text className="text-sm text-text opacity-70">
+                • Una buena iluminación mejora la precisión
+              </Text>
+            </View>
           </View>
         )}
       </ScrollView>

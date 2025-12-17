@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
+import { LinearGradient } from "expo-linear-gradient";
+import { cssInterop } from "nativewind";
 import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
 import { Filter, X } from 'lucide-react-native';
@@ -8,6 +10,10 @@ import { toggleFavoriteApi } from '@/lib/favorites';
 import FilterModal, { WineFilters } from '@/components/FilterModal';
 import { useAuth } from '@/hooks/useAuth';
 import RecommendationItem from '@/components/RecommendationItem';
+
+cssInterop(LinearGradient, {
+  className: "style",
+});
 
 interface Wine {
   wineId: number;
@@ -349,27 +355,11 @@ export default function RecommendationsPage() {
             </View>
             
             {/* Content */}
-            <View className="flex-1 px-4 py-4">
-                {/* Filter Button */}
-                <TouchableOpacity 
-                  className="flex-row items-center justify-center py-3 px-4 rounded-xl mb-4"
-                  style={{ backgroundColor: hasActiveFilters() ? '#6B1E3A' : '#F5F0E6' }}
-                  onPress={() => setIsFilterModalVisible(true)}
-                >
-                  <Filter 
-                    color={hasActiveFilters() ? '#F5F0E6' : '#6B1E3A'} 
-                    size={18} 
-                  />
-                  <Text 
-                    className="ml-2 font-semibold"
-                    style={{ color: hasActiveFilters() ? '#F5F0E6' : '#6B1E3A' }}
-                  >
-                    {hasActiveFilters() ? `Filtros (${Object.values(activeFilters).filter(v => v !== undefined && v !== '').length})` : 'Filtrar recomendaciones'}
-                  </Text>
-                </TouchableOpacity>
-
+            <View className="flex-1 py-4">
                 {/* Active Filters Chips */}
-                {renderActiveFilters()}
+                <View className="px-4">
+                  {renderActiveFilters()}
+                </View>
 
                 {error ? (
                     <View style={styles.errorContainer}>
@@ -414,13 +404,31 @@ export default function RecommendationsPage() {
                         renderItem={renderItem}
                         showsVerticalScrollIndicator={false}
                         ListHeaderComponent={
-                            <View className="mb-4">
-                                <Text style={[styles.wineDetail, { fontSize: 16, marginBottom: 8 }]}>
+                            <View className="mb-4 flex-row justify-between items-center px-4">
+                                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '600' }}>
                                     {results.length} recomendaciones
                                     {hasActiveFilters() && (
                                       <Text style={{ color: '#6B1E3A' }}> (filtradas)</Text>
                                     )}
                                 </Text>
+                                <TouchableOpacity
+                                  onPress={() => setIsFilterModalVisible(true)}
+                                  className="rounded-3xl h-12 w-12 overflow-hidden"
+                                  style={{ borderWidth: 1, borderColor: '#2A2A2A' }}
+                                >
+                                  <LinearGradient
+                                    colors={['#0D0D0D', '#0E0E0E']}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 1 }}
+                                    className="flex-1 items-center justify-center"
+                                    style={{ borderRadius: 24 }}
+                                  >
+                                    <Filter
+                                      color={hasActiveFilters() ? "#AA9D15" : "#e6b3c4"}
+                                      size={18}
+                                    />
+                                  </LinearGradient>
+                                </TouchableOpacity>
                             </View>
                         }
                     />

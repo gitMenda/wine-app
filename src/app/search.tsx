@@ -423,9 +423,9 @@ export default function SearchPage() {
       <View className="px-4 py-4">
         {/* Search Bar and Filter */}
         <View className="flex-row items-center gap-3 mb-4">
-          <View className="flex-1 rounded-3xl h-12 overflow-hidden border border-border">
+          <View className="flex-1 rounded-3xl h-12 overflow-hidden" style={{ borderWidth: 1, borderColor: '#2A2A2A' }}>
             <LinearGradient
-              colors={['#17030B', '#20040E']}
+              colors={['#0D0D0D', '#0E0E0E']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               className="flex-1 flex-row items-center px-4"
@@ -450,20 +450,21 @@ export default function SearchPage() {
               )}
             </LinearGradient>
           </View>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setIsFilterModalVisible(true)}
-            className="rounded-3xl h-12 w-12 overflow-hidden border border-border"
+            className="rounded-3xl h-12 w-12 overflow-hidden"
+            style={{ borderWidth: 1, borderColor: '#2A2A2A' }}
           >
             <LinearGradient
-              colors={['#17030B', '#20040E']}
+              colors={['#0D0D0D', '#0E0E0E']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               className="flex-1 items-center justify-center"
               style={{ borderRadius: 24 }}
             >
-              <Filter 
+              <Filter
                 color={hasActiveFilters() ? "#AA9D15" : "#e6b3c4"}
-                size={18} 
+                size={18}
               />
             </LinearGradient>
           </TouchableOpacity>

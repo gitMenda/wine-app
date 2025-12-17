@@ -127,14 +127,16 @@ export default function HomeScreen() {
         <View className="flex-row flex-wrap gap-4 mb-10">
           {/* Profile Card */}
           <TouchableOpacity
-            className="flex-1 min-w-[45%] rounded-3xl shadow-lg overflow-hidden border border-primary"
+            className="flex-1 min-w-[45%] rounded-3xl shadow-lg overflow-hidden"
             style={{
-              minHeight: 120
+              minHeight: 120,
+              borderWidth: 1,
+              borderColor: '#2A2A2A'
             }}
             onPress={() => router.push('/ratings')}
           >
             <LinearGradient
-              colors={['#17030B', '#20040E']}
+              colors={['#0D0D0D', '#0E0E0E']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               className="flex-1 rounded-3xl"
@@ -150,14 +152,16 @@ export default function HomeScreen() {
 
           {/* Search Card */}
           <TouchableOpacity
-            className="flex-1 min-w-[45%] rounded-3xl shadow-lg overflow-hidden border border-primary"
+            className="flex-1 min-w-[45%] rounded-3xl shadow-lg overflow-hidden"
             style={{
-              minHeight: 120
+              minHeight: 120,
+              borderWidth: 1,
+              borderColor: '#2A2A2A'
             }}
             onPress={() => router.push('/search')}
           >
             <LinearGradient
-              colors={['#17030B', '#20040E']}
+              colors={['#0D0D0D', '#0E0E0E']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               className="flex-1 rounded-3xl"
@@ -173,14 +177,16 @@ export default function HomeScreen() {
 
           {/* Scan Card */}
           <TouchableOpacity
-            className="w-full rounded-3xl shadow-lg overflow-hidden border border-primary"
+            className="w-full rounded-3xl shadow-lg overflow-hidden"
             style={{
-              minHeight: 80
+              minHeight: 80,
+              borderWidth: 1,
+              borderColor: '#2A2A2A'
             }}
             onPress={() => router.push('/scan')}
           >
             <LinearGradient
-              colors={['#17030B', '#20040E']}
+              colors={['#0D0D0D', '#0E0E0E']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               className="flex-1 rounded-3xl"
