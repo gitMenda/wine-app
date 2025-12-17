@@ -36,7 +36,7 @@ export default function Button({
       className={`rounded-lg px-6 py-3 ${button} ${className}`}
       {...rest}
     >
-      <Text className={`${text}`}>{title}</Text>
+      <Text className={`${text} text-center font-semibold`}>{title}</Text>
     </TouchableOpacity>
   );
 }

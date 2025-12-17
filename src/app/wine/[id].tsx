@@ -404,7 +404,7 @@ export default function WineDetailPage() {
               disabled={saving || !userId}
             >
               <Text className="text-white font-bold text-base">
-                {saving ? 'Guardando...' : 'Registrar experiencia'}
+                {saving ? 'Guardando...' : 'Registrar calificación'}
               </Text>
             </TouchableOpacity>
           </View>

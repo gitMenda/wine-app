@@ -2,10 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from "expo-linear-gradient";
+import { cssInterop } from "nativewind";
 import WineImage from "@/components/WineImage";
 import { favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
+
+cssInterop(LinearGradient, {
+  className: "style",
+});
 
 interface Wine {
   wineId: number;
@@ -136,35 +142,18 @@ const RecommendationItem: React.FC<RecommendationItemProps> = ({
   const compatibilityInfo = getCompatibilityInfo(item.score);
 
   return (
-    <View style={styles.card}>
-      <View className="flex-row items-start">
-        <WineImage name={item.wineName} size={48} rounded className="mr-3" />
-
-        <View className="flex-1 flex-row justify-between items-start">
-          <View className="flex-1 mr-2">
-            <Text style={styles.wineTitle} numberOfLines={2}>
-              {item.wineName}
-            </Text>
-            {item.winery && (
-              <Text style={styles.wineryText} numberOfLines={1}>
-                {item.winery}
-              </Text>
-            )}
-            {item.region && (
-              <Text style={styles.regionText} numberOfLines={1}>
-                {item.region}{item.country ? `, ${item.country}` : ''}
-              </Text>
-            )}
-
-            {compatibilityInfo && (
-              <View className="flex-row items-center mt-1">
-                <Text style={[styles.compatibilityText, { color: compatibilityInfo.color }]}>
-                  Compatibilidad: {compatibilityInfo.label} ({compatibilityInfo.percentage}%)
-                </Text>
-              </View>
-            )}
-          </View>
-
+    <View style={styles.cardContainer}>
+      <LinearGradient
+        colors={['#0D0D0D', '#0E0E0E']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.card}
+      >
+        <View className="flex-row items-center mb-3">
+          <WineImage name={item.wineName} size={36} rounded className="mr-3" />
+          <Text style={styles.wineTitle} numberOfLines={2} className="flex-1">
+            {item.wineName}
+          </Text>
           <TouchableOpacity
             onPress={() => onToggleFavorite(item)}
             className="p-1 ml-2"
@@ -176,7 +165,25 @@ const RecommendationItem: React.FC<RecommendationItemProps> = ({
             />
           </TouchableOpacity>
         </View>
-      </View>
+
+        {item.winery && (
+          <Text style={styles.wineryText} numberOfLines={1} className="mb-1">
+            {item.winery}
+          </Text>
+        )}
+        {item.region && (
+          <Text style={styles.regionText} numberOfLines={1} className="mb-2">
+            {item.region}{item.country ? `, ${item.country}` : ''}
+          </Text>
+        )}
+
+        {compatibilityInfo && (
+          <View className="flex-row items-center mb-2">
+            <Text style={[styles.compatibilityText, { color: compatibilityInfo.color }]}>
+              Compatibilidad: {compatibilityInfo.label} ({compatibilityInfo.percentage}%)
+            </Text>
+          </View>
+        )}
 
       {loadingRating ? (
         <View className="items-center py-3">
@@ -184,31 +191,34 @@ const RecommendationItem: React.FC<RecommendationItemProps> = ({
         </View>
       ) : (
         <View>
-          <View className="flex-row justify-center my-2">
-            {[1, 2, 3, 4, 5].map((i) => {
-              const ratingToShow = isEditing ? selectedRating : (selectedRating ?? originalRating);
-              const filled = ratingToShow !== null && i <= ratingToShow;
-              return (
-                <TouchableOpacity key={i} onPress={() => onToggleStar(i)} className="px-1">
-                  <Ionicons 
-                    name={filled ? 'star' : 'star-outline'} 
-                    size={24} 
-                    color={filled ? '#FACC15' : '#9CA3AF'} 
-                  />
-                </TouchableOpacity>
-              );
-            })}
+          <View className="flex-row justify-between items-center my-2">
+            <View className="flex-row">
+              {[1, 2, 3, 4, 5].map((i) => {
+                const ratingToShow = isEditing ? selectedRating : (selectedRating ?? originalRating);
+                const filled = ratingToShow !== null && i <= ratingToShow;
+                return (
+                  <TouchableOpacity key={i} onPress={() => onToggleStar(i)} className="px-1">
+                    <Ionicons 
+                      name={filled ? 'star' : 'star-outline'} 
+                      size={24} 
+                      color={filled ? '#FACC15' : '#9CA3AF'} 
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+            {originalRating !== null && !isEditing && selectedRating === originalRating && (
+              <TouchableOpacity 
+                style={styles.editButton}
+                onPress={onStartEditing}
+              >
+                <Text style={styles.editButtonText}>
+                  Editar
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
-          {originalRating !== null && !isEditing && selectedRating === originalRating ? (
-            <TouchableOpacity 
-              style={styles.secondaryAction}
-              onPress={onStartEditing}
-            >
-              <Text style={styles.secondaryActionText}>
-                Editar calificación
-              </Text>
-            </TouchableOpacity>
-          ) : (isEditing || (selectedRating !== null && originalRating === null) || (selectedRating !== null && selectedRating !== originalRating)) && (
+          {(isEditing || (selectedRating !== null && originalRating === null) || (selectedRating !== null && selectedRating !== originalRating)) && (
             <View className="mt-2">
               <TextInput
                 style={styles.reviewInput}
@@ -229,7 +239,7 @@ const RecommendationItem: React.FC<RecommendationItemProps> = ({
                   <ActivityIndicator size="small" color="#F5F0E6" />
                 ) : (
                   <Text style={styles.primaryActionText}>
-                    {originalRating !== null ? 'Actualizar experiencia' : 'Registrar experiencia'}
+                    {originalRating !== null ? 'Actualizar calificación' : 'Registrar calificación'}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -237,19 +247,22 @@ const RecommendationItem: React.FC<RecommendationItemProps> = ({
           )}
         </View>
       )}
+      </LinearGradient>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#1E191B',
-    borderWidth: 1,
-    borderColor: '#382E32',
-    padding: 16,
+  cardContainer: {
     marginHorizontal: 16,
     marginBottom: 12,
-    borderRadius: 8,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#2A2A2A',
+  },
+  card: {
+    padding: 16,
   },
   wineTitle: {
     color: '#FFFFFF',
@@ -299,15 +312,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
+  editButton: {
+    backgroundColor: 'rgba(42, 42, 42, 0.3)',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  editButtonText: {
+    color: '#F5F0E6',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   reviewInput: {
     marginBottom: 8,
     padding: 10,
     minHeight: 60,
     borderRadius: 8,
-    backgroundColor: '#2A1F23',
+    backgroundColor: '#0F0105',
     color: '#F5F0E6',
     borderWidth: 1,
-    borderColor: '#382E32',
+    borderColor: '#1F1F1F',
     fontSize: 14,
   },
 });

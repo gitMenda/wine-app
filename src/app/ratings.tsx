@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, FlatList, TouchableOpacity, ActivityIndicator, Image, Alert } from 'react-native';
 import { router } from 'expo-router';
+import { LinearGradient } from "expo-linear-gradient";
+import { cssInterop } from "nativewind";
 import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
 import { toggleFavoriteApi } from '@/lib/favorites';
@@ -8,6 +10,10 @@ import { Ionicons } from '@expo/vector-icons';
 import WineImage from '@/components/WineImage';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft } from "lucide-react-native";
+
+cssInterop(LinearGradient, {
+  className: "style",
+});
 
 interface Wine {
     wineId: number;
@@ -172,71 +178,89 @@ export default function MisVinosPage() {
     const renderFavorite = ({ item }: { item: Wine }) => (
         <View className="mr-3 w-64">
             <TouchableOpacity
-                className="bg-[#1E191B] border-[#382E32] p-4 rounded-lg border flex-row items-start"
+                style={{ borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#2A2A2A' }}
                 onPress={() => router.push(`/wine/${item.wineId}`)}
             >
-                <WineImage name={item.wineName} uri={item.imageUrl} size={48} rounded className="mr-3" />
-                <View className="flex-1 flex-row justify-between items-start">
-                    <View className="flex-1 mr-2">
-                        <Text className="text-white font-semibold mb-1" numberOfLines={2}>{item.wineName}</Text>
-                        {!!item.winery && <Text className="text-gray-300 text-sm" numberOfLines={1}>{item.winery}</Text>}
-                        <View className="flex-row mt-1">
-                            {!!item.country && item.region && <Text className="text-gray-400 text-sm" numberOfLines={1}>{item.region + ', ' + item.country}</Text>}
+            <LinearGradient
+              colors={['#0D0D0D', '#0E0E0E']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{ padding: 16 }}
+            >
+                    <View className="flex-row items-start">
+                        <WineImage name={item.wineName} uri={item.imageUrl} size={48} rounded className="mr-3" />
+                        <View className="flex-1 flex-row justify-between items-start">
+                            <View className="flex-1 mr-2">
+                                <Text className="text-white font-semibold mb-1" numberOfLines={2}>{item.wineName}</Text>
+                                {!!item.winery && <Text className="text-gray-300 text-sm" numberOfLines={1}>{item.winery}</Text>}
+                                <View className="flex-row mt-1">
+                                    {!!item.country && item.region && <Text className="text-gray-400 text-sm" numberOfLines={1}>{item.region + ', ' + item.country}</Text>}
+                                </View>
+                            </View>
+                            <TouchableOpacity
+                                onPress={() => toggleFavorite(item.wineId, true, item.wineName)}
+                                className="p-1 ml-2"
+                            >
+                                <Ionicons
+                                    name={togglingFavorites.has(item.wineId) ? "heart-outline" : "heart"}
+                                    size={24}
+                                    color={togglingFavorites.has(item.wineId) ? "#6b7280" : "#d60f0f"}
+                                />
+                            </TouchableOpacity>
                         </View>
                     </View>
-                    <TouchableOpacity
-                        onPress={() => toggleFavorite(item.wineId, true, item.wineName)}
-                        className="p-1 ml-2"
-                    >
-                        <Ionicons
-                            name={togglingFavorites.has(item.wineId) ? "heart-outline" : "heart"}
-                            size={24}
-                            color={togglingFavorites.has(item.wineId) ? "#6b7280" : "#d60f0f"}
-                        />
-                    </TouchableOpacity>
-                </View>
+                </LinearGradient>
             </TouchableOpacity>
         </View>
     );
 
     const renderRating = ({ item }: { item: RatingItem }) => (
         <TouchableOpacity
-            className="bg-[#1E191B] border-[#382E32] p-4 mb-3 rounded-lg border flex-row items-start"
+            style={{ marginBottom: 12, borderRadius: 12, overflow: 'hidden', borderWidth: 1, borderColor: '#2A2A2A' }}
             onPress={() => router.push(`/wine/${item.wineId}`)}
         >
-            <WineImage name={item.wineName} uri={item.imageUrl} size={48} rounded className="mr-3" />
-            <View className="flex-1 flex-row justify-between items-start">
-                <View className="flex-1 mr-2">
-                    <View className="flex-row justify-between items-start mb-1">
-                        <Text className="text-white font-semibold flex-1 mr-2" numberOfLines={2}>{item.wineName}</Text>
-                        <View className="flex-row items-center">
-                            {item.rating == null ? (
-                                <Text className="text-gray-400 text-sm">Sin calificación</Text>
-                            ) : (
-                                <Text className="text-yellow-400 font-semibold">{item.rating.toFixed(1)}★</Text>
-                            )}
+            <LinearGradient
+              colors={['#0D0D0D', '#0E0E0E']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={{ padding: 16 }}
+            >
+                <View className="flex-row items-start">
+                    <WineImage name={item.wineName} uri={item.imageUrl} size={48} rounded className="mr-3" />
+                    <View className="flex-1 flex-row justify-between items-start">
+                        <View className="flex-1 mr-2">
+                            <View className="flex-row justify-between items-start mb-1">
+                                <Text className="text-white font-semibold flex-1 mr-2" numberOfLines={2}>{item.wineName}</Text>
+                                <View className="flex-row items-center">
+                                    {item.rating == null ? (
+                                        <Text className="text-gray-400 text-sm">Sin calificación</Text>
+                                    ) : (
+                                        <Text className="text-yellow-400 font-semibold">{item.rating.toFixed(1)}★</Text>
+                                    )}
+                                </View>
+                            </View>
+                            {!!item.winery && <Text className="text-gray-300 text-sm" numberOfLines={1}>{item.winery}</Text>}
+                            <View>
+                                {(item.country && item.region) ? (
+                                    <Text className="text-gray-300 text-sm" numberOfLines={2}>{item.region + ', ' + item.country}</Text>
+                                ) : (
+                                    <Text className="text-gray-500 text-sm">Ubicación desconocida</Text>
+                                )}
+                            </View>
                         </View>
-                    </View>
-                    {!!item.winery && <Text className="text-gray-300 text-sm" numberOfLines={1}>{item.winery}</Text>}
-                    <View>
-                        {(item.country && item.region) ? (
-                            <Text className="text-gray-300 text-sm" numberOfLines={2}>{item.region + ', ' + item.country}</Text>
-                        ) : (
-                            <Text className="text-gray-500 text-sm">Ubicación desconocida</Text>
-                        )}
+                        <TouchableOpacity
+                            onPress={() => toggleFavorite(item.wineId, item.isFavorite || false, item.wineName)}
+                            className="p-1 ml-2"
+                        >
+                            <Ionicons
+                                name={togglingFavorites.has(item.wineId) ? "heart" : (item.isFavorite ? "heart" : "heart-outline")}
+                                size={24}
+                                color={togglingFavorites.has(item.wineId) ? "#d60f0f" : (item.isFavorite ? "#d60f0f" : "#6b7280")}
+                            />
+                        </TouchableOpacity>
                     </View>
                 </View>
-                <TouchableOpacity
-                    onPress={() => toggleFavorite(item.wineId, item.isFavorite || false, item.wineName)}
-                    className="p-1 ml-2"
-                >
-                    <Ionicons
-                        name={togglingFavorites.has(item.wineId) ? "heart" : (item.isFavorite ? "heart" : "heart-outline")}
-                        size={24}
-                        color={togglingFavorites.has(item.wineId) ? "#d60f0f" : (item.isFavorite ? "#d60f0f" : "#6b7280")}
-                    />
-                </TouchableOpacity>
-            </View>
+            </LinearGradient>
         </TouchableOpacity>
     );
 
