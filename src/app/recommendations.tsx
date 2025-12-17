@@ -9,6 +9,13 @@ import FilterModal, { WineFilters } from '@/components/FilterModal';
 import { useAuth } from '@/hooks/useAuth';
 import RecommendationItem from '@/components/RecommendationItem';
 
+let hasDislikedWhiteWine = false;
+
+export const setWhiteWineDislike = (value: boolean) => {
+  hasDislikedWhiteWine = value;
+  console.log('White wine dislike set to:', value);
+};
+
 interface Wine {
   wineId: number;
   wineName: string;
@@ -172,11 +179,19 @@ export default function RecommendationsPage() {
         
         // Asignar score aleatorio según tipo
         let randomScore: number;
-        if (wineType.toLowerCase() === 'white') {
-          // Blancos: 80-99
+        if (wineType.toLowerCase() === 'red') {
+          // Tintos: 80-99
           randomScore = Math.floor(Math.random() * 20) + 80;
+        }else if (wineType.toLowerCase() === 'white') {
+          // Si el usuario no gusta de blancos, asignar score bajo
+          if (hasDislikedWhiteWine) {
+            randomScore = Math.floor(Math.random() * 20) + 40; // 40-59
+          } else {
+            // Blancos: 70-89
+            randomScore = Math.floor(Math.random() * 20) + 60;
+          }
         } else {
-          // Tintos y otros: 60-79
+          // Blancos y otros: 60-79
           randomScore = Math.floor(Math.random() * 20) + 60;
         }
 

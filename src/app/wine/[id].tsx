@@ -22,6 +22,9 @@ import {
 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { cssInterop } from "nativewind";
+import { setWhiteWineDislike } from '../recommendations';
+import { setWhiteWineDislikeSearch } from '../search';
+
 
 // Enable className support for LinearGradient
 cssInterop(LinearGradient, {
@@ -124,6 +127,13 @@ export default function WineDetailPage() {
       Alert.alert('Error', 'Necesitas iniciar sesión para guardar calificaciones.');
       return;
     }
+
+    if (wine?.type?.toLowerCase() === 'white' && selectedRating !== null && selectedRating <= 2) {
+      setWhiteWineDislike(true);
+      setWhiteWineDislikeSearch(true);
+      console.log('Usuario dio dislike a vino blanco, scores ajustados');
+    }
+
     try {
       setSaving(true);
       await apiClient.post(`/users/${userId}/wines/status`, {

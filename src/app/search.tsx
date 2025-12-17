@@ -34,6 +34,15 @@ interface Wine {
   score?: number;
 }
 
+// Variable global simple - AGREGÁ ESTO AL INICIO después de los imports
+let hasDislikedWhiteWine = false;
+
+// Función para setear desde ratings - AGREGÁ ESTO
+export const setWhiteWineDislikeSearch = (value: boolean) => {
+  hasDislikedWhiteWine = value;
+  console.log('[SEARCH] White wine dislike set to:', value);
+};
+
 export default function SearchPage() {
   // Use context for persistent state
   const {
@@ -187,10 +196,29 @@ export default function SearchPage() {
 
       // Procesa los resultados
       const normalized: Wine[] = winesArray.map((w: any, index: number) => {
+        const wineType = w.type || w.wine_type || '';
+        
+        // Asignar score aleatorio según tipo (igual que recommendations)
+        let randomScore: number;
+        if (wineType.toLowerCase() === 'red') {
+          // Tintos: 80-99
+          randomScore = Math.floor(Math.random() * 20) + 80;
+        } else if (wineType.toLowerCase() === 'white') {
+          // Blancos: 60-79 normal, 40-59 si dio dislike
+          if (hasDislikedWhiteWine) {
+            randomScore = Math.floor(Math.random() * 20) + 40; // 40-59
+          } else {
+            randomScore = Math.floor(Math.random() * 20) + 60; // 60-79
+          }
+        } else {
+          // Otros: 60-79
+          randomScore = Math.floor(Math.random() * 20) + 60;
+        }
+
         const wine = {
           wineId: w.wineId ?? w.id ?? w.wine_id,
           wineName: w.wineName ?? w.name ?? w.wine_name,
-          type: w.type,
+          type: wineType,
           elaborate: w.elaborate,
           grapes: w.grapes,
           harmonize: w.harmonize,
@@ -201,19 +229,12 @@ export default function SearchPage() {
           region: w.region,
           winery: w.winery,
           vintages: w.vintages,
-          // Por defecto, asumir no favorito. Luego lo confirmamos con el endpoint de status si hay sesión.
           isFavorite: false,
-          // Incluye el score si está presente en la respuesta
-          score: w.score ?? undefined,
+          score: randomScore, // Usar el score hardcodeado
         };
 
-        // DEBUG: Log score mapping for ALL wines to see if any have issues
-        console.log(`=== SCORE MAPPING DEBUG (Wine ${index + 1}) ===`);
-        console.log(`Wine name: ${wine.wineName}`);
-        console.log(`Raw score: ${w.score} (type: ${typeof w.score})`);
-        console.log(`Normalized score: ${wine.score} (type: ${typeof wine.score})`);
-        console.log(`Score undefined?: ${wine.score === undefined}`);
-        console.log(`Score null?: ${wine.score === null}`);
+        // DEBUG: Log score mapping
+        console.log(`[SEARCH] Wine ${index + 1}: ${wine.wineName} (${wine.type}) - Score: ${randomScore}`);
 
         return wine;
       });
