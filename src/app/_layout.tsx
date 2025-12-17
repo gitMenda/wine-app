@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { OnboardingProvider } from "@/hooks/useOnboarding";
+import { SearchStateProvider } from "@/hooks/useSearchState";
 import { Text, ActivityIndicator, View } from "react-native";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
 import "../global.css";
@@ -102,11 +103,13 @@ export default function Layout() {
     <SafeAreaProvider>
       <AuthProvider>
         <OnboardingProvider>
-          <AuthGuard>
-            <SafeAreaWrapper>
-              <Slot />
-            </SafeAreaWrapper>
-          </AuthGuard>
+          <SearchStateProvider>
+            <AuthGuard>
+              <SafeAreaWrapper>
+                <Slot />
+              </SafeAreaWrapper>
+            </AuthGuard>
+          </SearchStateProvider>
         </OnboardingProvider>
       </AuthProvider>
     </SafeAreaProvider>

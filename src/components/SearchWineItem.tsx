@@ -35,34 +35,44 @@ const SearchWineItem: React.FC<SearchWineItemProps> = ({
   onToggleFavorite,
   togglingFavorites,
 }) => {
-  // DEBUG: Log item data
-  console.log(`SearchWineItem for ${item.wineName}:`, {
-    wineId: item.wineId,
-    score: item.score,
-    scoreType: typeof item.score,
-  });
+  // DEBUG: Log item data with more details
+  console.log(`\n=== SearchWineItem Render: ${item.wineName} ===`);
+  console.log(`  WineId: ${item.wineId}`);
+  console.log(`  Score: ${item.score} (type: ${typeof item.score})`);
+  console.log(`  Score is undefined: ${item.score === undefined}`);
+  console.log(`  Score is null: ${item.score === null}`);
+  console.log(`  Score is valid number: ${typeof item.score === 'number' && !isNaN(item.score)}`);
+  console.log(`  Score in valid range (0-100): ${item.score !== undefined && item.score !== null && item.score >= 0 && item.score <= 100}`);
 
   // Calculate compatibility percentage from score (0-100 scale from backend)
   const getCompatibilityInfo = (score?: number) => {
+    console.log(`  [getCompatibilityInfo] Input score: ${score}`);
+
     if (score === undefined || score === null || score < 0 || score > 100) {
-      console.log(`No compatibility info for ${item.wineName}. Score:`, score);
+      console.log(`  [getCompatibilityInfo] No compatibility info for ${item.wineName}. Score:`, score);
       return null;
     }
 
     const percentage = Math.round(score);
+    console.log(`  [getCompatibilityInfo] Rounded percentage: ${percentage}`);
 
+    let result: { percentage: number; label: string; color: string };
     if (percentage >= 80) {
-      return { percentage, label: 'Muy alta', color: '#22c55e' };
+      result = { percentage, label: 'Muy alta', color: '#22c55e' };
     } else if (percentage >= 60) {
-      return { percentage, label: 'Alta', color: '#3b82f6' };
+      result = { percentage, label: 'Alta', color: '#3b82f6' };
     } else if (percentage >= 40) {
-      return { percentage, label: 'Media', color: '#f59e0b' };
+      result = { percentage, label: 'Media', color: '#f59e0b' };
     } else {
-      return { percentage, label: 'Baja', color: '#ef4444' };
+      result = { percentage, label: 'Baja', color: '#ef4444' };
     }
+
+    console.log(`  [getCompatibilityInfo] Result:`, result);
+    return result;
   };
 
   const compatibilityInfo = getCompatibilityInfo(item.score);
+  console.log(`  Final compatibilityInfo:`, compatibilityInfo);
 
   return (
     <TouchableOpacity

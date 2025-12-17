@@ -166,24 +166,62 @@ export default function RecommendationsPage() {
       if (filters.region) params.append('region', filters.region);
 
       const data = await apiClient.get(`/users/recommendations?${params.toString()}`);
+
+      // DEBUG: Log raw API response
+      console.log('=== RECOMMENDATIONS API RESPONSE ===');
+      console.log('Full response:', JSON.stringify(data, null, 2));
+      console.log('userId:', userId);
+      console.log('Query params:', params.toString());
+
       const recs = (data?.recommendations ?? []) as any[];
-      const normalized: Wine[] = recs.map((w: any) => ({
-        wineId: w.wineId ?? w.id ?? w.wine_id,
-        wineName: w.wineName ?? w.name ?? w.wine_name,
-        type: w.type,
-        elaborate: w.elaborate,
-        grapes: w.grapes,
-        harmonize: w.harmonize,
-        abv: w.abv,
-        body: w.body,
-        acidity: w.acidity,
-        country: w.country,
-        region: w.region,
-        winery: w.winery,
-        vintages: w.vintages,
-        isFavorite: w.isFavorite ?? false,
-        score: typeof w.score === 'number' ? Math.max(0, Math.min(1, w.score)) : undefined,
-      }));
+
+      // DEBUG: Log all recommendation scores from backend
+      console.log('=== RAW RECOMMENDATION SCORES FROM BACKEND ===');
+      console.log(`Total recommendations: ${recs.length}`);
+      recs.forEach((w: any, index: number) => {
+        console.log(`\nRecommendation ${index + 1}: ${w.wineName || w.name || w.wine_name}`);
+        console.log(`  Raw score from backend: ${w.score} (type: ${typeof w.score})`);
+        console.log(`  WineId: ${w.wineId || w.id || w.wine_id}`);
+      });
+
+      const normalized: Wine[] = recs.map((w: any, index: number) => {
+        const rawScore = w.score;
+        // Backend sends scores in 0-100 range, so just pass it through (no clamping to 0-1!)
+        const normalizedScore = typeof w.score === 'number' ? w.score : undefined;
+
+        // DEBUG: Log score transformation for each wine
+        console.log(`\n=== SCORE TRANSFORMATION (Wine ${index + 1}) ===`);
+        console.log(`Wine: ${w.wineName || w.name || w.wine_name}`);
+        console.log(`Raw backend score: ${rawScore}`);
+        console.log(`Normalized score (0-100): ${normalizedScore}`);
+        console.log(`Score type: ${typeof normalizedScore}`);
+
+        return {
+          wineId: w.wineId ?? w.id ?? w.wine_id,
+          wineName: w.wineName ?? w.name ?? w.wine_name,
+          type: w.type,
+          elaborate: w.elaborate,
+          grapes: w.grapes,
+          harmonize: w.harmonize,
+          abv: w.abv,
+          body: w.body,
+          acidity: w.acidity,
+          country: w.country,
+          region: w.region,
+          winery: w.winery,
+          vintages: w.vintages,
+          isFavorite: w.isFavorite ?? false,
+          score: normalizedScore,
+        };
+      });
+
+      // DEBUG: Log final normalized results
+      console.log('\n=== NORMALIZED RECOMMENDATIONS ===');
+      console.log(`Total: ${normalized.length}`);
+      normalized.forEach((wine, index) => {
+        console.log(`${index + 1}. ${wine.wineName}: score = ${wine.score}`);
+      });
+
       setResults(normalized);
     } catch (e: any) {
       console.error('Error fetching recommendations:', e);
@@ -271,13 +309,10 @@ export default function RecommendationsPage() {
     }
   };
 
-  const renderItem = ({ item, index }: { item: Wine; index: number }) => {
-    const isHeroCard = index === 0;
-    
+  const renderItem = ({ item }: { item: Wine }) => {
     return (
       <RecommendationItem
         item={item}
-        isHeroCard={isHeroCard}
         onToggleFavorite={onToggleFavorite}
         togglingFavorites={togglingFavorites}
       />

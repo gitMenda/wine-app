@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { apiClient } from '@/lib/api';
 import { Search, Filter, X, ArrowLeft } from 'lucide-react-native';
 import { toggleFavoriteApi } from '@/lib/favorites';
 import SearchWineItem from '@/components/SearchWineItem';
 import FilterModal, { WineFilters } from '@/components/FilterModal';
 import { useAuth } from '@/hooks/useAuth';
+import { useSearchState } from '@/hooks/useSearchState';
 import { LinearGradient } from "expo-linear-gradient";
 import { cssInterop } from "nativewind";
 
@@ -34,20 +35,71 @@ interface Wine {
 }
 
 export default function SearchPage() {
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Wine[]>([]);
+  // Use context for persistent state
+  const {
+    searchState,
+    setQuery: setQueryContext,
+    setResults: setResultsContext,
+    setHasSearched: setHasSearchedContext,
+    setActiveFilters: setActiveFiltersContext,
+    setCurrentPage: setCurrentPageContext,
+    setTotalPages: setTotalPagesContext,
+    setHasNext: setHasNextContext,
+    setHasPrevious: setHasPreviousContext,
+    setTotalResults: setTotalResultsContext,
+    setScrollPosition,
+    updateWineInResults,
+    clearSearch,
+  } = useSearchState();
+
+  // Destructure from context
+  const {
+    query,
+    results,
+    hasSearched,
+    activeFilters,
+    currentPage,
+    totalPages,
+    hasNext,
+    hasPrevious,
+    totalResults,
+    scrollPosition,
+  } = searchState;
+
+  // Local state (not persisted)
   const [loading, setLoading] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
   const [togglingFavorites, setTogglingFavorites] = useState<Set<number>>(new Set());
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
-  const [activeFilters, setActiveFilters] = useState<WineFilters>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [hasNext, setHasNext] = useState(false);
-  const [hasPrevious, setHasPrevious] = useState(false);
-  const [totalResults, setTotalResults] = useState(0);
+
   const { user } = useAuth();
   const userId = user?.id || user?.sub;
+
+  // Ref to store scroll position and preserve it when navigating back
+  const flatListRef = useRef<FlatList>(null);
+
+  // Track when we're coming back to the screen to restore scroll position
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('=== SEARCH PAGE FOCUSED ===');
+      console.log('Results count:', results.length);
+      console.log('Query:', query);
+      console.log('Saved scroll position:', scrollPosition);
+
+      // When screen comes into focus (user navigates back), restore scroll position
+      if (scrollPosition > 0 && flatListRef.current && results.length > 0) {
+        console.log('Attempting to restore scroll position:', scrollPosition);
+        // Use a small timeout to ensure the list is rendered
+        setTimeout(() => {
+          flatListRef.current?.scrollToOffset({
+            offset: scrollPosition,
+            animated: false,
+          });
+        }, 100);
+      }
+
+      return undefined;
+    }, [scrollPosition, results.length, query])
+  );
 
   const handleSearch = async (specificFilters?: WineFilters, page: number = 1) => {
     // Usa los filtros específicos proporcionados o los del estado
@@ -57,7 +109,7 @@ export default function SearchPage() {
     if (!query.trim() && !hasActiveFilters(filtersToUse)) return;
 
     setLoading(true);
-    setHasSearched(true);
+    setHasSearchedContext(true);
     try {
       const params = new URLSearchParams();
 
@@ -89,6 +141,7 @@ export default function SearchPage() {
       console.log('=== SEARCH API RESPONSE ===');
       console.log('Full response:', JSON.stringify(data, null, 2));
       console.log('userId sent:', userId);
+      console.log('Query params:', params.toString());
 
       // Extrae el array de items y metadata de paginación
       const winesArray = (data as any)?.items || data;
@@ -98,25 +151,33 @@ export default function SearchPage() {
       console.log('Wines array length:', winesArray?.length);
       if (winesArray && winesArray.length > 0) {
         console.log('First wine sample:', JSON.stringify(winesArray[0], null, 2));
+
+        // Log ALL wines with scores to see the distribution
+        console.log('=== ALL WINES SCORES ===');
+        winesArray.forEach((wine: any, index: number) => {
+          console.log(`Wine ${index + 1}: ${wine.wineName || wine.name || wine.wine_name}`);
+          console.log(`  - Score: ${wine.score} (type: ${typeof wine.score})`);
+          console.log(`  - WineId: ${wine.wineId || wine.id || wine.wine_id}`);
+        });
       }
 
       // Actualiza el estado de paginación
-      setCurrentPage(paginationData?.page || 1);
-      setTotalPages(paginationData?.totalPages || 1);
-      setHasNext(paginationData?.hasNext || false);
-      setHasPrevious(paginationData?.hasPrevious || false);
-      setTotalResults(paginationData?.total || 0);
+      setCurrentPageContext(paginationData?.page || 1);
+      setTotalPagesContext(paginationData?.totalPages || 1);
+      setHasNextContext(paginationData?.hasNext || false);
+      setHasPreviousContext(paginationData?.hasPrevious || false);
+      setTotalResultsContext(paginationData?.total || 0);
 
       // Verifica que tengamos un array de vinos
       if (!winesArray || !Array.isArray(winesArray)) {
         console.error('API returned invalid data structure:', data);
-        setResults([]);
+        setResultsContext([]);
         setLoading(false);
         return;
       }
 
       // Procesa los resultados
-      const normalized: Wine[] = winesArray.map((w: any) => {
+      const normalized: Wine[] = winesArray.map((w: any, index: number) => {
         const wine = {
           wineId: w.wineId ?? w.id ?? w.wine_id,
           wineName: w.wineName ?? w.name ?? w.wine_name,
@@ -137,13 +198,13 @@ export default function SearchPage() {
           score: w.score ?? undefined,
         };
 
-        // DEBUG: Log score info for first wine
-        if (w === winesArray[0]) {
-          console.log('=== SCORE MAPPING DEBUG ===');
-          console.log('Raw wine data score:', w.score);
-          console.log('Normalized wine score:', wine.score);
-          console.log('Score type:', typeof w.score);
-        }
+        // DEBUG: Log score mapping for ALL wines to see if any have issues
+        console.log(`=== SCORE MAPPING DEBUG (Wine ${index + 1}) ===`);
+        console.log(`Wine name: ${wine.wineName}`);
+        console.log(`Raw score: ${w.score} (type: ${typeof w.score})`);
+        console.log(`Normalized score: ${wine.score} (type: ${typeof wine.score})`);
+        console.log(`Score undefined?: ${wine.score === undefined}`);
+        console.log(`Score null?: ${wine.score === null}`);
 
         return wine;
       });
@@ -153,7 +214,30 @@ export default function SearchPage() {
       console.log('Total normalized wines:', normalized.length);
       console.log('First normalized wine:', JSON.stringify(normalized[0], null, 2));
 
-      setResults(normalized);
+      // Log score statistics
+      const winesWithScores = normalized.filter(w => w.score !== undefined && w.score !== null);
+      const winesWithoutScores = normalized.filter(w => w.score === undefined || w.score === null);
+      console.log(`Wines WITH scores: ${winesWithScores.length}`);
+      console.log(`Wines WITHOUT scores: ${winesWithoutScores.length}`);
+
+      if (winesWithScores.length > 0) {
+        const scores = winesWithScores.map(w => w.score!);
+        const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+        const maxScore = Math.max(...scores);
+        const minScore = Math.min(...scores);
+        console.log(`Score range: ${minScore} - ${maxScore}`);
+        console.log(`Average score: ${avgScore.toFixed(2)}`);
+
+        // Log high-scoring wines (potential recommended wines)
+        const highScoring = winesWithScores.filter(w => w.score! >= 80);
+        console.log(`=== HIGH-SCORING WINES (>=80) ===`);
+        console.log(`Count: ${highScoring.length}`);
+        highScoring.forEach(w => {
+          console.log(`  - ${w.wineName}: ${w.score}%`);
+        });
+      }
+
+      setResultsContext(normalized);
 
       // Si hay usuario autenticado, consultar el estado de cada vino para obtener isFavorite real
       if (userId && normalized.length > 0) {
@@ -180,10 +264,33 @@ export default function SearchPage() {
           );
 
           // DEBUG: Log final results
-          console.log('=== FINAL RESULTS DEBUG ===');
+          console.log('=== FINAL RESULTS DEBUG (after favorite update) ===');
           console.log('First wine in final results:', JSON.stringify(updated[0], null, 2));
 
-          setResults(updated);
+          // Check if scores were preserved after favorite update
+          const scoresPreserved = updated.every((wine, idx) => wine.score === normalized[idx].score);
+          console.log(`Scores preserved after favorite update: ${scoresPreserved}`);
+
+          if (!scoresPreserved) {
+            console.warn('⚠️ SCORES WERE MODIFIED DURING FAVORITE UPDATE!');
+            updated.forEach((wine, idx) => {
+              if (wine.score !== normalized[idx].score) {
+                console.log(`  - ${wine.wineName}: ${normalized[idx].score} → ${wine.score}`);
+              }
+            });
+          }
+
+          // Final score statistics
+          const finalWinesWithScores = updated.filter(w => w.score !== undefined && w.score !== null);
+          console.log(`=== FINAL SCORE STATISTICS ===`);
+          console.log(`Wines with scores: ${finalWinesWithScores.length}/${updated.length}`);
+          if (finalWinesWithScores.length > 0) {
+            const finalScores = finalWinesWithScores.map(w => w.score!);
+            console.log(`Final score range: ${Math.min(...finalScores)} - ${Math.max(...finalScores)}`);
+            console.log(`Final average: ${(finalScores.reduce((a, b) => a + b, 0) / finalScores.length).toFixed(2)}`);
+          }
+
+          setResultsContext(updated);
         } catch (e) {
           // Ignorar errores globales de esta actualización para no romper la búsqueda
         }
@@ -191,7 +298,7 @@ export default function SearchPage() {
     } catch (error) {
       console.error('Error fetching wines:', error);
       Alert.alert('Error', 'No se pudieron cargar los resultados');
-      setResults([]);
+      setResultsContext([]);
     }
     setLoading(false);
   };
@@ -204,22 +311,22 @@ export default function SearchPage() {
 
   const handleApplyFilters = (filters: WineFilters) => {
     // Actualiza los filtros en el estado
-    setActiveFilters(filters);
+    setActiveFiltersContext(filters);
 
     // Actualiza el término de búsqueda si existe en los filtros
     if (filters.wine_name) {
-      setQuery(filters.wine_name);
+      setQueryContext(filters.wine_name);
     }
 
     // IMPORTANTE: Ejecuta una búsqueda inmediatamente con los nuevos filtros, volviendo a la página 1
-    setCurrentPage(1);
+    setCurrentPageContext(1);
     handleSearch(filters, 1);
   };
 
   const handleNextPage = () => {
     if (hasNext) {
       const nextPage = currentPage + 1;
-      setCurrentPage(nextPage);
+      setCurrentPageContext(nextPage);
       handleSearch(activeFilters, nextPage);
     }
   };
@@ -227,7 +334,7 @@ export default function SearchPage() {
   const handlePreviousPage = () => {
     if (hasPrevious) {
       const prevPage = currentPage - 1;
-      setCurrentPage(prevPage);
+      setCurrentPageContext(prevPage);
       handleSearch(activeFilters, prevPage);
     }
   };
@@ -240,12 +347,12 @@ export default function SearchPage() {
     }
     setTogglingFavorites(prev => new Set(prev).add(wine.wineId));
     const prevFav = !!wine.isFavorite;
-    setResults(prev => prev.map(w => w.wineId === wine.wineId ? { ...w, isFavorite: !prevFav } : w));
+    updateWineInResults(wine.wineId, { isFavorite: !prevFav });
     try {
       await toggleFavoriteApi(userId, wine.wineId, prevFav);
     } catch (e) {
       Alert.alert('Error', 'No se pudo actualizar el favorito. Intenta nuevamente.');
-      setResults(prev => prev.map(w => w.wineId === wine.wineId ? { ...w, isFavorite: prevFav } : w));
+      updateWineInResults(wine.wineId, { isFavorite: prevFav });
     } finally {
       setTogglingFavorites(prev => {
         const ns = new Set(prev);
@@ -277,8 +384,8 @@ export default function SearchPage() {
               <TouchableOpacity onPress={() => {
                 const newFilters = { ...activeFilters };
                 delete newFilters[key as keyof WineFilters];
-                setActiveFilters(newFilters);
-                setCurrentPage(1);
+                setActiveFiltersContext(newFilters);
+                setCurrentPageContext(1);
                 handleSearch(newFilters, 1);
               }}>
                 <X color="#F5F0E6" size={16} />
@@ -321,14 +428,14 @@ export default function SearchPage() {
                 placeholder="Buscar"
                 placeholderTextColor="#e6b3c4"
                 value={query}
-                onChangeText={setQuery}
+                onChangeText={setQueryContext}
                 onSubmitEditing={() => {
-                  setCurrentPage(1);
+                  setCurrentPageContext(1);
                   handleSearch(activeFilters, 1);
                 }}
               />
               {query.length > 0 && (
-                <TouchableOpacity onPress={() => setQuery('')} className="ml-2">
+                <TouchableOpacity onPress={() => setQueryContext('')} className="ml-2">
                   <X color="#CECCCD" size={18} />
                 </TouchableOpacity>
               )}
@@ -369,10 +476,16 @@ export default function SearchPage() {
       ) : results.length > 0 ? (
         <View className="flex-1">
           <FlatList
+            ref={flatListRef}
             data={results}
             keyExtractor={(item) => item.wineId.toString()}
             renderItem={renderItem}
             showsVerticalScrollIndicator={false}
+            onScroll={(event) => {
+              // Save scroll position as user scrolls to context
+              setScrollPosition(event.nativeEvent.contentOffset.y);
+            }}
+            scrollEventThrottle={16}
             ListFooterComponent={
               <View className="px-4 py-6">
                 {/* Pagination Info */}
@@ -435,18 +548,10 @@ export default function SearchPage() {
           <Text className="text-gray-400 text-base text-center mb-6">
             Probá con otros términos de búsqueda o ajustá los filtros para explorar más opciones
           </Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             className="rounded-3xl overflow-hidden border border-primary"
             onPress={() => {
-              setQuery('');
-              setActiveFilters({});
-              setResults([]);
-              setHasSearched(false);
-              setCurrentPage(1);
-              setTotalPages(1);
-              setHasNext(false);
-              setHasPrevious(false);
-              setTotalResults(0);
+              clearSearch();
             }}
           >
             <LinearGradient
