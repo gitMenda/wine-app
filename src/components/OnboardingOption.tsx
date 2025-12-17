@@ -1,5 +1,11 @@
 import React from 'react';
-import { TouchableOpacity, Text, View } from 'react-native';
+import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { cssInterop } from 'nativewind';
+
+cssInterop(LinearGradient, {
+  className: 'style',
+});
 
 interface OnboardingOptionProps {
   title: string;
@@ -8,43 +14,66 @@ interface OnboardingOptionProps {
   onPress: () => void;
 }
 
-export default function OnboardingOption({ 
-  title, 
-  description, 
-  isSelected, 
-  onPress 
+export default function OnboardingOption({
+  title,
+  description,
+  isSelected,
+  onPress
 }: OnboardingOptionProps) {
+  if (isSelected) {
+    return (
+      <TouchableOpacity
+        onPress={onPress}
+        className="mb-3 overflow-hidden"
+        style={styles.selectedContainer}
+      >
+        <LinearGradient
+          colors={['#300615', '#45081E']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          className="p-4"
+          style={{ borderRadius: 12 }}
+        >
+          <Text className="font-semibold text-base mb-1 text-white">
+            {title}
+          </Text>
+          {description && (
+            <Text className="text-sm text-gray-300">
+              {description}
+            </Text>
+          )}
+        </LinearGradient>
+      </TouchableOpacity>
+    );
+  }
+
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`
-        border rounded-lg p-4 mb-3 transition-all duration-200
-        ${isSelected 
-          ? 'border-green-500 bg-green-50' 
-          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
-        }
-      `}
+      className="rounded-xl p-4 mb-3"
+      style={styles.unselectedContainer}
     >
-      <Text className={`
-        font-semibold text-base mb-1
-        ${isSelected 
-          ? 'text-green-700' 
-          : 'text-black dark:text-white'
-        }
-      `}>
+      <Text className="font-semibold text-base mb-1 text-white">
         {title}
       </Text>
       {description && (
-        <Text className={`
-          text-sm
-          ${isSelected 
-            ? 'text-green-600' 
-            : 'text-gray-600 dark:text-gray-400'
-          }
-        `}>
+        <Text className="text-sm text-gray-300">
           {description}
         </Text>
       )}
     </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  selectedContainer: {
+    borderWidth: 1,
+    borderColor: '#6B1E3A',
+    borderRadius: 12,
+  },
+  unselectedContainer: {
+    backgroundColor: '#0D0D0D',
+    borderWidth: 1,
+    borderColor: '#2A2A2A',
+  },
+});

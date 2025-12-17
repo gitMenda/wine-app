@@ -9,7 +9,7 @@ export default function WelcomeScreen() {
       <View className="flex-1 justify-center px-8">
         <View className="items-center mb-12">
           <Text className="text-3xl font-bold text-burgundy-600 mb-4">
-            ¡Bienvenido a TuVino! 🍷
+            ¡Bienvenido a TuVino!
           </Text>
           <Text className="text-lg text-center text-gray-700 dark:text-gray-300 leading-relaxed">
               Queremos que tu experiencia con el vino sea única.

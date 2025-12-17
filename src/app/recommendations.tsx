@@ -5,11 +5,13 @@ import { LinearGradient } from "expo-linear-gradient";
 import { cssInterop } from "nativewind";
 import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
-import { Filter, X } from 'lucide-react-native';
+import { Filter, X, ArrowLeft } from 'lucide-react-native';
 import { toggleFavoriteApi } from '@/lib/favorites';
 import FilterModal, { WineFilters } from '@/components/FilterModal';
 import { useAuth } from '@/hooks/useAuth';
 import RecommendationItem from '@/components/RecommendationItem';
+import { translateWineType } from '@/lib/wineTypes';
+import Toast from '@/components/Toast';
 
 let hasDislikedWhiteWine = false;
 
@@ -65,13 +67,12 @@ const styles = StyleSheet.create({
     },
     header: {
         backgroundColor: 'transparent',
-        paddingTop: 60,
         paddingBottom: 24,
         paddingHorizontal: 24,
     },
     headerTitle: {
         color: '#CECCCD',
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
     },
     headerSubtitle: {
@@ -125,22 +126,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
     },
-    filterChip: {
-        backgroundColor: '#6B1E3A',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        borderRadius: 16,
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginRight: 8,
-        marginBottom: 8,
-    },
-    filterChipText: {
-        color: '#F5F0E6',
-        fontSize: 14,
-        fontWeight: '500',
-        marginRight: 4,
-    },
 });
 
 export default function RecommendationsPage() {
@@ -150,10 +135,15 @@ export default function RecommendationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [togglingFavorites, setTogglingFavorites] = useState<Set<number>>(new Set());
-  
+
   // Estados para filtros
   const [isFilterModalVisible, setIsFilterModalVisible] = useState(false);
   const [activeFilters, setActiveFilters] = useState<RecommendationFilters>({});
+
+  // Toast state
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
   const fetchRecommendations = async (filters: RecommendationFilters = {}) => {
     if (!userId) {
@@ -310,39 +300,60 @@ export default function RecommendationsPage() {
   const renderActiveFilters = () => {
     if (!hasActiveFilters()) return null;
 
+    const getDisplayValue = (key: string, value: any): string => {
+      if (key === 'wine_type') {
+        return translateWineType(value) || value;
+      }
+      return value;
+    };
+
     return (
-      <View className="flex-row flex-wrap mb-4">
+      <View className="flex-row flex-wrap mb-4" style={{ gap: 8 }}>
         {Object.entries(activeFilters).map(([key, value]) => {
           if (!value || value === '' || key === 'wine_name') return null;
           return (
-            <View key={key} style={styles.filterChip}>
-              <Text style={styles.filterChipText}>{value}</Text>
+            <View
+              key={key}
+              style={{
+                backgroundColor: 'rgba(42, 42, 42, 0.5)',
+                borderWidth: 1,
+                borderColor: '#2A2A2A',
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: '#D1D5DB', fontSize: 13, fontWeight: '500', marginRight: 6 }}>
+                {getDisplayValue(key, value)}
+              </Text>
               <TouchableOpacity onPress={() => {
                 const newFilters = { ...activeFilters };
                 delete newFilters[key as keyof RecommendationFilters];
                 setActiveFilters(newFilters);
                 fetchRecommendations(newFilters);
               }}>
-                <X color="#F5F0E6" size={16} />
+                <X color="#9CA3AF" size={14} />
               </TouchableOpacity>
             </View>
           );
         })}
-        <TouchableOpacity 
-          className="ml-2 px-3 py-1 bg-red-600 rounded-full"
-          onPress={clearFilters}
-        >
-          <Text className="text-white text-xs font-semibold">Limpiar todo</Text>
-        </TouchableOpacity>
       </View>
     );
   };
 
 
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage(message);
+    setToastType(type);
+    setToastVisible(true);
+  };
+
   const onToggleFavorite = async (wine: Wine) => {
     if (togglingFavorites.has(wine.wineId)) return;
     if (!userId) {
-      Alert.alert('Sesión requerida', 'Debes iniciar sesión para gestionar favoritos.');
+      showToast('Debes iniciar sesión para gestionar favoritos.', 'error');
       return;
     }
     setTogglingFavorites(prev => new Set(prev).add(wine.wineId));
@@ -350,9 +361,9 @@ export default function RecommendationsPage() {
     setResults(prev => prev.map(w => w.wineId === wine.wineId ? { ...w, isFavorite: !prevFav } : w));
     try {
       await toggleFavoriteApi(userId, wine.wineId, prevFav);
-      Alert.alert('', prevFav ? 'Eliminado de favoritos' : 'Guardado en tus experiencias');
+      showToast(prevFav ? 'Eliminado de favoritos' : 'Guardado en tus experiencias', 'success');
     } catch (e) {
-      Alert.alert('Error', 'No se pudo actualizar el favorito. Intenta nuevamente.');
+      showToast('No se pudo actualizar el favorito. Intenta nuevamente.', 'error');
       setResults(prev => prev.map(w => w.wineId === wine.wineId ? { ...w, isFavorite: prevFav } : w));
     } finally {
       setTogglingFavorites(prev => {
@@ -369,6 +380,7 @@ export default function RecommendationsPage() {
         item={item}
         onToggleFavorite={onToggleFavorite}
         togglingFavorites={togglingFavorites}
+        showToast={showToast}
       />
     );
   };
@@ -378,9 +390,16 @@ export default function RecommendationsPage() {
             <View className="flex-1" style={styles.container}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <Text style={styles.headerTitle}>Sugerencias</Text>
+                    <View className="flex-row justify-between items-center">
+                        <TouchableOpacity onPress={() => router.back()} className="mr-4">
+                            <ArrowLeft color="#CECCCD" size={24} />
+                        </TouchableOpacity>
+                        <View className="flex-1">
+                            <Text style={styles.headerTitle} numberOfLines={1}>Sugerencias</Text>
+                        </View>
+                    </View>
                 </View>
-                
+
                 {/* Loading State */}
                 <View style={styles.loadingContainer}>
                     <View className="items-center">
@@ -399,7 +418,14 @@ export default function RecommendationsPage() {
         <View className="flex-1 bg-background" style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Tus recomendaciones</Text>
+                <View className="flex-row justify-between items-center">
+                    <TouchableOpacity onPress={() => router.back()} className="mr-4">
+                        <ArrowLeft color="#CECCCD" size={24} />
+                    </TouchableOpacity>
+                    <View className="flex-1">
+                        <Text style={styles.headerTitle} numberOfLines={1}>Tus recomendaciones</Text>
+                    </View>
+                </View>
             </View>
             
             {/* Content */}
@@ -483,11 +509,19 @@ export default function RecommendationsPage() {
                 )}
             </View>
             
-            <FilterModal 
+            <FilterModal
               visible={isFilterModalVisible}
               onClose={() => setIsFilterModalVisible(false)}
               onApplyFilters={handleApplyFilters}
               initialFilters={activeFilters}
+            />
+
+            {/* Toast Notification */}
+            <Toast
+              message={toastMessage}
+              type={toastType}
+              visible={toastVisible}
+              onHide={() => setToastVisible(false)}
             />
         </View>
     );
