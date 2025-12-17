@@ -74,10 +74,11 @@ export default function SearchPage() {
   const { user } = useAuth();
   const userId = user?.id || user?.sub;
 
-  // Ref to store scroll position and preserve it when navigating back
+  // Ref to store scroll position locally (don't update context on every scroll to avoid re-renders)
   const flatListRef = useRef<FlatList>(null);
+  const currentScrollPositionRef = useRef(0);
 
-  // Track when we're coming back to the screen to restore scroll position
+  // Track when we're coming back to/leaving the screen
   useFocusEffect(
     React.useCallback(() => {
       console.log('=== SEARCH PAGE FOCUSED ===');
@@ -88,6 +89,8 @@ export default function SearchPage() {
       // When screen comes into focus (user navigates back), restore scroll position
       if (scrollPosition > 0 && flatListRef.current && results.length > 0) {
         console.log('Attempting to restore scroll position:', scrollPosition);
+        // Restore the local ref too
+        currentScrollPositionRef.current = scrollPosition;
         // Use a small timeout to ensure the list is rendered
         setTimeout(() => {
           flatListRef.current?.scrollToOffset({
@@ -97,8 +100,14 @@ export default function SearchPage() {
         }, 100);
       }
 
-      return undefined;
-    }, [scrollPosition, results.length, query])
+      // Cleanup function runs when screen loses focus
+      return () => {
+        console.log('=== SEARCH PAGE LOST FOCUS ===');
+        console.log('Saving scroll position to context:', currentScrollPositionRef.current);
+        // Save to context only when leaving the screen
+        setScrollPosition(currentScrollPositionRef.current);
+      };
+    }, [scrollPosition, results.length, query, setScrollPosition])
   );
 
   const handleSearch = async (specificFilters?: WineFilters, page: number = 1) => {
@@ -482,10 +491,10 @@ export default function SearchPage() {
             renderItem={renderItem}
             showsVerticalScrollIndicator={false}
             onScroll={(event) => {
-              // Save scroll position as user scrolls to context
-              setScrollPosition(event.nativeEvent.contentOffset.y);
+              // Save scroll position locally (not to context to avoid re-renders)
+              currentScrollPositionRef.current = event.nativeEvent.contentOffset.y;
             }}
-            scrollEventThrottle={16}
+            scrollEventThrottle={400}
             ListFooterComponent={
               <View className="px-4 py-6">
                 {/* Pagination Info */}

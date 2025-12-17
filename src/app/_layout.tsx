@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Stack, useRouter, useSegments } from "expo-router";
+import React, { useEffect } from "react";
+import { useRouter, useSegments } from "expo-router";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { OnboardingProvider } from "@/hooks/useOnboarding";
 import { SearchStateProvider } from "@/hooks/useSearchState";

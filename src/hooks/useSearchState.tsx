@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 
 interface Wine {
   wineId: number;
@@ -76,77 +76,91 @@ const initialState: SearchState = {
 export function SearchStateProvider({ children }: { children: ReactNode }) {
   const [searchState, setSearchState] = useState<SearchState>(initialState);
 
-  const setQuery = (query: string) => {
+  const setQuery = useCallback((query: string) => {
     setSearchState(prev => ({ ...prev, query }));
-  };
+  }, []);
 
-  const setResults = (results: Wine[]) => {
+  const setResults = useCallback((results: Wine[]) => {
     setSearchState(prev => ({ ...prev, results }));
-  };
+  }, []);
 
-  const setHasSearched = (hasSearched: boolean) => {
+  const setHasSearched = useCallback((hasSearched: boolean) => {
     setSearchState(prev => ({ ...prev, hasSearched }));
-  };
+  }, []);
 
-  const setActiveFilters = (activeFilters: WineFilters) => {
+  const setActiveFilters = useCallback((activeFilters: WineFilters) => {
     setSearchState(prev => ({ ...prev, activeFilters }));
-  };
+  }, []);
 
-  const setCurrentPage = (currentPage: number) => {
+  const setCurrentPage = useCallback((currentPage: number) => {
     setSearchState(prev => ({ ...prev, currentPage }));
-  };
+  }, []);
 
-  const setTotalPages = (totalPages: number) => {
+  const setTotalPages = useCallback((totalPages: number) => {
     setSearchState(prev => ({ ...prev, totalPages }));
-  };
+  }, []);
 
-  const setHasNext = (hasNext: boolean) => {
+  const setHasNext = useCallback((hasNext: boolean) => {
     setSearchState(prev => ({ ...prev, hasNext }));
-  };
+  }, []);
 
-  const setHasPrevious = (hasPrevious: boolean) => {
+  const setHasPrevious = useCallback((hasPrevious: boolean) => {
     setSearchState(prev => ({ ...prev, hasPrevious }));
-  };
+  }, []);
 
-  const setTotalResults = (totalResults: number) => {
+  const setTotalResults = useCallback((totalResults: number) => {
     setSearchState(prev => ({ ...prev, totalResults }));
-  };
+  }, []);
 
-  const setScrollPosition = (scrollPosition: number) => {
+  const setScrollPosition = useCallback((scrollPosition: number) => {
     setSearchState(prev => ({ ...prev, scrollPosition }));
-  };
+  }, []);
 
-  const updateWineInResults = (wineId: number, updates: Partial<Wine>) => {
+  const updateWineInResults = useCallback((wineId: number, updates: Partial<Wine>) => {
     setSearchState(prev => ({
       ...prev,
       results: prev.results.map(wine =>
         wine.wineId === wineId ? { ...wine, ...updates } : wine
       ),
     }));
-  };
+  }, []);
 
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
     setSearchState(initialState);
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    searchState,
+    setQuery,
+    setResults,
+    setHasSearched,
+    setActiveFilters,
+    setCurrentPage,
+    setTotalPages,
+    setHasNext,
+    setHasPrevious,
+    setTotalResults,
+    setScrollPosition,
+    updateWineInResults,
+    clearSearch,
+  }), [
+    searchState,
+    setQuery,
+    setResults,
+    setHasSearched,
+    setActiveFilters,
+    setCurrentPage,
+    setTotalPages,
+    setHasNext,
+    setHasPrevious,
+    setTotalResults,
+    setScrollPosition,
+    updateWineInResults,
+    clearSearch,
+  ]);
 
   return (
-    <SearchContext.Provider
-      value={{
-        searchState,
-        setQuery,
-        setResults,
-        setHasSearched,
-        setActiveFilters,
-        setCurrentPage,
-        setTotalPages,
-        setHasNext,
-        setHasPrevious,
-        setTotalResults,
-        setScrollPosition,
-        updateWineInResults,
-        clearSearch,
-      }}
-    >
+    <SearchContext.Provider value={value}>
       {children}
     </SearchContext.Provider>
   );
