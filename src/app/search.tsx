@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { apiClient } from '@/lib/api';
-import { Ionicons } from '@expo/vector-icons';
 import { Search, Filter, X, ArrowLeft } from 'lucide-react-native';
-import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
-import WineImage from "@/components/WineImage";
+import { toggleFavoriteApi } from '@/lib/favorites';
+import SearchWineItem from '@/components/SearchWineItem';
 import FilterModal, { WineFilters } from '@/components/FilterModal';
 import { useAuth } from '@/hooks/useAuth';
 import { LinearGradient } from "expo-linear-gradient";
@@ -31,6 +30,7 @@ interface Wine {
   vintages: string;
   id?: string;
   isFavorite?: boolean;
+  score?: number;
 }
 
 export default function SearchPage() {
@@ -74,15 +74,31 @@ export default function SearchPage() {
       if (filtersToUse.min_abv !== undefined) params.append('min_abv', filtersToUse.min_abv.toString());
       if (filtersToUse.max_abv !== undefined) params.append('max_abv', filtersToUse.max_abv.toString());
 
+      // Añade el user_id si está disponible para obtener scores
+      if (userId) {
+        params.append('user_id', userId);
+      }
+
       // Añade la página
       params.append('page', page.toString());
 
       // Llama al endpoint correcto con todos los parámetros
       const data = await apiClient.get(`/wines/search?${params.toString()}`);
 
+      // DEBUG: Log the raw API response
+      console.log('=== SEARCH API RESPONSE ===');
+      console.log('Full response:', JSON.stringify(data, null, 2));
+      console.log('userId sent:', userId);
+
       // Extrae el array de items y metadata de paginación
       const winesArray = (data as any)?.items || data;
       const paginationData = data as any;
+
+      // DEBUG: Log the wines array
+      console.log('Wines array length:', winesArray?.length);
+      if (winesArray && winesArray.length > 0) {
+        console.log('First wine sample:', JSON.stringify(winesArray[0], null, 2));
+      }
 
       // Actualiza el estado de paginación
       setCurrentPage(paginationData?.page || 1);
@@ -100,23 +116,43 @@ export default function SearchPage() {
       }
 
       // Procesa los resultados
-      const normalized: Wine[] = winesArray.map((w: any) => ({
-        wineId: w.wineId ?? w.id ?? w.wine_id,
-        wineName: w.wineName ?? w.name ?? w.wine_name,
-        type: w.type,
-        elaborate: w.elaborate,
-        grapes: w.grapes,
-        harmonize: w.harmonize,
-        abv: w.abv,
-        body: w.body,
-        acidity: w.acidity,
-        country: w.country,
-        region: w.region,
-        winery: w.winery,
-        vintages: w.vintages,
-        // Por defecto, asumir no favorito. Luego lo confirmamos con el endpoint de status si hay sesión.
-        isFavorite: false,
-      }));
+      const normalized: Wine[] = winesArray.map((w: any) => {
+        const wine = {
+          wineId: w.wineId ?? w.id ?? w.wine_id,
+          wineName: w.wineName ?? w.name ?? w.wine_name,
+          type: w.type,
+          elaborate: w.elaborate,
+          grapes: w.grapes,
+          harmonize: w.harmonize,
+          abv: w.abv,
+          body: w.body,
+          acidity: w.acidity,
+          country: w.country,
+          region: w.region,
+          winery: w.winery,
+          vintages: w.vintages,
+          // Por defecto, asumir no favorito. Luego lo confirmamos con el endpoint de status si hay sesión.
+          isFavorite: false,
+          // Incluye el score si está presente en la respuesta
+          score: w.score ?? undefined,
+        };
+
+        // DEBUG: Log score info for first wine
+        if (w === winesArray[0]) {
+          console.log('=== SCORE MAPPING DEBUG ===');
+          console.log('Raw wine data score:', w.score);
+          console.log('Normalized wine score:', wine.score);
+          console.log('Score type:', typeof w.score);
+        }
+
+        return wine;
+      });
+
+      // DEBUG: Log normalized results
+      console.log('=== NORMALIZED RESULTS ===');
+      console.log('Total normalized wines:', normalized.length);
+      console.log('First normalized wine:', JSON.stringify(normalized[0], null, 2));
+
       setResults(normalized);
 
       // Si hay usuario autenticado, consultar el estado de cada vino para obtener isFavorite real
@@ -127,6 +163,14 @@ export default function SearchPage() {
               try {
                 const status = await apiClient.get(`/users/${userId}/wines/status/${w.wineId}`);
                 const isFav = !!(status as any)?.isFavorite;
+
+                // DEBUG: Log for first wine to check if score is preserved
+                if (w === normalized[0]) {
+                  console.log('=== FAVORITE UPDATE DEBUG ===');
+                  console.log('Wine before favorite update:', JSON.stringify(w, null, 2));
+                  console.log('Updated wine with favorite:', JSON.stringify({ ...w, isFavorite: isFav }, null, 2));
+                }
+
                 return { ...w, isFavorite: isFav };
               } catch (e) {
                 // Si falla la consulta del estado de un vino, devolvemos el original
@@ -134,6 +178,11 @@ export default function SearchPage() {
               }
             })
           );
+
+          // DEBUG: Log final results
+          console.log('=== FINAL RESULTS DEBUG ===');
+          console.log('First wine in final results:', JSON.stringify(updated[0], null, 2));
+
           setResults(updated);
         } catch (e) {
           // Ignorar errores globales de esta actualización para no romper la búsqueda
@@ -208,63 +257,11 @@ export default function SearchPage() {
 
 
   const renderItem = ({ item }: { item: Wine }) => (
-    <View className="bg-[#F5F0E6] p-5 mx-4 mb-4 rounded-2xl shadow-lg">
-      <TouchableOpacity onPress={() => router.push(`/wine/${item.wineId}`)}>
-        {/* Badges */}
-        {item.isFavorite && (
-          <View className="bg-[#FFD54F] px-2 py-1 rounded-lg mb-2 self-start">
-            <Text className="text-[#3E2723] text-xs font-bold">⭐ Favorito</Text>
-          </View>
-        )}
-
-        {/* Wine Header */}
-        <View className="flex-row justify-between items-start mb-3">
-          <WineImage name={item.wineName} size={48} rounded className="mr-3" />
-          <Text className="text-[#3E2723] text-lg font-bold flex-1 mr-2" numberOfLines={2}>
-            {item.wineName}
-          </Text>
-          <TouchableOpacity 
-            className="p-2" 
-            onPress={() => onToggleFavorite(item)}
-            style={{ minWidth: 48, minHeight: 48, justifyContent: 'center', alignItems: 'center' }}
-          >
-            <Ionicons
-              name={favoriteIconName(!!item.isFavorite, togglingFavorites.has(item.wineId))}
-              size={22}
-              color={favoriteIconColor(!!item.isFavorite, togglingFavorites.has(item.wineId))}
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* Wine Details Chips */}
-        <View className="flex-row flex-wrap gap-1.5 my-2">
-          <View className="bg-[#F8D7DA] px-2.5 py-1.5 rounded-xl">
-            <Text className="text-[#3E2723] text-xs font-medium">{item.winery}</Text>
-          </View>
-          <View className="bg-[#F8D7DA] px-2.5 py-1.5 rounded-xl">
-            <Text className="text-[#3E2723] text-xs font-medium">{item.type}</Text>
-          </View>
-          {item.body && (
-            <View className="bg-[#F8D7DA] px-2.5 py-1.5 rounded-xl">
-              <Text className="text-[#3E2723] text-xs font-medium">{item.body}</Text>
-            </View>
-          )}
-          <View className="bg-[#F8D7DA] px-2.5 py-1.5 rounded-xl">
-            <Text className="text-[#3E2723] text-xs font-medium">{item.region}</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-
-      {/* Action Button */}
-      <TouchableOpacity 
-        className="bg-[#6B1E3A] py-3 px-4 rounded-lg mt-3"
-        onPress={() => router.push(`/wine/${item.wineId}`)}
-      >
-        <Text className="text-[#F5F0E6] text-sm font-semibold text-center">
-          ¿Lo conocés? Contanos tu experiencia
-        </Text>
-      </TouchableOpacity>
-    </View>
+    <SearchWineItem
+      item={item}
+      onToggleFavorite={onToggleFavorite}
+      togglingFavorites={togglingFavorites}
+    />
   );
 
   const renderActiveFilters = () => {
