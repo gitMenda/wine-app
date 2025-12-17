@@ -8,6 +8,7 @@ import WineImage from "@/components/WineImage";
 import { favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
+import { translateWineType } from '@/lib/wineTypes';
 
 cssInterop(LinearGradient, {
   className: "style",
@@ -36,12 +37,14 @@ interface RecommendationItemProps {
   item: Wine;
   onToggleFavorite: (wine: Wine) => void;
   togglingFavorites: Set<number>;
+  showToast?: (message: string, type?: 'success' | 'error') => void;
 }
 
 const RecommendationItem: React.FC<RecommendationItemProps> = ({
   item,
   onToggleFavorite,
   togglingFavorites,
+  showToast,
 }) => {
   const { user } = useAuth();
   const userId = user?.id || user?.sub;
@@ -109,10 +112,19 @@ const RecommendationItem: React.FC<RecommendationItemProps> = ({
       await apiClient.post(`/users/${userId}/wines/status`, payload);
       setOriginalRating(selectedRating);
       setIsEditing(false);
-      Alert.alert('Listo', originalRating !== null ? 'Actualizamos tu experiencia correctamente.' : 'Registramos tu experiencia correctamente.');
+      const message = originalRating !== null ? 'Actualizamos tu experiencia correctamente.' : 'Registramos tu experiencia correctamente.';
+      if (showToast) {
+        showToast(message, 'success');
+      } else {
+        Alert.alert('Listo', message);
+      }
     } catch (e) {
       console.error('Error guardando rating', e);
-      Alert.alert('Error', 'No se pudo guardar. Intenta nuevamente.');
+      if (showToast) {
+        showToast('No se pudo guardar. Intenta nuevamente.', 'error');
+      } else {
+        Alert.alert('Error', 'No se pudo guardar. Intenta nuevamente.');
+      }
     } finally {
       setSaving(false);
     }
@@ -166,6 +178,11 @@ const RecommendationItem: React.FC<RecommendationItemProps> = ({
           </TouchableOpacity>
         </View>
 
+        {item.type && (
+          <Text style={styles.typeText} numberOfLines={1} className="mb-1">
+            {translateWineType(item.type)}
+          </Text>
+        )}
         {item.winery && (
           <Text style={styles.wineryText} numberOfLines={1} className="mb-1">
             {item.winery}
@@ -269,6 +286,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 4,
+  },
+  typeText: {
+    color: '#6B1E3A',
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 2,
   },
   wineryText: {
     color: '#D1D5DB',

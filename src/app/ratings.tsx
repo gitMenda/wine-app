@@ -10,6 +10,7 @@ import { Ionicons } from '@expo/vector-icons';
 import WineImage from '@/components/WineImage';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft } from "lucide-react-native";
+import { translateWineType } from '@/lib/wineTypes';
 
 cssInterop(LinearGradient, {
   className: "style",
@@ -30,6 +31,7 @@ interface RatingItem {
     id: string | number;
     wineId: number;
     wineName: string;
+    type?: string | null;
     rating: number | null;
     country?: string | null;
     region?: string | null;
@@ -80,6 +82,7 @@ export default function MisVinosPage() {
                         id: r.id,
                         wineId: r.id ?? r.wineId ?? r.wine_id,
                         wineName: r.name ?? r.wineName ?? r.wine_name ?? 'Vino',
+                        type: r.type ?? null,
                         rating: r.rating ?? null,
                         country: r.country ?? null,
                         region: r.region ?? null,
@@ -160,14 +163,14 @@ export default function MisVinosPage() {
     };
 
     const header = (
-        <View className="bg-transparent pb-6 px-6">
+        <View style={{ paddingBottom: 24, paddingHorizontal: 24 }}>
             <View className="flex-row justify-between items-center">
                 <TouchableOpacity onPress={() => router.back()} className="mr-4">
                     <ArrowLeft color="#CECCCD" size={24} />
                 </TouchableOpacity>
 
                 <View className="flex-1">
-                    <Text className="text-[#CECCCD] text-2xl font-bold">
+                    <Text className="text-text" style={{ fontSize: 20, fontWeight: 'bold' }} numberOfLines={1}>
                         Mis experiencias
                     </Text>
                 </View>
@@ -192,6 +195,7 @@ export default function MisVinosPage() {
                         <View className="flex-1 flex-row justify-between items-start">
                             <View className="flex-1 mr-2">
                                 <Text className="text-white font-semibold mb-1" numberOfLines={2}>{item.wineName}</Text>
+                                {!!item.type && <Text style={{ color: '#6B1E3A', fontSize: 13, fontWeight: '600', marginBottom: 2 }} numberOfLines={1}>{translateWineType(item.type)}</Text>}
                                 {!!item.winery && <Text className="text-gray-300 text-sm" numberOfLines={1}>{item.winery}</Text>}
                                 <View className="flex-row mt-1">
                                     {!!item.country && item.region && <Text className="text-gray-400 text-sm" numberOfLines={1}>{item.region + ', ' + item.country}</Text>}
@@ -239,6 +243,7 @@ export default function MisVinosPage() {
                                     )}
                                 </View>
                             </View>
+                            {!!item.type && <Text style={{ color: '#6B1E3A', fontSize: 13, fontWeight: '600', marginBottom: 2 }} numberOfLines={1}>{translateWineType(item.type)}</Text>}
                             {!!item.winery && <Text className="text-gray-300 text-sm" numberOfLines={1}>{item.winery}</Text>}
                             <View>
                                 {(item.country && item.region) ? (
@@ -285,8 +290,8 @@ export default function MisVinosPage() {
 
     return (
         <View className="flex-1">
-            <ScrollView className="flex-1 p-4 pt-8">
-                {header}
+            {header}
+            <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
 
                 <View className="mb-6">
                     <View className="flex-row justify-between items-center mb-2">

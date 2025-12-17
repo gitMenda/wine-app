@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSearchState } from '@/hooks/useSearchState';
 import { LinearGradient } from "expo-linear-gradient";
 import { cssInterop } from "nativewind";
+import { translateWineType } from '@/lib/wineTypes';
 
 cssInterop(LinearGradient, {
   className: "style",
@@ -383,13 +384,34 @@ export default function SearchPage() {
   const renderActiveFilters = () => {
     if (!hasActiveFilters()) return null;
 
+    const getDisplayValue = (key: string, value: any): string => {
+      if (key === 'wine_type') {
+        return translateWineType(value) || value;
+      }
+      return value;
+    };
+
     return (
-      <View className="flex-row flex-wrap mb-4">
+      <View className="flex-row flex-wrap mb-4" style={{ gap: 8 }}>
         {Object.entries(activeFilters).map(([key, value]) => {
           if (!value || value === '' || key === 'wine_name') return null;
           return (
-            <View key={key} className="bg-[#6B1E3A] px-3 py-2 rounded-2xl mr-2 flex-row items-center">
-              <Text className="text-[#F5F0E6] text-sm font-semibold mr-1">{value}</Text>
+            <View
+              key={key}
+              style={{
+                backgroundColor: 'rgba(42, 42, 42, 0.5)',
+                borderWidth: 1,
+                borderColor: '#2A2A2A',
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
+              <Text style={{ color: '#D1D5DB', fontSize: 13, fontWeight: '500', marginRight: 6 }}>
+                {getDisplayValue(key, value)}
+              </Text>
               <TouchableOpacity onPress={() => {
                 const newFilters = { ...activeFilters };
                 delete newFilters[key as keyof WineFilters];
@@ -397,7 +419,7 @@ export default function SearchPage() {
                 setCurrentPageContext(1);
                 handleSearch(newFilters, 1);
               }}>
-                <X color="#F5F0E6" size={16} />
+                <X color="#9CA3AF" size={14} />
               </TouchableOpacity>
             </View>
           );
@@ -415,7 +437,7 @@ export default function SearchPage() {
             <ArrowLeft color="#CECCCD" size={24} />
           </TouchableOpacity>
           <View className="flex-1">
-            <Text className="text-text text-2xl font-bold">Catálogo de Vinos</Text>
+            <Text className="text-text font-bold" style={{ fontSize: 20 }} numberOfLines={1}>Catálogo de Vinos</Text>
           </View>
         </View>
       </View>

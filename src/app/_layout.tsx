@@ -83,15 +83,15 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 }
 
 function SafeAreaWrapper({ children }: { children: React.ReactNode }) {
-  const { top } = useSafeAreaInsets();
-  
+  const { top, bottom } = useSafeAreaInsets();
+
   return (
     <LinearGradient
       colors={['#0E0206', '#0C0105', '#080203', '#050102', '#000000']}
       locations={[0, 0.2, 0.4, 0.7, 1]}
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
-      style={{ flex: 1, paddingTop: top }}
+      style={{ flex: 1, paddingTop: top + 16, paddingBottom: bottom }}
     >
       {children}
     </LinearGradient>

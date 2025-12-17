@@ -189,7 +189,7 @@ export default function ScanMenuScreen() {
             <ArrowLeft color="#CECCCD" size={24} />
           </TouchableOpacity>
           <View className="flex-1">
-            <Text className="text-text" style={{ fontSize: 24, fontWeight: 'bold' }}>Escanear Carta</Text>
+            <Text className="text-text" style={{ fontSize: 20, fontWeight: 'bold' }} numberOfLines={1}>Escanear Carta</Text>
           </View>
         </View>
       </View>

@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Modal, ActivityIndicator, StyleSheet } from 'react-native';
-import { Settings, Wine, Droplets, Thermometer, Percent, Pencil, ArrowLeft } from 'lucide-react-native';
+import { View, Text, ScrollView, TouchableOpacity, Image, Modal, ActivityIndicator, StyleSheet, Alert } from 'react-native';
+import { Settings, Wine, Droplets, Thermometer, Percent, Pencil, ArrowLeft, LogOut } from 'lucide-react-native';
 import { useAuth } from '@/hooks/useAuth';
 import { apiClient } from '@/lib/api';
 import { router } from 'expo-router';
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: '#CECCCD',
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   headerSubtitle: {
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
 });
 
 export default function WineProfileScreen() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const userId = user?.id;
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -245,6 +245,25 @@ export default function WineProfileScreen() {
     }
   };
 
+  // Manejar cierre de sesión
+  const handleLogout = () => {
+    Alert.alert(
+      'Cerrar sesión',
+      '¿Estás seguro que deseas cerrar sesión?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Cerrar sesión',
+          style: 'destructive',
+          onPress: async () => {
+            await signOut();
+            router.replace('/');
+          }
+        }
+      ]
+    );
+  };
+
   // Renderiza cada preferencia
   const renderPreferenceItem = (category: string, value: any, onPress: () => void) => {
     const { label } = CATEGORY_MAP[category];
@@ -279,7 +298,7 @@ export default function WineProfileScreen() {
         <View style={styles.header}>
           <View className="flex-row justify-between items-center">
             <View>
-              <Text style={styles.headerTitle}>Mi Perfil</Text>
+              <Text style={styles.headerTitle} numberOfLines={1}>Mi Perfil</Text>
             </View>
           </View>
         </View>
@@ -302,7 +321,7 @@ export default function WineProfileScreen() {
               <ArrowLeft color="#CECCCD" size={24} />
             </TouchableOpacity>
             <View className="flex-1">
-              <Text style={styles.headerTitle}>Mi Perfil</Text>
+              <Text style={styles.headerTitle} numberOfLines={1}>Mi Perfil</Text>
             </View>
           </View>
         </View>
@@ -329,7 +348,7 @@ export default function WineProfileScreen() {
             <ArrowLeft color="#3E2723" size={24} />
           </TouchableOpacity>
           <View className="flex-1">
-            <Text style={styles.headerTitle}>Mi Perfil</Text>
+            <Text style={styles.headerTitle} numberOfLines={1}>Mi Perfil</Text>
           </View>
           <TouchableOpacity
             style={styles.editButton}
@@ -381,6 +400,18 @@ export default function WineProfileScreen() {
               </LinearGradient>
             </TouchableOpacity>
           )}
+        </View>
+
+        {/* Logout Button */}
+        <View className="mb-8 mt-4">
+          <TouchableOpacity
+            className="rounded-xl p-4 flex-row items-center justify-center"
+            style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}
+            onPress={handleLogout}
+          >
+            <LogOut color="#ef4444" size={20} />
+            <Text className="text-red-500 text-base font-semibold ml-2">Cerrar sesión</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 

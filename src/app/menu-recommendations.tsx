@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: '#CECCCD',
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
   },
   headerSubtitle: {
@@ -192,12 +192,12 @@ export default function MenuRecommendationsScreen() {
     <View className="flex-1" style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View className="flex-row items-center mb-2">
+        <View className="flex-row items-center">
           <TouchableOpacity onPress={() => router.back()} className="mr-4">
-            <ArrowLeft color="#3E2723" size={24} />
+            <ArrowLeft color="#CECCCD" size={24} />
           </TouchableOpacity>
           <View className="flex-1">
-            <Text style={styles.headerTitle}>Recomendaciones del Menú</Text>
+            <Text style={styles.headerTitle} numberOfLines={1}>Recomendaciones del Menú</Text>
           </View>
         </View>
       </View>

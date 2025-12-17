@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { toggleFavoriteApi, favoriteIconColor, favoriteIconName } from '@/lib/favorites';
 import { useAuth } from '@/hooks/useAuth';
 import HorizontalScroll from '@/components/HorizontalScroll';
+import Toast from '@/components/Toast';
 import {
   ArrowLeft,
   MapPin,
@@ -22,6 +23,7 @@ import {
 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { cssInterop } from "nativewind";
+import { translateWineType, translateWineBody, translateWineAcidity } from '@/lib/wineTypes';
 
 // Enable className support for LinearGradient
 cssInterop(LinearGradient, {
@@ -59,7 +61,11 @@ export default function WineDetailPage() {
   const [saving, setSaving] = useState<boolean>(false);
   const [selectedVintage, setSelectedVintage] = useState<string | null>(null);
   const [wineIconActive, setWineIconActive] = useState<boolean>(false);
-  
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState<boolean>(false);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastType, setToastType] = useState<'success' | 'error'>('success');
+
   // Use current user ID instead of hardcoded ID
   const userId = user?.id || user?.sub;
 
@@ -115,13 +121,19 @@ export default function WineDetailPage() {
     }
   };
 
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage(message);
+    setToastType(type);
+    setToastVisible(true);
+  };
+
   const onToggleStar = (value: number) => {
     setSelectedRating(prev => (prev === value ? null : value));
   };
 
-  const onSaveRating = async () => {
+  const onSaveRating = async (showSuccessToast = true) => {
     if (!id || !userId) {
-      Alert.alert('Error', 'Necesitas iniciar sesión para guardar calificaciones.');
+      showToast('Necesitas iniciar sesión para guardar calificaciones.', 'error');
       return;
     }
     try {
@@ -131,12 +143,29 @@ export default function WineDetailPage() {
         rating: selectedRating ?? null,
         review: (review?.trim()?.length ?? 0) > 0 ? review.trim() : null,
       });
-      Alert.alert('Listo', 'Registramos tu experiencia correctamente.');
+      if (showSuccessToast) {
+        showToast('¡Experiencia registrada correctamente!', 'success');
+      }
     } catch (e) {
       console.error('Error guardando rating', e);
-      Alert.alert('Error', 'No se pudo guardar. Intenta nuevamente.');
+      showToast('No se pudo guardar. Intenta nuevamente.', 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const onToggleWineIcon = async () => {
+    const newState = !wineIconActive;
+    setWineIconActive(newState);
+
+    if (newState) {
+      // User is marking wine as tasted
+      // Save without rating (but don't show success toast yet, will be shown by onSaveRating)
+      await onSaveRating(false);
+      showToast('¡Vino marcado como probado!', 'success');
+    } else {
+      // User is unmarking - could optionally handle this
+      showToast('Vino desmarcado', 'success');
     }
   };
 
@@ -170,21 +199,18 @@ export default function WineDetailPage() {
 
   return (
     <View className="flex-1">
-      <ScrollView className="flex-1 px-4 py-6">
-        {/* Header with back button */}
-        <View className="flex-row items-center justify-between mb-4">
-          <TouchableOpacity className="p-2" onPress={() => router.back()}>
-            <ArrowLeft color="#fca5a5" size={24} />
+      {/* Header */}
+      <View style={{ paddingBottom: 24, paddingHorizontal: 24 }}>
+        <View className="flex-row justify-between items-center">
+          <TouchableOpacity onPress={() => router.back()} className="mr-4">
+            <ArrowLeft color="#CECCCD" size={24} />
           </TouchableOpacity>
-          <Text className="text-burgundy-300 text-xl font-bold flex-1 text-center">
-            {wine.wineName}
-          </Text>
+          <View className="flex-1">
+            <Text className="text-text" style={{ fontSize: 20, fontWeight: 'bold' }} numberOfLines={1}>{wine.wineName}</Text>
+          </View>
           <TouchableOpacity
             className="p-2"
-            onPress={() => {
-              setWineIconActive(prev => !prev);
-              onSaveRating();
-            }}
+            onPress={onToggleWineIcon}
           >
             <Ionicons
               name={wineIconActive ? 'wine' : 'wine-outline'}
@@ -200,6 +226,10 @@ export default function WineDetailPage() {
             />
           </TouchableOpacity>
         </View>
+      </View>
+
+      <ScrollView className="flex-1 px-4 py-6" showsVerticalScrollIndicator={false}>
+        {/* Removed old header - now handled above */}
 
         {/* Botella de vino - cuello más ancho y mejor centrado */}
         <View className="items-center mb-8 mt-24">
@@ -244,8 +274,8 @@ export default function WineDetailPage() {
         </View>
 
         {/* Wine Description */}
-        <View className="mb-8 bg-burgundy-800 p-4 rounded-xl">
-          <Text className="text-burgundy-200 text-base text-center italic">
+        <View className="mb-8 p-4 rounded-xl" style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}>
+          <Text className="text-gray-300 text-base text-center italic">
             "{wine.elaborate}"
           </Text>
         </View>
@@ -253,81 +283,81 @@ export default function WineDetailPage() {
         {/* Wine Characteristics Grid */}
         <View className="flex-row flex-wrap gap-4 mb-8">
           {/* Origin */}
-          <View className="flex-1 min-w-[45%] bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
+          <View className="flex-1 min-w-[45%] rounded-2xl p-4" style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}>
             <View className="flex-row items-center mb-2">
-              <MapPin color="#fca5a5" size={18} />
+              <MapPin color="#6B1E3A" size={18} />
               <Text className="text-white font-semibold ml-2">Origen</Text>
             </View>
-            <Text className="text-burgundy-200 text-sm">{wine.country}, {wine.region}</Text>
+            <Text className="text-gray-300 text-sm">{wine.country}, {wine.region}</Text>
           </View>
 
           {/* Vineyard */}
-          <View className="flex-1 min-w-[45%] bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
+          <View className="flex-1 min-w-[45%] rounded-2xl p-4" style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}>
             <View className="flex-row items-center mb-2">
-              <Building2 color="#fca5a5" size={18} />
+              <Building2 color="#6B1E3A" size={18} />
               <Text className="text-white font-semibold ml-2">Bodega</Text>
             </View>
-            <Text className="text-burgundy-200 text-sm">{wine.winery}</Text>
+            <Text className="text-gray-300 text-sm">{wine.winery}</Text>
           </View>
 
           {/* ABV */}
-          <View className="flex-1 min-w-[45%] bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
+          <View className="flex-1 min-w-[45%] rounded-2xl p-4" style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}>
             <View className="flex-row items-center mb-2">
-              <Droplets color="#fca5a5" size={18} />
+              <Droplets color="#6B1E3A" size={18} />
               <Text className="text-white font-semibold ml-2">ABV</Text>
             </View>
-            <Text className="text-burgundy-200 text-sm">{wine.abv}%</Text>
+            <Text className="text-gray-300 text-sm">{wine.abv}%</Text>
           </View>
 
           {/* Body */}
-          <View className="flex-1 min-w-[45%] bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
+          <View className="flex-1 min-w-[45%] rounded-2xl p-4" style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}>
             <View className="flex-row items-center mb-2">
-              <Scale color="#fca5a5" size={18} />
+              <Scale color="#6B1E3A" size={18} />
               <Text className="text-white font-semibold ml-2">Cuerpo</Text>
             </View>
-            <Text className="text-burgundy-200 text-sm">{wine.body}</Text>
+            <Text className="text-gray-300 text-sm">{translateWineBody(wine.body)}</Text>
           </View>
 
           {/* Acidity */}
-          <View className="flex-1 min-w-[45%] bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
+          <View className="flex-1 min-w-[45%] rounded-2xl p-4" style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}>
             <View className="flex-row items-center mb-2">
-              <Droplet color="#fca5a5" size={18} />
+              <Droplet color="#6B1E3A" size={18} />
               <Text className="text-white font-semibold ml-2">Acidez</Text>
             </View>
-            <Text className="text-burgundy-200 text-sm">{wine.acidity}</Text>
+            <Text className="text-gray-300 text-sm">{translateWineAcidity(wine.acidity)}</Text>
           </View>
 
           {/* Type */}
-          <View className="flex-1 min-w-[45%] bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
+          <View className="flex-1 min-w-[45%] rounded-2xl p-4" style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}>
             <View className="flex-row items-center mb-2">
-              <Grape color="#fca5a5" size={18} />
+              <Grape color="#6B1E3A" size={18} />
               <Text className="text-white font-semibold ml-2">Tipo</Text>
             </View>
-            <Text className="text-burgundy-200 text-sm">{wine.type}</Text>
+            <Text className="text-gray-300 text-sm">{translateWineType(wine.type)}</Text>
           </View>
         </View>
 
         {/* Grape Type */}
-        <View className="mb-6 bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
+        <View className="mb-6 rounded-2xl p-4" style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}>
           <Text className="text-white text-xl font-bold mb-3">Uvas</Text>
-          <Text className="text-burgundy-200">{formatArrayField(wine.grapes)}</Text>
+          <Text className="text-gray-300">{formatArrayField(wine.grapes)}</Text>
         </View>
 
         {/* Harmonization */}
-        <View className="mb-6 bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
+        <View className="mb-6 rounded-2xl p-4" style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}>
           <View className="flex-row items-center mb-3">
-            <Utensils color="#fca5a5" size={20} />
+            <Utensils color="#6B1E3A" size={20} />
             <Text className="text-white text-xl font-bold ml-2">
               Acompañalo con...
             </Text>
           </View>
-          <Text className="text-burgundy-200">{formatArrayField(wine.harmonizeEs)}</Text>
+          <Text className="text-gray-300">{formatArrayField(wine.harmonizeEs)}</Text>
         </View>
 
         {/* Vintage Years */}
-        <View className="mb-6 bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
+        <View className="mb-6 rounded-2xl p-4" style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}>
           <View className="flex-row items-center mb-2 px-1">
-            <Calendar color="#fca5a5" size={20} />
+            <Calendar color="#6B1E3A" size={20} />
             <Text className="text-white text-xl font-bold ml-2">
               Años de cosecha
             </Text>
@@ -340,69 +370,83 @@ export default function WineDetailPage() {
         </View>
 
           {(wine.summary ?? '').trim().length > 0 && (
-              <View className="mb-2 bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
-                  <View className="flex-row items-center">
-                    <Sparkles color="#fca5a5" size={20}/>
-                    <Text className="text-white text-xl font-bold ml-2">Resumen de opiniones hecho con IA</Text>
+              <View className="mb-6 rounded-2xl p-4" style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}>
+                  <View className="flex-row items-center mb-3">
+                    <Sparkles color="#6B1E3A" size={20}/>
+                    <Text className="text-white text-xl font-bold ml-2 flex-1 flex-shrink">Resumen de opiniones hecho con IA</Text>
                   </View>
-                  <Text className="text-burgundy-200 mb-2">{wine.summary}</Text>
+                  <Text className="text-gray-300" numberOfLines={isSummaryExpanded ? undefined : 4}>
+                    {wine.summary}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                    className="mt-2"
+                  >
+                    <Text className="text-sm font-semibold" style={{ color: '#6B1E3A' }}>
+                      {isSummaryExpanded ? 'Leer menos' : 'Leer más'}
+                    </Text>
+                  </TouchableOpacity>
               </View>
           )}
 
-        {/* Rating Section - FIXED LAYOUT */}
-        <View className="mb-2 bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
-          <View className="flex-row items-center">
-              <MessageSquareHeart color="#fca5a5" size={20} />
+        {/* Rating Section */}
+        <View className="mb-6 rounded-2xl p-4" style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}>
+          <View className="flex-row items-center mb-3">
+              <MessageSquareHeart color="#6B1E3A" size={20} />
               <Text className="text-white text-xl font-bold ml-2">¿Probaste este vino?</Text>
           </View>
-            <View className="mb-2 bg-burgundy-700 rounded-2xl p-4 border border-burgundy-700/50">
-                <Text className="text-burgundy-300 mb-3">¡Registrá tu experiencia para ajustar nuestras recomendaciones!</Text>
-                <TextInput
-                    className="mb-3 p-3 min-h-[100px] rounded-lg bg-burgundy-800 text-white border border-burgundy-700"
-                    placeholder="¿Qué te pareció este vino? Contanos tu opinión."
-                    placeholderTextColor="#9CA3AF"
-                    multiline
-                    numberOfLines={4}
-                    value={review}
-                    onChangeText={setReview}
-                    textAlignVertical="top"
-                />
-            
-            {/* Stars in center */}
-            <View className="flex-row justify-center my-2">
-              {[1, 2, 3, 4, 5].map((i) => {
-                const filled = selectedRating !== null && i <= selectedRating;
-                return (
-                  <TouchableOpacity key={i} onPress={() => onToggleStar(i)} className="px-2">
-                    <Ionicons 
-                      name={filled ? 'star' : 'star-outline'} 
-                      size={32} 
-                      color={filled ? '#FACC15' : '#9CA3AF'} 
-                    />
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            <View className="flex-row justify-between mb-4">
-                <Text className="text-burgundy-300">No me gustó</Text>
-                <Text className="text-burgundy-300">Me encantó</Text>
-            </View>
-            
-            <TouchableOpacity 
-              className="bg-burgundy-500 py-3 rounded-xl items-center mt-4"
-              onPress={onSaveRating}
-              disabled={saving || !userId}
-            >
-              <Text className="text-white font-bold text-base">
-                {saving ? 'Guardando...' : 'Registrar calificación'}
-              </Text>
-            </TouchableOpacity>
+
+          <Text className="text-gray-300 mb-3">¡Registrá tu experiencia para ajustar nuestras recomendaciones!</Text>
+
+          <TextInput
+              className="mb-3 p-3 min-h-[100px] rounded-lg text-white"
+              style={{ backgroundColor: '#1A1A1A', borderWidth: 1, borderColor: '#2A2A2A' }}
+              placeholder="¿Qué te pareció este vino? Contanos tu opinión."
+              placeholderTextColor="#9CA3AF"
+              multiline
+              numberOfLines={4}
+              value={review}
+              onChangeText={setReview}
+              textAlignVertical="top"
+          />
+
+          {/* Stars in center */}
+          <View className="flex-row justify-center my-2">
+            {[1, 2, 3, 4, 5].map((i) => {
+              const filled = selectedRating !== null && i <= selectedRating;
+              return (
+                <TouchableOpacity key={i} onPress={() => onToggleStar(i)} className="px-2">
+                  <Ionicons
+                    name={filled ? 'star' : 'star-outline'}
+                    size={32}
+                    color={filled ? '#FACC15' : '#9CA3AF'}
+                  />
+                </TouchableOpacity>
+              );
+            })}
           </View>
+
+          <View className="flex-row justify-between mb-4">
+              <Text className="text-gray-400">No me gustó</Text>
+              <Text className="text-gray-400">Me encantó</Text>
+          </View>
+
+          <TouchableOpacity
+            className="py-3 rounded-xl items-center mt-4"
+            style={{ backgroundColor: '#6B1E3A' }}
+            onPress={() => onSaveRating()}
+            disabled={saving || !userId}
+          >
+            <Text className="text-white font-bold text-base">
+              {saving ? 'Guardando...' : 'Registrar calificación'}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Action Button */}
-        <TouchableOpacity 
-          className="bg-burgundy-700 py-4 rounded-2xl items-center mb-8"
+        <TouchableOpacity
+          className="py-4 rounded-2xl items-center mb-8"
+          style={{ backgroundColor: '#0D0D0D', borderWidth: 1, borderColor: '#2A2A2A' }}
           onPress={() => router.back()}
         >
           <Text className="text-white font-bold text-lg">
@@ -410,6 +454,14 @@ export default function WineDetailPage() {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* Toast Notification */}
+      <Toast
+        message={toastMessage}
+        type={toastType}
+        visible={toastVisible}
+        onHide={() => setToastVisible(false)}
+      />
     </View>
   );
 }

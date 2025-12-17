@@ -6,6 +6,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { cssInterop } from "nativewind";
 import WineImage from "@/components/WineImage";
 import { favoriteIconColor, favoriteIconName } from '@/lib/favorites';
+import { translateWineType } from '@/lib/wineTypes';
 
 cssInterop(LinearGradient, {
   className: "style",
@@ -83,6 +84,11 @@ const SearchWineItem: React.FC<SearchWineItemProps> = ({
               <Text style={styles.wineTitle} numberOfLines={2}>
                 {item.wineName}
               </Text>
+              {item.type && (
+                <Text style={styles.typeText} numberOfLines={1}>
+                  {translateWineType(item.type)}
+                </Text>
+              )}
               {item.winery && (
                 <Text style={styles.wineryText} numberOfLines={1}>
                   {item.winery}
@@ -139,6 +145,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  typeText: {
+    color: '#6B1E3A',
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 2,
   },
   wineryText: {
     color: '#D1D5DB',

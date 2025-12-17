@@ -14,7 +14,6 @@ interface FilterProps {
 export interface WineFilters {
   wine_name?: string;
   wine_type?: string;
-  wine_types?: string[];  // Multiple wine types
   winery?: string;
   country?: string;
   region?: string;
@@ -22,11 +21,28 @@ export interface WineFilters {
   max_abv?: number;
 }
 
+const WINE_TYPES = [
+  { label: 'Tinto', value: 'Red' },
+  { label: 'Blanco', value: 'White' },
+  { label: 'Rosado', value: 'Rosé' },
+  { label: 'Espumante', value: 'Sparkling' },
+  { label: 'Dulce', value: 'Dessert' },
+  { label: 'Fortificado', value: 'Fortified' },
+];
+
 export default function FilterModal({ visible, onClose, onApplyFilters, initialFilters }: FilterProps) {
   const [filters, setFilters] = useState<WineFilters>(initialFilters);
 
   const handleChange = (key: keyof WineFilters, value: string | number | undefined) => {
     setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const selectWineType = (value: string) => {
+    // If the same type is clicked, deselect it. Otherwise, select the new type.
+    setFilters(prev => ({
+      ...prev,
+      wine_type: prev.wine_type === value ? undefined : value
+    }));
   };
 
   const handleMinAbvChange = (value: number) => {
@@ -55,15 +71,14 @@ export default function FilterModal({ visible, onClose, onApplyFilters, initialF
     });
   };
 
-  // Asegúrate de que handleApply envíe los datos en el formato correcto:
   const handleApply = () => {
     // Eliminar valores undefined o vacíos antes de enviar
     const cleanFilters = Object.fromEntries(
-      Object.entries(filters).filter(([_, value]) => 
+      Object.entries(filters).filter(([_, value]) =>
         value !== undefined && value !== "" && value !== null
       )
     );
-    
+
     onApplyFilters(cleanFilters);
     onClose();
   };
@@ -80,15 +95,24 @@ export default function FilterModal({ visible, onClose, onApplyFilters, initialF
           </View>
 
           <ScrollView className="p-4">
-            <View className="mb-4">
+            <View className="mb-6">
               <Text style={styles.label}>Tipo de vino</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Ej: Tinto, Blanco, Rosado..."
-                placeholderTextColor="#6B7280"
-                value={filters.wine_type}
-                onChangeText={(text) => handleChange('wine_type', text || undefined)}
-              />
+              <View style={styles.radioContainer}>
+                {WINE_TYPES.map((type) => (
+                  <TouchableOpacity
+                    key={type.value}
+                    style={styles.radioRow}
+                    onPress={() => selectWineType(type.value)}
+                  >
+                    <View style={styles.radioOuter}>
+                      {filters.wine_type === type.value && (
+                        <View style={styles.radioInner} />
+                      )}
+                    </View>
+                    <Text style={styles.radioLabel}>{type.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
 
             <View className="mb-4">
@@ -259,5 +283,35 @@ const styles = StyleSheet.create({
   slider: {
     flex: 1,
     height: 40,
+  },
+  radioContainer: {
+    gap: 12,
+  },
+  radioRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  radioOuter: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#2A2A2A',
+    backgroundColor: '#0D0D0D',
+    marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#6B1E3A',
+  },
+  radioLabel: {
+    color: '#CECCCD',
+    fontSize: 15,
+    fontWeight: '500',
   },
 });

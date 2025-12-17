@@ -57,10 +57,10 @@ export default function HomeScreen() {
     return (
     <View className="flex-1">
       {/* Header */}
-      <View style={{ paddingBottom: 24, paddingHorizontal: 24 }}>
+      <View style={{ paddingBottom: 12, paddingHorizontal: 24 }}>
         <View className="flex-row justify-between items-center">
           <View>
-            <Text className="text-text" style={{ fontSize: 24, fontWeight: 'bold' }}>TuVino</Text>
+            <Text className="text-text" style={{ fontSize: 20, fontWeight: 'bold' }} numberOfLines={1}>TuVino</Text>
           </View>
           <TouchableOpacity
             className="bg-primary"
@@ -73,11 +73,10 @@ export default function HomeScreen() {
       </View>
 
       {/* Main Content */}
-      <ScrollView className="flex-1 px-6 py-8" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1 px-6 py-2" showsVerticalScrollIndicator={false}>
         {/* Welcome Section - Minimized */}
         <View className="mb-4">
           <Text className="text-text text-xl font-semibold mb-1">¡Bienvenido {userInfo?.username || ''}!</Text>
-          <Text className="text-text text-xl font-semibold mb-1">¿Qué hacemos hoy?</Text>
         </View>
 
         {/* Hero Card - Sugerencias */}
